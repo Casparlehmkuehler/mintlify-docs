@@ -1,54 +1,155 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "Lyceum API",
+    "description": "Cloud compute, AI inference, and storage API for developers",
+    "version": "2.0.0",
+    "contact": {
+      "name": "Lyceum Support",
+      "url": "https://lyceum.cloud"
+    }
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.lyceum.cloud/api/v2/external",
+      "description": "Production server"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "ApiKeyAuth": []
+    },
+    {
+      "BearerAuth": []
     }
   ],
   "paths": {
-    "/plants": {
+    "/general/health/ping": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "tags": ["General"],
+        "summary": "Health Check",
+        "description": "Check the health status of the Lyceum API",
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "API is healthy",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/general/health/version": {
+      "get": {
+        "tags": ["General"],
+        "summary": "Get API Version",
+        "description": "Get API version and system information",
+        "responses": {
+          "200": {
+            "description": "Version information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/general/resources/available-resources": {
+      "get": {
+        "tags": ["General"],
+        "summary": "Available Resources",
+        "description": "List all available hardware resources with pricing",
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []},
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Available resources",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourcesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/user/status": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get User Status",
+        "description": "Check user authentication status and profile information",
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ],
+        "responses": {
+          "200": {
+            "description": "User status information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/api-keys": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Create API Key",
+        "description": "Generate a new Lyceum API key for authentication",
+        "security": [
+          {"BearerAuth": []}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "API key created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
+            "description": "Bad request",
             "content": {
               "application/json": {
                 "schema": {
@@ -59,32 +160,60 @@
           }
         }
       },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "List API Keys",
+        "description": "Retrieve all API keys for the authenticated user",
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ],
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "List of API keys",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/ApiKeyListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/compute/execution/python/start": {
+      "post": {
+        "tags": ["Compute"],
+        "summary": "Start Python Execution",
+        "description": "Execute Python code with specified resources",
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Execution started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Bad request",
             "content": {
               "application/json": {
                 "schema": {
@@ -96,121 +225,578 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
+    "/storage/credentials": {
+      "post": {
+        "tags": ["Storage"],
+        "summary": "Get Storage Credentials",
+        "description": "Generate temporary S3-compatible storage credentials",
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Storage credentials generated",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/StorageCredentialsResponse"
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/billing/credits": {
+      "get": {
+        "tags": ["Billing"],
+        "summary": "Get Credits Balance",
+        "description": "Check your current credit balance",
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ],
+        "responses": {
+          "200": {
+            "description": "Credit balance information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditsBalanceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/checkout": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": ["Billing"],
+        "summary": "Create Checkout Session",
+        "description": "Create a Stripe checkout session to purchase credits",
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/CheckoutRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Checkout session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutResponse"
+                }
+              }
+            }
           }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key authentication"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token authentication"
+      }
+    },
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
         "type": "object",
         "properties": {
           "error": {
-            "type": "integer",
-            "format": "int32"
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "RESOURCE_NOT_FOUND"
+              },
+              "message": {
+                "type": "string",
+                "example": "The requested resource was not found"
+              },
+              "details": {
+                "type": "object"
+              }
+            },
+            "required": ["code", "message"]
+          }
+        },
+        "required": ["error"]
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "healthy"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T00:00:00Z"
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "example": "Lyceum API is operational"
+          }
+        },
+        "required": ["status", "timestamp"]
+      },
+      "VersionResponse": {
+        "type": "object",
+        "properties": {
+          "api_version": {
+            "type": "string",
+            "example": "2.0.0"
+          },
+          "python_version": {
+            "type": "string",
+            "example": "3.11.5"
+          },
+          "platform": {
+            "type": "string",
+            "example": "linux-x86_64"
+          },
+          "build_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T00:00:00Z"
+          }
+        },
+        "required": ["api_version"]
+      },
+      "ResourcesResponse": {
+        "type": "object",
+        "properties": {
+          "cpu_instances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CpuInstance"
+            }
+          },
+          "gpu_instances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GpuInstance"
+            }
+          },
+          "storage_pricing": {
+            "$ref": "#/components/schemas/StoragePricing"
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      },
+      "CpuInstance": {
+        "type": "object",
+        "properties": {
+          "instance_type": {
+            "type": "string",
+            "example": "cpu.small"
+          },
+          "vcpus": {
+            "type": "integer",
+            "example": 2
+          },
+          "memory_gb": {
+            "type": "integer",
+            "example": 4
+          },
+          "price_per_hour": {
+            "type": "number",
+            "format": "float",
+            "example": 0.10
+          },
+          "availability": {
+            "type": "string",
+            "enum": ["available", "limited", "unavailable"],
+            "example": "available"
+          }
+        },
+        "required": ["instance_type", "vcpus", "memory_gb", "price_per_hour", "availability"]
+      },
+      "GpuInstance": {
+        "type": "object",
+        "properties": {
+          "instance_type": {
+            "type": "string",
+            "example": "gpu.a100.40gb"
+          },
+          "gpu_model": {
+            "type": "string",
+            "example": "NVIDIA A100"
+          },
+          "gpu_count": {
+            "type": "integer",
+            "example": 1
+          },
+          "vram_gb": {
+            "type": "integer",
+            "example": 40
+          },
+          "vcpus": {
+            "type": "integer",
+            "example": 8
+          },
+          "memory_gb": {
+            "type": "integer",
+            "example": 32
+          },
+          "price_per_hour": {
+            "type": "number",
+            "format": "float",
+            "example": 2.50
+          },
+          "availability": {
+            "type": "string",
+            "enum": ["available", "limited", "unavailable"],
+            "example": "available"
+          }
+        },
+        "required": ["instance_type", "gpu_model", "gpu_count", "vram_gb", "vcpus", "memory_gb", "price_per_hour", "availability"]
+      },
+      "StoragePricing": {
+        "type": "object",
+        "properties": {
+          "price_per_gb_month": {
+            "type": "number",
+            "format": "float",
+            "example": 0.10
+          },
+          "price_per_gb_transfer": {
+            "type": "number",
+            "format": "float",
+            "example": 0.05
+          }
+        },
+        "required": ["price_per_gb_month", "price_per_gb_transfer"]
+      },
+      "UserStatusResponse": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "example": "user_123456"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "api_keys_count": {
+            "type": "integer",
+            "example": 3
+          },
+          "credit_balance": {
+            "type": "number",
+            "format": "float",
+            "example": 50.00
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T00:00:00Z"
+          }
+        },
+        "required": ["user_id", "email", "api_keys_count", "credit_balance"]
+      },
+      "CreateApiKeyRequest": {
+        "type": "object",
+        "properties": {
+          "key_name": {
+            "type": "string",
+            "description": "A descriptive name for the API key",
+            "example": "Production API Key"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional expiration date for the API key",
+            "example": "2025-01-01T00:00:00Z"
+          }
+        },
+        "required": ["key_name"]
+      },
+      "ApiKeyResponse": {
+        "type": "object",
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "description": "The generated API key (only shown once)",
+            "example": "lyceum_sk_live_abc123xyz789"
+          },
+          "api_key_id": {
+            "type": "string",
+            "example": "key_123456"
+          },
+          "key_name": {
+            "type": "string",
+            "example": "Production API Key"
+          },
+          "key_prefix": {
+            "type": "string",
+            "example": "lyceum_sk_live_abc"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T00:00:00Z"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-01T00:00:00Z"
+          }
+        },
+        "required": ["api_key", "api_key_id", "key_name", "key_prefix", "created_at"]
+      },
+      "ApiKeyListResponse": {
+        "type": "object",
+        "properties": {
+          "api_keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyInfo"
+            }
+          }
+        },
+        "required": ["api_keys"]
+      },
+      "ApiKeyInfo": {
+        "type": "object",
+        "properties": {
+          "api_key_id": {
+            "type": "string",
+            "example": "key_123456"
+          },
+          "key_name": {
+            "type": "string",
+            "example": "Production API Key"
+          },
+          "key_prefix": {
+            "type": "string",
+            "example": "lyceum_sk_live_abc"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T00:00:00Z"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-01-01T00:00:00Z"
+          },
+          "last_used_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2024-01-15T12:00:00Z"
+          }
+        },
+        "required": ["api_key_id", "key_name", "key_prefix", "is_active", "created_at"]
+      },
+      "ExecutionRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Python code to execute",
+            "example": "import numpy as np\\nprint(np.random.rand(5))"
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of pip packages to install",
+            "example": ["numpy==1.24.0"]
+          },
+          "machine_type": {
+            "type": "string",
+            "description": "Hardware profile",
+            "example": "cpu.small"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "description": "Maximum execution time in seconds",
+            "example": 300
+          },
+          "environment_variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Environment variables to set"
+          }
+        },
+        "required": ["code"]
+      },
+      "ExecutionResponse": {
+        "type": "object",
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "description": "Unique identifier for the execution",
+            "example": "exec_abc123"
+          },
+          "stream_url": {
+            "type": "string",
+            "description": "WebSocket URL for real-time output streaming",
+            "example": "wss://stream.lyceum.cloud/exec_abc123"
+          },
+          "status": {
+            "type": "string",
+            "description": "Initial execution status",
+            "example": "initializing"
+          },
+          "estimated_cost": {
+            "type": "number",
+            "format": "float",
+            "description": "Estimated cost in USD",
+            "example": 0.05
+          }
+        },
+        "required": ["execution_id", "stream_url", "status", "estimated_cost"]
+      },
+      "StorageCredentialsResponse": {
+        "type": "object",
+        "properties": {
+          "access_key": {
+            "type": "string",
+            "description": "Temporary S3 access key",
+            "example": "ASIATEMP123456"
+          },
+          "secret_key": {
+            "type": "string",
+            "description": "Temporary S3 secret key",
+            "example": "tempSecretKey123abc"
+          },
+          "session_token": {
+            "type": "string",
+            "description": "Session token for temporary credentials",
+            "example": "FwoGZXIvYXdzEBYaD..."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "S3-compatible endpoint URL",
+            "example": "https://storage.lyceum.cloud"
+          },
+          "bucket_name": {
+            "type": "string",
+            "description": "Your personal storage bucket name",
+            "example": "user-123456-storage"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Credential expiration timestamp (12 hours)",
+            "example": "2024-01-01T12:00:00Z"
+          }
+        },
+        "required": ["access_key", "secret_key", "endpoint", "bucket_name", "expires_at"]
+      },
+      "CreditsBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "available_credits": {
+            "type": "number",
+            "format": "float",
+            "description": "Current available credit balance in USD",
+            "example": 150.50
+          },
+          "pending_charges": {
+            "type": "number",
+            "format": "float",
+            "description": "Pending charges not yet deducted",
+            "example": 5.25
+          },
+          "total_balance": {
+            "type": "number",
+            "format": "float",
+            "description": "Total balance including pending charges",
+            "example": 145.25
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code",
+            "example": "USD"
+          }
+        },
+        "required": ["available_credits", "pending_charges", "total_balance", "currency"]
+      },
+      "CheckoutRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "float",
+            "minimum": 10.00,
+            "description": "Amount to add in USD (minimum $10)",
+            "example": 50.00
+          },
+          "success_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to redirect after successful payment",
+            "example": "https://app.lyceum.cloud/billing/success"
+          },
+          "cancel_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to redirect if payment is cancelled",
+            "example": "https://app.lyceum.cloud/billing"
+          }
+        },
+        "required": ["amount"]
+      },
+      "CheckoutResponse": {
+        "type": "object",
+        "properties": {
+          "checkout_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Stripe checkout session URL",
+            "example": "https://checkout.stripe.com/c/pay/cs_live_abc123"
+          },
+          "session_id": {
+            "type": "string",
+            "description": "Stripe session identifier",
+            "example": "cs_live_abc123"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Session expiration timestamp",
+            "example": "2024-01-01T01:00:00Z"
+          }
+        },
+        "required": ["checkout_url", "session_id", "expires_at"]
       }
     }
   }

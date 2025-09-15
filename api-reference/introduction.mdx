@@ -54,3 +54,38 @@ Error responses include appropriate HTTP status codes and descriptive messages:
   }
 }
 ```
+
+## Getting Started
+
+1. **Create an account** at [lyceum.cloud](https://lyceum.cloud)
+2. **Generate an API key** using the dashboard or the API
+3. **Make your first request** to test connectivity
+4. **Explore the endpoints** below to see what's available
+
+## SDK and Libraries
+
+We provide official SDKs for popular programming languages:
+
+- **Python**: `pip install lyceum-sdk`
+- **JavaScript/Node.js**: `npm install lyceum-sdk`
+- **Go**: `go get github.com/lyceum/lyceum-go`
+
+## Rate Limits
+
+API requests are rate limited to ensure fair usage:
+
+- **General endpoints**: 1000 requests per hour
+- **Compute endpoints**: 100 requests per hour
+- **Storage endpoints**: 500 requests per hour
+
+Rate limit headers are included in all responses:
+- `X-RateLimit-Limit`: Request limit per hour
+- `X-RateLimit-Remaining`: Requests remaining in current window
+- `X-RateLimit-Reset`: Time when rate limit resets
+
+## Support
+
+For help with the API:
+- **Documentation**: Browse the endpoints below
+- **Support**: Contact us at [support@lyceum.cloud](mailto:support@lyceum.cloud)
+- **Status**: Check service status at [status.lyceum.cloud](https://status.lyceum.cloud)
