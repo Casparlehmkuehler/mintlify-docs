@@ -1,14 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "dark",
+  "theme": "mint",
   "name": "Lyceum Documentation",
   "colors": {
     "primary": "#E0E0E0",
     "light": "#B0B0B0",
-    "dark": "#121212",
-    "background": {
-      "dark": "#121212"
-    }
+    "dark": "#121212"
   },
   "favicon": "/favicon.png",
   "navigation": {
