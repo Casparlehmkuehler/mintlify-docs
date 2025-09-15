@@ -1,0 +1,103 @@
+---
+title: 'Health Check'
+description: 'Check the health status of the Lyceum API'
+---
+
+## GET /general/health/ping
+
+Simple health check endpoint to verify the API is operational.
+
+### Response
+
+<ResponseField name="status" type="string">
+  Health status of the API
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Current server timestamp
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Health check message
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.lyceum.cloud/api/v2/external/general/health/ping
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.lyceum.cloud/api/v2/external/general/health/ping"
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T00:00:00Z",
+  "message": "Lyceum API is operational"
+}
+```
+
+</ResponseExample>
+
+---
+
+## GET /general/health/version
+
+Get API version and system information.
+
+### Response
+
+<ResponseField name="api_version" type="string">
+  Current API version
+</ResponseField>
+
+<ResponseField name="python_version" type="string">
+  Python runtime version
+</ResponseField>
+
+<ResponseField name="platform" type="string">
+  Server platform information
+</ResponseField>
+
+<ResponseField name="build_date" type="string">
+  API build timestamp
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.lyceum.cloud/api/v2/external/general/health/version
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.lyceum.cloud/api/v2/external/general/health/version"
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "api_version": "2.0.0",
+  "python_version": "3.11.5",
+  "platform": "linux-x86_64",
+  "build_date": "2024-01-01T00:00:00Z"
+}
+```
+
+</ResponseExample>

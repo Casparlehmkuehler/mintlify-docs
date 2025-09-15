@@ -1,33 +1,56 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Lyceum API documentation for cloud compute and AI inference'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Welcome to Lyceum API
 
-## Welcome
+The Lyceum API provides comprehensive access to cloud compute resources, AI model inference, and storage capabilities.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URL
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://api.lyceum.cloud/api/v2/external
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints require authentication using either:
+
+### API Key Authentication
+Include your API key in the request header:
+```
+X-API-Key: lyceum_xxx
+```
+
+### Bearer Token Authentication
+Exchange your API key for a JWT token and include it in the Authorization header:
+```
+Authorization: Bearer <token>
+```
+
+## Response Format
+
+All API responses follow a consistent JSON format:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "data": {...},
+  "status": "success",
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+```
+
+## Error Handling
+
+Error responses include appropriate HTTP status codes and descriptive messages:
+
+```json
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "The requested resource was not found",
+    "details": {...}
   }
-]
+}
 ```

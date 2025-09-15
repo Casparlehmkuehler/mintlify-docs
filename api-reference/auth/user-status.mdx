@@ -1,0 +1,68 @@
+---
+title: 'Get User Status'
+description: 'Check user authentication status and profile information'
+---
+
+## GET /auth/user/status
+
+Retrieve the current user's authentication status and profile information.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token or API key authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="user_id" type="string">
+  Unique identifier for the user
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  User's email address
+</ResponseField>
+
+<ResponseField name="api_keys_count" type="integer">
+  Number of active API keys
+</ResponseField>
+
+<ResponseField name="credit_balance" type="number">
+  Current credit balance in USD
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Account creation timestamp
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.lyceum.cloud/api/v2/external/auth/user/status \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.lyceum.cloud/api/v2/external/auth/user/status",
+    headers={"Authorization": "Bearer YOUR_TOKEN"}
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "user_id": "user_123456",
+  "email": "user@example.com",
+  "api_keys_count": 3,
+  "credit_balance": 50.00,
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+</ResponseExample>
