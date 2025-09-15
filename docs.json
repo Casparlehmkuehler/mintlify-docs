@@ -57,37 +57,8 @@
             ]
           },
           {
-            "group": "Authentication",
-            "pages": [
-              "api-reference/auth/user-status",
-              "api-reference/auth/api-keys-create",
-              "api-reference/auth/api-keys-list"
-            ]
-          },
-          {
-            "group": "General",
-            "pages": [
-              "api-reference/general/health",
-              "api-reference/general/resources"
-            ]
-          },
-          {
-            "group": "Compute",
-            "pages": [
-              "api-reference/compute/execution-start"
-            ]
-          },
-          {
-            "group": "Storage",
-            "pages": [
-              "api-reference/storage/credentials"
-            ]
-          },
-          {
-            "group": "Billing",
-            "pages": [
-              "api-reference/billing/credits"
-            ]
+            "group": "API Reference",
+            "openapi": "api-reference/openapi.json"
           }
         ]
       }
