@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Lyceum API Documentation",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -51,18 +51,42 @@
         "tab": "API reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Getting Started",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Authentication",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/auth/user-status",
+              "api-reference/auth/api-keys-create",
+              "api-reference/auth/api-keys-list"
+            ]
+          },
+          {
+            "group": "General",
+            "pages": [
+              "api-reference/general/health",
+              "api-reference/general/resources"
+            ]
+          },
+          {
+            "group": "Compute",
+            "pages": [
+              "api-reference/compute/execution-start"
+            ]
+          },
+          {
+            "group": "Storage",
+            "pages": [
+              "api-reference/storage/credentials"
+            ]
+          },
+          {
+            "group": "Billing",
+            "pages": [
+              "api-reference/billing/credits"
             ]
           }
         ]

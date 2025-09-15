@@ -1,0 +1,97 @@
+---
+title: 'List API Keys'
+description: 'Retrieve all API keys for the authenticated user'
+---
+
+## GET /auth/api-keys
+
+List all active API keys associated with your account.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token or API key authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="api_keys" type="array">
+  Array of API key objects
+  
+  <Expandable title="API Key Object">
+    <ResponseField name="api_key_id" type="string">
+      Unique identifier for the API key
+    </ResponseField>
+    
+    <ResponseField name="key_name" type="string">
+      Descriptive name of the API key
+    </ResponseField>
+    
+    <ResponseField name="key_prefix" type="string">
+      First few characters for identification
+    </ResponseField>
+    
+    <ResponseField name="is_active" type="boolean">
+      Whether the key is currently active
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      Creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="expires_at" type="string">
+      Expiration timestamp if set
+    </ResponseField>
+    
+    <ResponseField name="last_used_at" type="string">
+      Last usage timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.lyceum.cloud/api/v2/external/auth/api-keys \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.lyceum.cloud/api/v2/external/auth/api-keys",
+    headers={"Authorization": "Bearer YOUR_TOKEN"}
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "api_keys": [
+    {
+      "api_key_id": "key_123456",
+      "key_name": "Production API Key",
+      "key_prefix": "lyceum_sk_live_abc",
+      "is_active": true,
+      "created_at": "2024-01-01T00:00:00Z",
+      "expires_at": "2025-01-01T00:00:00Z",
+      "last_used_at": "2024-01-15T12:00:00Z"
+    },
+    {
+      "api_key_id": "key_789012",
+      "key_name": "Development Key",
+      "key_prefix": "lyceum_sk_test_xyz",
+      "is_active": true,
+      "created_at": "2024-01-05T00:00:00Z",
+      "expires_at": null,
+      "last_used_at": "2024-01-16T08:30:00Z"
+    }
+  ]
+}
+```
+
+</ResponseExample>
