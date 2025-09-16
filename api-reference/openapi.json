@@ -1,1 +1,3680 @@
-{"openapi":"3.1.0","info":{"title":"Lyceum Cloud Execution API","version":"0.1.0"},"paths":{"/api/v1/auth/refresh":{"post":{"tags":["Authentication"],"summary":"Refresh Access Token","description":"Refresh an expired access token using a refresh token.","operationId":"refresh_access_token_api_v1_auth_refresh_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RefreshRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/auth/me":{"get":{"tags":["Authentication"],"summary":"Get Current User Info","description":"Get information about the currently authenticated user.","operationId":"get_current_user_info_api_v1_auth_me_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v1/auth/validate":{"post":{"tags":["Authentication"],"summary":"Validate Token","description":"Validate a Supabase token.\nReturns { valid: true } if the token is valid.","operationId":"validate_token_api_v1_auth_validate_post","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v1/execution/test-setup":{"get":{"tags":["Code Execution"],"summary":"Test Execution Setup","description":"Test if the execution environment is properly configured.","operationId":"test_execution_setup_api_v1_execution_test_setup_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v1/execution/run":{"post":{"tags":["Code Execution"],"summary":"Run Code","description":"Execute Python code on the VM.","operationId":"run_code_api_v1_execution_run_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CodeExecution"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExecutionResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/execution/newjobsstream":{"get":{"tags":["Code Execution"],"summary":"Stream New Jobs","description":"Stream new job notifications in real-time using SSE.","operationId":"stream_new_jobs_api_v1_execution_newjobsstream_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v1/execution/stream/{execution_id}/ping":{"post":{"tags":["Code Execution"],"summary":"Ping Stream","description":"Handle ping request from client to keep SSE connection alive.","operationId":"ping_stream_api_v1_execution_stream__execution_id__ping_post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/execution/stream/{execution_id}":{"get":{"tags":["Code Execution"],"summary":"Stream Execution","description":"Stream execution output in real-time using SSE with keepalive support.","operationId":"stream_execution_api_v1_execution_stream__execution_id__get","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/execution/start":{"post":{"tags":["Code Execution"],"summary":"Start Execution","description":"Start code execution and return execution_id immediately.","operationId":"start_execution_api_v1_execution_start_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CodeExecution"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"additionalProperties":{"type":"string"},"type":"object","title":"Response Start Execution Api V1 Execution Start Post"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/history/":{"get":{"tags":["Execution History"],"summary":"Get Execution History","description":"Get the execution history for the current user.","operationId":"get_execution_history_api_v1_history__get","parameters":[{"name":"limit","in":"query","required":false,"schema":{"type":"integer","default":10,"title":"Limit"}},{"name":"offset","in":"query","required":false,"schema":{"type":"integer","default":0,"title":"Offset"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/history/{execution_id}":{"get":{"tags":["Execution History"],"summary":"Get Execution Detail","description":"Get details of a specific execution.","operationId":"get_execution_detail_api_v1_history__execution_id__get","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/delete-user":{"post":{"summary":"Delete User","operationId":"delete_user_api_v1_delete_user_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/DeleteUserRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/create-checkout-session":{"post":{"summary":"Create Checkout Session","operationId":"create_checkout_session_api_v1_create_checkout_session_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateCheckoutSessionRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/webhook":{"post":{"summary":"Stripe Webhook","operationId":"stripe_webhook_api_v1_webhook_post","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v1/upload-file":{"post":{"summary":"Upload File","operationId":"upload_file_api_v1_upload_file_post","requestBody":{"content":{"application/x-www-form-urlencoded":{"schema":{"$ref":"#/components/schemas/Body_upload_file_api_v1_upload_file_post"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/execution/start-prebuilt":{"post":{"tags":["Code Execution"],"summary":"Start Prebuilt","operationId":"start_prebuilt_api_v1_execution_start_prebuilt_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/StartPrebuiltExecutionRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/StartPrebuiltExecutionResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/api-keys/":{"get":{"tags":["API Keys"],"summary":"List Api Keys","description":"List all API keys for the authenticated user.","operationId":"list_api_keys_api_v1_api_keys__get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/ApiKeyResponse"},"type":"array","title":"Response List Api Keys Api V1 Api Keys  Get"}}}}}},"post":{"tags":["API Keys"],"summary":"Create Api Key","description":"Create a new API key for the authenticated user.","operationId":"create_api_key_api_v1_api_keys__post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApiKeyCreate"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApiKeyCreateResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/api-keys/{api_key_id}":{"delete":{"tags":["API Keys"],"summary":"Revoke Api Key","description":"Revoke (delete) an API key.","operationId":"revoke_api_key_api_v1_api_keys__api_key_id__delete","parameters":[{"name":"api_key_id","in":"path","required":true,"schema":{"type":"string","title":"Api Key Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/api-keys/{api_key_id}/toggle":{"patch":{"tags":["API Keys"],"summary":"Toggle Api Key","description":"Toggle API key active status.","operationId":"toggle_api_key_api_v1_api_keys__api_key_id__toggle_patch","parameters":[{"name":"api_key_id","in":"path","required":true,"schema":{"type":"string","title":"Api Key Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/api/cloud-storage/status":{"get":{"tags":["Cloud Storage"],"summary":"Get Cloud Storage Status","description":"Get connection status for all cloud storage providers","operationId":"get_cloud_storage_status_api_v1_api_cloud_storage_status_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CloudStorageStatus"}}}}}}},"/api/v1/api/cloud-storage/connect":{"post":{"tags":["Cloud Storage"],"summary":"Connect Cloud Storage","description":"Store encrypted credentials for a cloud storage provider","operationId":"connect_cloud_storage_api_v1_api_cloud_storage_connect_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ConnectRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/api/cloud-storage/{provider}":{"delete":{"tags":["Cloud Storage"],"summary":"Disconnect Cloud Storage","description":"Remove stored credentials for a cloud storage provider","operationId":"disconnect_cloud_storage_api_v1_api_cloud_storage__provider__delete","parameters":[{"name":"provider","in":"path","required":true,"schema":{"type":"string","title":"Provider"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/api/cloud-storage/credentials/{provider}":{"get":{"tags":["Cloud Storage"],"summary":"Get Cloud Storage Credentials","description":"Retrieve and decrypt stored cloud storage credentials for a specific provider","operationId":"get_cloud_storage_credentials_api_v1_api_cloud_storage_credentials__provider__get","parameters":[{"name":"provider","in":"path","required":true,"schema":{"type":"string","title":"Provider"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/api/cloud-storage/test/{provider}":{"post":{"tags":["Cloud Storage"],"summary":"Test Cloud Storage Credentials","description":"Test cloud storage credentials without storing them","operationId":"test_cloud_storage_credentials_api_v1_api_cloud_storage_test__provider__post","parameters":[{"name":"provider","in":"path","required":true,"schema":{"type":"string","title":"Provider"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TestCredentialsRequest"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/workloads/abort/{execution_id}":{"post":{"tags":["Workload Management"],"summary":"Abort Execution","description":"Abort a specific execution by setting cancel=true in the database.","operationId":"abort_execution_api_v1_workloads_abort__execution_id__post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/AbortResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/workloads/list":{"get":{"tags":["Workload Management"],"summary":"List Non Complete Executions","description":"List all non-completed executions for the current user.","operationId":"list_non_complete_executions_api_v1_workloads_list_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/app__api__routes__abort_workloads__ExecutionSummary"},"type":"array","title":"Response List Non Complete Executions Api V1 Workloads List Get"}}}}}}},"/api/v2/external/storage/list-files":{"get":{"tags":["External API v2","Storage Files"],"summary":"List Files","description":"List files in user's S3 bucket.","operationId":"list_files_api_v2_external_storage_list_files_get","parameters":[{"name":"prefix","in":"query","required":false,"schema":{"type":"string","default":"","title":"Prefix"}},{"name":"max_files","in":"query","required":false,"schema":{"type":"integer","default":1000,"title":"Max Files"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/FileInfo"},"title":"Response List Files Api V2 External Storage List Files Get"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/storage/upload":{"post":{"tags":["External API v2","Storage Files"],"summary":"Upload File","description":"Upload a file to user's S3 bucket.","operationId":"upload_file_api_v2_external_storage_upload_post","parameters":[{"name":"key","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Key"}}],"requestBody":{"required":true,"content":{"multipart/form-data":{"schema":{"$ref":"#/components/schemas/Body_upload_file_api_v2_external_storage_upload_post"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UploadResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/storage/upload-bulk":{"post":{"tags":["External API v2","Storage Files"],"summary":"Upload Bulk Files","description":"Upload multiple files at once, optionally preserving folder structure.","operationId":"upload_bulk_files_api_v2_external_storage_upload_bulk_post","requestBody":{"content":{"multipart/form-data":{"schema":{"$ref":"#/components/schemas/Body_upload_bulk_files_api_v2_external_storage_upload_bulk_post"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/BulkUploadResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/storage/download/{file_key}":{"get":{"tags":["External API v2","Storage Files"],"summary":"Download File","description":"Download a file from user's S3 bucket.","operationId":"download_file_api_v2_external_storage_download__file_key__get","parameters":[{"name":"file_key","in":"path","required":true,"schema":{"type":"string","title":"File Key"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/storage/delete/{file_key}":{"delete":{"tags":["External API v2","Storage Files"],"summary":"Delete File","description":"Delete a file from user's S3 bucket.","operationId":"delete_file_api_v2_external_storage_delete__file_key__delete","parameters":[{"name":"file_key","in":"path","required":true,"schema":{"type":"string","title":"File Key"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/storage/delete-folder/{folder_prefix}":{"delete":{"tags":["External API v2","Storage Files"],"summary":"Delete Folder","description":"Delete all files in a folder (by prefix).","operationId":"delete_folder_api_v2_external_storage_delete_folder__folder_prefix__delete","parameters":[{"name":"folder_prefix","in":"path","required":true,"schema":{"type":"string","title":"Folder Prefix"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/storage/credentials":{"post":{"tags":["External API v2","Storage Credentials"],"summary":"Get Storage Credentials","description":"Generate temporary MinIO/S3 storage credentials using STS.","operationId":"get_storage_credentials_api_v2_external_storage_credentials_post","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/StorageCredentials"}}}}}}},"/api/v2/external/user/status":{"get":{"tags":["External API v2","User Management"],"summary":"Get User Status","description":"Check user's authentication status and profile information.","operationId":"get_user_status_api_v2_external_user_status_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v2/external/user/delete":{"delete":{"tags":["External API v2","User Management"],"summary":"Delete User","description":"Permanently delete user account and all associated data.","operationId":"delete_user_api_v2_external_user_delete_delete","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v2/external/auth/api-keys/":{"get":{"tags":["External API v2","API Keys"],"summary":"List Api Keys","description":"List all API keys for the authenticated user.","operationId":"list_api_keys_api_v2_external_auth_api_keys__get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/ApiKeyResponse"},"type":"array","title":"Response List Api Keys Api V2 External Auth Api Keys  Get"}}}}}},"post":{"tags":["External API v2","API Keys"],"summary":"Create Api Key","description":"Create a new API key for the authenticated user.","operationId":"create_api_key_api_v2_external_auth_api_keys__post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApiKeyCreate"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApiKeyCreateResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/auth/api-keys/{api_key_id}":{"delete":{"tags":["External API v2","API Keys"],"summary":"Revoke Api Key","description":"Revoke (delete) an API key.","operationId":"revoke_api_key_api_v2_external_auth_api_keys__api_key_id__delete","parameters":[{"name":"api_key_id","in":"path","required":true,"schema":{"type":"string","title":"Api Key Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/auth/api-keys/{api_key_id}/toggle":{"patch":{"tags":["External API v2","API Keys"],"summary":"Toggle Api Key","description":"Toggle API key active status.","operationId":"toggle_api_key_api_v2_external_auth_api_keys__api_key_id__toggle_patch","parameters":[{"name":"api_key_id","in":"path","required":true,"schema":{"type":"string","title":"Api Key Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/auth/login":{"post":{"tags":["External API v2","Authentication"],"summary":"Login","description":"Login with email and password, return JWT tokens.\nThis JWT can be used directly with MinIO STS.","operationId":"login_api_v2_external_auth_login_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LoginRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/LoginResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/auth/refresh":{"post":{"tags":["External API v2","Authentication"],"summary":"Refresh Token","description":"Refresh an access token using a refresh token.","operationId":"refresh_token_api_v2_external_auth_refresh_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RefreshRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RefreshResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/delete-user":{"post":{"tags":["External API v2"],"summary":"Delete User","operationId":"delete_user_api_v2_external_delete_user_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/DeleteUserRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/health/ping":{"get":{"tags":["External API v2","Health"],"summary":"Ping","description":"Health check endpoint for the Lyceum FastAPI Server.","operationId":"ping_api_v2_external_health_ping_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v2/external/health/version":{"get":{"tags":["External API v2","Health"],"summary":"Version","description":"Get FastAPI and system version information.","operationId":"version_api_v2_external_health_version_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v2/external/resources/available-resources":{"get":{"tags":["External API v2","Resources"],"summary":"Get Available Resources","description":"List all available hardware resources including prices.","operationId":"get_available_resources_api_v2_external_resources_available_resources_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"additionalProperties":true,"type":"object","title":"Response Get Available Resources Api V2 External Resources Available Resources Get"}}}}}}},"/api/v2/external/workloads/abort/{execution_id}":{"post":{"tags":["External API v2","Workload Management"],"summary":"Abort Execution","description":"Abort a specific execution by setting cancel=true in the database.","operationId":"abort_execution_api_v2_external_workloads_abort__execution_id__post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/AbortResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/workloads/list":{"get":{"tags":["External API v2","Workload Management"],"summary":"List Non Complete Executions","description":"List all non-completed executions for the current user.","operationId":"list_non_complete_executions_api_v2_external_workloads_list_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/app__api__v2_streaming__external__compute__abort_workloads__ExecutionSummary"},"type":"array","title":"Response List Non Complete Executions Api V2 External Workloads List Get"}}}}}}},"/api/v2/external/machine-types":{"get":{"tags":["External API v2","Machine Types"],"summary":"Get Machine Types","description":"Get all available machine types with their pricing.","operationId":"get_machine_types_api_v2_external_machine_types_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/MachineTypesResponse"}}}}}}},"/api/v2/external/execution/image/start":{"post":{"tags":["External API v2","Docker Execution"],"summary":"Start Docker Execution","description":"Start Docker container execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.","operationId":"start_docker_execution_api_v2_external_execution_image_start_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/DockerExecutionRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/DockerExecutionStartResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/image/complete/{execution_id}":{"post":{"tags":["External API v2","Docker Execution"],"summary":"Complete Docker Execution","description":"Complete Docker execution endpoint called after streaming finishes.\nUpdates the Supabase record with final output and status.","operationId":"complete_docker_execution_api_v2_external_execution_image_complete__execution_id__post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","additionalProperties":true,"title":"Request"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/image/abort/{execution_id}":{"post":{"tags":["External API v2","Docker Execution"],"summary":"Abort Docker Execution","description":"Abort a running Docker execution.","operationId":"abort_docker_execution_api_v2_external_execution_image_abort__execution_id__post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/streaming/start":{"post":{"tags":["External API v2","Streaming Execution"],"summary":"Start Streaming Execution","description":"Start execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.","operationId":"start_streaming_execution_api_v2_external_execution_streaming_start_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/StreamingExecutionRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExecutionStartResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/streaming/complete/{execution_id}":{"post":{"tags":["External API v2","Streaming Execution"],"summary":"Complete Execution","description":"Complete execution endpoint called by the extension after streaming finishes.\nUpdates the Supabase record with final output and status.","operationId":"complete_execution_api_v2_external_execution_streaming_complete__execution_id__post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","additionalProperties":true,"title":"Request"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/streaming/abort/{execution_id}":{"post":{"tags":["External API v2","Streaming Execution"],"summary":"Abort Execution","description":"Abort a running execution.","operationId":"abort_execution_api_v2_external_execution_streaming_abort__execution_id__post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/streaming/{execution_id}/status":{"get":{"tags":["External API v2","Streaming Execution"],"summary":"Get Execution Status","description":"Get the current status of an execution.","operationId":"get_execution_status_api_v2_external_execution_streaming__execution_id__status_get","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/{execution_id}":{"delete":{"tags":["External API v2","Execution Management"],"summary":"Delete Execution","description":"Delete an execution record.","operationId":"delete_execution_api_v2_external_execution__execution_id__delete","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"get":{"tags":["External API v2","Execution Management"],"summary":"Get Execution","description":"Get execution details.","operationId":"get_execution_api_v2_external_execution__execution_id__get","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/execution/{execution_id}/timing":{"get":{"tags":["External API v2","Execution Management"],"summary":"Get Execution Timing","description":"Get execution timing details.","operationId":"get_execution_timing_api_v2_external_execution__execution_id__timing_get","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/files":{"post":{"tags":["External API v2","Batch API"],"summary":"Upload Batch File","description":"Upload a file for batch processing (following OpenAI pattern).","operationId":"upload_batch_file_api_v2_external_files_post","parameters":[{"name":"purpose","in":"query","required":false,"schema":{"type":"string","default":"batch","title":"Purpose"}}],"requestBody":{"required":true,"content":{"multipart/form-data":{"schema":{"$ref":"#/components/schemas/Body_upload_batch_file_api_v2_external_files_post"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UploadFileResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/batches":{"post":{"tags":["External API v2","Batch API"],"summary":"Create Batch","description":"Create a batch inference job (following OpenAI batch API pattern).","operationId":"create_batch_api_v2_external_batches_post","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateBatchRequest"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/BatchResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"get":{"tags":["External API v2","Batch API"],"summary":"List Batches","description":"List batch jobs (following OpenAI batch API pattern).","operationId":"list_batches_api_v2_external_batches_get","parameters":[{"name":"after","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"After"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","default":20,"title":"Limit"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/batches/{batch_id}":{"get":{"tags":["External API v2","Batch API"],"summary":"Get Batch","description":"Retrieve a batch job (following OpenAI batch API pattern).","operationId":"get_batch_api_v2_external_batches__batch_id__get","parameters":[{"name":"batch_id","in":"path","required":true,"schema":{"type":"string","title":"Batch Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/BatchResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/batches/{batch_id}/cancel":{"post":{"tags":["External API v2","Batch API"],"summary":"Cancel Batch","description":"Cancel a batch job (following OpenAI batch API pattern).","operationId":"cancel_batch_api_v2_external_batches__batch_id__cancel_post","parameters":[{"name":"batch_id","in":"path","required":true,"schema":{"type":"string","title":"Batch Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/files/{file_id}/content":{"get":{"tags":["External API v2","Batch API"],"summary":"Get File Content","description":"Retrieve file content (following OpenAI Files API pattern).","operationId":"get_file_content_api_v2_external_files__file_id__content_get","parameters":[{"name":"file_id","in":"path","required":true,"schema":{"type":"string","title":"File Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/files/{file_id}":{"get":{"tags":["External API v2","Batch API"],"summary":"Get File Info","description":"Get file metadata (following OpenAI Files API pattern).","operationId":"get_file_info_api_v2_external_files__file_id__get","parameters":[{"name":"file_id","in":"path","required":true,"schema":{"type":"string","title":"File Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/models/":{"get":{"tags":["External API v2","Inference Models"],"summary":"List Available Models","description":"List all models from database.","operationId":"list_available_models_api_v2_external_models__get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/ModelInfo"},"type":"array","title":"Response List Available Models Api V2 External Models  Get"}}}}}}},"/api/v2/external/models/{model_id}":{"get":{"tags":["External API v2","Inference Models"],"summary":"Get Model Info","description":"Get detailed information about a specific model.","operationId":"get_model_info_api_v2_external_models__model_id__get","parameters":[{"name":"model_id","in":"path","required":true,"schema":{"type":"string","title":"Model Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ModelInfo"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/models/sync":{"get":{"tags":["External API v2","Inference Models"],"summary":"List Sync Models","description":"List models that support synchronous inference.","operationId":"list_sync_models_api_v2_external_models_sync_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/ModelInfo"},"type":"array","title":"Response List Sync Models Api V2 External Models Sync Get"}}}}}}},"/api/v2/external/models/async":{"get":{"tags":["External API v2","Inference Models"],"summary":"List Async Models","description":"List models that support asynchronous/batch inference.","operationId":"list_async_models_api_v2_external_models_async_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/ModelInfo"},"type":"array","title":"Response List Async Models Api V2 External Models Async Get"}}}}}}},"/api/v2/external/models/type/{model_type}":{"get":{"tags":["External API v2","Inference Models"],"summary":"List Models By Type","description":"List models filtered by type (text, image, audio, etc.).","operationId":"list_models_by_type_api_v2_external_models_type__model_type__get","parameters":[{"name":"model_type","in":"path","required":true,"schema":{"type":"string","title":"Model Type"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/ModelInfo"},"title":"Response List Models By Type Api V2 External Models Type  Model Type  Get"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/models/{model_id}/instances":{"get":{"tags":["External API v2","Inference Models"],"summary":"List Model Instances","description":"List running instances for a specific model.","operationId":"list_model_instances_api_v2_external_models__model_id__instances_get","parameters":[{"name":"model_id","in":"path","required":true,"schema":{"type":"string","title":"Model Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/ModelInstance"},"title":"Response List Model Instances Api V2 External Models  Model Id  Instances Get"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/sync/":{"post":{"tags":["External API v2","Synchronous Inference"],"summary":"Create Sync Inference","description":"Create a synchronous inference request.","operationId":"create_sync_inference_api_v2_external_sync__post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SyncRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SyncResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/sync/{inference_id}":{"get":{"tags":["External API v2","Synchronous Inference"],"summary":"Get Sync Inference","description":"Get the result of a synchronous inference by ID.","operationId":"get_sync_inference_api_v2_external_sync__inference_id__get","parameters":[{"name":"inference_id","in":"path","required":true,"schema":{"type":"string","title":"Inference Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SyncResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/admin/instances":{"get":{"tags":["External API v2","Model Admin"],"summary":"List All Instances","description":"List all model instances (admin only).","operationId":"list_all_instances_api_v2_external_admin_instances_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}},"post":{"tags":["External API v2","Model Admin"],"summary":"Register Model Instance","description":"Register a new running model instance.","operationId":"register_model_instance_api_v2_external_admin_instances_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateInstanceRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/admin/instances/{instance_id}":{"patch":{"tags":["External API v2","Model Admin"],"summary":"Update Model Instance","description":"Update model instance status.","operationId":"update_model_instance_api_v2_external_admin_instances__instance_id__patch","parameters":[{"name":"instance_id","in":"path","required":true,"schema":{"type":"string","title":"Instance Id"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateInstanceRequest"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"delete":{"tags":["External API v2","Model Admin"],"summary":"Remove Model Instance","description":"Remove a model instance registration.","operationId":"remove_model_instance_api_v2_external_admin_instances__instance_id__delete","parameters":[{"name":"instance_id","in":"path","required":true,"schema":{"type":"string","title":"Instance Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/billing/credits":{"get":{"tags":["External API v2","Billing Credits"],"summary":"Get User Credits","description":"Get current user's credit balance.","operationId":"get_user_credits_api_v2_external_billing_credits_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreditsBalance"}}}}}}},"/api/v2/external/billing/credits/details":{"get":{"tags":["External API v2","Billing Credits"],"summary":"Get User Credits Details","description":"Get detailed user credits information including Stripe data.","operationId":"get_user_credits_details_api_v2_external_billing_credits_details_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserCredits"}}}}}}},"/api/v2/external/billing/checkout":{"post":{"tags":["External API v2","Billing Credits"],"summary":"Create Checkout Session","description":"Create a Stripe checkout session for purchasing credits.","operationId":"create_checkout_session_api_v2_external_billing_checkout_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CheckoutSessionRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CheckoutSessionResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/billing/history":{"get":{"tags":["External API v2","Billing Credits"],"summary":"Get Execution History","description":"Get user's execution history.","operationId":"get_execution_history_api_v2_external_billing_history_get","parameters":[{"name":"limit","in":"query","required":false,"schema":{"type":"integer","default":50,"title":"Limit"}},{"name":"offset","in":"query","required":false,"schema":{"type":"integer","default":0,"title":"Offset"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExecutionHistory"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/billing/activities":{"get":{"tags":["External API v2","Billing Credits"],"summary":"Get Billing Activities","description":"Get combined billing activities (executions + credit purchases).","operationId":"get_billing_activities_api_v2_external_billing_activities_get","parameters":[{"name":"limit","in":"query","required":false,"schema":{"type":"integer","default":10,"title":"Limit"}},{"name":"offset","in":"query","required":false,"schema":{"type":"integer","default":0,"title":"Offset"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/BillingHistory"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/create-checkout-session":{"post":{"tags":["External API v2"],"summary":"Create Checkout Session","operationId":"create_checkout_session_api_v2_external_create_checkout_session_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateCheckoutSessionRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v2/external/webhook":{"post":{"tags":["External API v2"],"summary":"Stripe Webhook","operationId":"stripe_webhook_api_v2_external_webhook_post","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/internal/callbacks/execution/{execution_id}":{"post":{"tags":["Internal Service Callbacks"],"summary":"Execution Callback","description":"Receive execution completion data from gRPC service.\n\nThis endpoint is called when an execution completes (successfully or with error).\nIt updates the database with all output, metrics, and billing information.","operationId":"execution_callback_api_internal_callbacks_execution__execution_id__post","parameters":[{"name":"execution_id","in":"path","required":true,"schema":{"type":"string","title":"Execution Id"}},{"name":"authorization","in":"header","required":false,"schema":{"type":"string","description":"Callback authentication token","title":"Authorization"},"description":"Callback authentication token"}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExecutionCallbackData"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/internal/callbacks/execution/health":{"get":{"tags":["Internal Service Callbacks"],"summary":"Callback Health","description":"Health check endpoint for internal callback service.","operationId":"callback_health_api_internal_callbacks_execution_health_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/":{"get":{"summary":"Root","operationId":"root__get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}}},"components":{"schemas":{"AbortResponse":{"properties":{"execution_id":{"type":"string","title":"Execution Id"},"status":{"type":"string","title":"Status"},"message":{"type":"string","title":"Message"}},"type":"object","required":["execution_id","status","message"],"title":"AbortResponse","description":"Response model for abort execution endpoint."},"ApiKeyCreate":{"properties":{"key_name":{"type":"string","maxLength":255,"minLength":1,"title":"Key Name","description":"Human-readable name for the API key"},"expires_at":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Expires At","description":"When the API key expires (optional)"}},"type":"object","required":["key_name"],"title":"ApiKeyCreate"},"ApiKeyCreateResponse":{"properties":{"api_key":{"type":"string","title":"Api Key","description":"The full API key (only shown once)"},"id":{"type":"string","title":"Id"},"key_name":{"type":"string","title":"Key Name"},"key_prefix":{"type":"string","title":"Key Prefix"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"expires_at":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Expires At"}},"type":"object","required":["api_key","id","key_name","key_prefix","created_at","expires_at"],"title":"ApiKeyCreateResponse","description":"Response when creating a new API key - includes the plaintext key"},"ApiKeyResponse":{"properties":{"id":{"type":"string","title":"Id"},"key_name":{"type":"string","title":"Key Name"},"key_prefix":{"type":"string","title":"Key Prefix"},"is_active":{"type":"boolean","title":"Is Active"},"last_used_at":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Last Used At"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"expires_at":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Expires At"}},"type":"object","required":["id","key_name","key_prefix","is_active","last_used_at","created_at","expires_at"],"title":"ApiKeyResponse"},"BatchErrors":{"properties":{"object":{"type":"string","title":"Object","default":"list"},"data":{"items":{"additionalProperties":true,"type":"object"},"type":"array","title":"Data","default":[]}},"type":"object","title":"BatchErrors"},"BatchRequestCounts":{"properties":{"total":{"type":"integer","title":"Total"},"completed":{"type":"integer","title":"Completed"},"failed":{"type":"integer","title":"Failed"}},"type":"object","required":["total","completed","failed"],"title":"BatchRequestCounts"},"BatchResponse":{"properties":{"id":{"type":"string","title":"Id"},"object":{"type":"string","title":"Object","default":"batch"},"endpoint":{"type":"string","title":"Endpoint"},"errors":{"anyOf":[{"$ref":"#/components/schemas/BatchErrors"},{"type":"null"}]},"input_file_id":{"type":"string","title":"Input File Id"},"completion_window":{"type":"string","title":"Completion Window"},"status":{"$ref":"#/components/schemas/BatchStatus"},"output_file_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Output File Id"},"error_file_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error File Id"},"created_at":{"type":"integer","title":"Created At"},"in_progress_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"In Progress At"},"expires_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Expires At"},"finalizing_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Finalizing At"},"completed_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Completed At"},"failed_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Failed At"},"expired_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Expired At"},"cancelling_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Cancelling At"},"cancelled_at":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Cancelled At"},"request_counts":{"$ref":"#/components/schemas/BatchRequestCounts"},"metadata":{"anyOf":[{"additionalProperties":true,"type":"object"},{"type":"null"}],"title":"Metadata"}},"type":"object","required":["id","endpoint","input_file_id","completion_window","status","created_at","request_counts"],"title":"BatchResponse"},"BatchStatus":{"type":"string","enum":["validating","failed","in_progress","finalizing","completed","expired","cancelling","cancelled"],"title":"BatchStatus"},"BillingActivity":{"properties":{"activity_id":{"type":"string","title":"Activity Id"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"type":{"type":"string","title":"Type"},"amount":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Amount"},"description":{"type":"string","title":"Description"},"status":{"type":"string","title":"Status"},"hardware_profile":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Hardware Profile"}},"type":"object","required":["activity_id","created_at","type","amount","description","status"],"title":"BillingActivity"},"BillingHistory":{"properties":{"activities":{"items":{"$ref":"#/components/schemas/BillingActivity"},"type":"array","title":"Activities"},"total_activities":{"type":"integer","title":"Total Activities"}},"type":"object","required":["activities","total_activities"],"title":"BillingHistory"},"Body_upload_batch_file_api_v2_external_files_post":{"properties":{"file":{"type":"string","format":"binary","title":"File"}},"type":"object","required":["file"],"title":"Body_upload_batch_file_api_v2_external_files_post"},"Body_upload_bulk_files_api_v2_external_storage_upload_bulk_post":{"properties":{"files":{"items":{"type":"string","format":"binary"},"type":"array","title":"Files"},"folder_prefix":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Folder Prefix"}},"type":"object","required":["files"],"title":"Body_upload_bulk_files_api_v2_external_storage_upload_bulk_post"},"Body_upload_file_api_v1_upload_file_post":{"properties":{"file":{"type":"string","format":"binary","title":"File"},"path":{"type":"string","format":"path","title":"Path"},"checksums_json":{"type":"string","title":"Checksums Json"}},"type":"object","required":["file","path","checksums_json"],"title":"Body_upload_file_api_v1_upload_file_post"},"Body_upload_file_api_v2_external_storage_upload_post":{"properties":{"file":{"type":"string","format":"binary","title":"File"}},"type":"object","required":["file"],"title":"Body_upload_file_api_v2_external_storage_upload_post"},"BulkUploadResponse":{"properties":{"total_files":{"type":"integer","title":"Total Files"},"successful_uploads":{"type":"integer","title":"Successful Uploads"},"failed_uploads":{"type":"integer","title":"Failed Uploads"},"results":{"items":{"$ref":"#/components/schemas/BulkUploadResult"},"type":"array","title":"Results"},"message":{"type":"string","title":"Message"}},"type":"object","required":["total_files","successful_uploads","failed_uploads","results","message"],"title":"BulkUploadResponse"},"BulkUploadResult":{"properties":{"key":{"type":"string","title":"Key"},"size":{"type":"integer","title":"Size"},"etag":{"type":"string","title":"Etag"},"status":{"type":"string","title":"Status"},"error_message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Message"}},"type":"object","required":["key","size","etag","status"],"title":"BulkUploadResult"},"CheckoutSessionRequest":{"properties":{"credits_amount":{"type":"integer","title":"Credits Amount"},"success_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Success Url"},"cancel_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Cancel Url"}},"type":"object","required":["credits_amount"],"title":"CheckoutSessionRequest"},"CheckoutSessionResponse":{"properties":{"checkout_url":{"type":"string","title":"Checkout Url"},"session_id":{"type":"string","title":"Session Id"}},"type":"object","required":["checkout_url","session_id"],"title":"CheckoutSessionResponse"},"CloudStorageStatus":{"properties":{"aws_s3":{"additionalProperties":{"type":"boolean"},"type":"object","title":"Aws S3"},"azure_blob":{"additionalProperties":{"type":"boolean"},"type":"object","title":"Azure Blob"},"gcp_storage":{"additionalProperties":{"type":"boolean"},"type":"object","title":"Gcp Storage"}},"type":"object","required":["aws_s3","azure_blob","gcp_storage"],"title":"CloudStorageStatus"},"CodeExecution":{"properties":{"code":{"type":"string","title":"Code"},"timeout":{"type":"integer","title":"Timeout","default":60},"requirements_content":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Requirements Content"},"kernel_state":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Kernel State"},"prior_imports":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"title":"Prior Imports","description":"List of import calls as strings to prepend before code execution"},"nbcode":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Nbcode"},"file_name":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"File Name"},"execution_type":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Execution Type","default":"cpu"},"import_files":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Import Files"}},"type":"object","required":["code"],"title":"CodeExecution"},"ConnectRequest":{"properties":{"provider":{"type":"string","title":"Provider"},"credentials":{"additionalProperties":true,"type":"object","title":"Credentials"}},"type":"object","required":["provider","credentials"],"title":"ConnectRequest"},"CreateBatchRequest":{"properties":{"input_file_id":{"type":"string","title":"Input File Id"},"endpoint":{"type":"string","title":"Endpoint"},"completion_window":{"type":"string","title":"Completion Window","default":"24h"},"metadata":{"anyOf":[{"additionalProperties":true,"type":"object"},{"type":"null"}],"title":"Metadata"}},"type":"object","required":["input_file_id","endpoint"],"title":"CreateBatchRequest"},"CreateCheckoutSessionRequest":{"properties":{"amount":{"type":"integer","title":"Amount"},"currency":{"type":"string","title":"Currency","default":"eur"},"description":{"type":"string","title":"Description","default":"Lyceum Cloud Credits"}},"type":"object","required":["amount"],"title":"CreateCheckoutSessionRequest"},"CreateInstanceRequest":{"properties":{"model_id":{"type":"string","title":"Model Id"},"instance_url":{"type":"string","title":"Instance Url"},"node_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Node Id"},"health_check_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Health Check Url"}},"type":"object","required":["model_id","instance_url"],"title":"CreateInstanceRequest"},"CreditsBalance":{"properties":{"available_credits":{"type":"number","title":"Available Credits"},"used_credits":{"type":"number","title":"Used Credits"},"total_credits_used":{"type":"number","title":"Total Credits Used"},"remaining_credits":{"type":"number","title":"Remaining Credits"},"monthly_free_credits":{"type":"number","title":"Monthly Free Credits","default":0.0},"purchased_credits":{"type":"number","title":"Purchased Credits","default":0.0}},"type":"object","required":["available_credits","used_credits","total_credits_used","remaining_credits"],"title":"CreditsBalance"},"DeleteUserRequest":{"properties":{"user_id":{"type":"string","title":"User Id"}},"type":"object","required":["user_id"],"title":"DeleteUserRequest"},"DockerExecutionRequest":{"properties":{"docker_image_ref":{"type":"string","title":"Docker Image Ref","description":"Docker image reference (e.g., python:3.9)"},"docker_run_cmd":{"items":{"type":"string"},"type":"array","title":"Docker Run Cmd","description":"Command to run in the container"},"docker_run_env":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Docker Run Env","description":"Environment variables as string"},"docker_registry_credential_type":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Docker Registry Credential Type","description":"Registry auth type (e.g., 'basic')"},"docker_registry_credentials":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Docker Registry Credentials","description":"Base64 encoded registry credentials"},"timeout":{"type":"integer","maximum":600.0,"minimum":1.0,"title":"Timeout","default":60},"execution_type":{"type":"string","pattern":"^(cpu|gpu|auto|a100)$","title":"Execution Type","default":"cpu"},"file_name":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"File Name"}},"type":"object","required":["docker_image_ref","docker_run_cmd"],"title":"DockerExecutionRequest","description":"Request model for Docker container execution"},"DockerExecutionStartResponse":{"properties":{"execution_id":{"type":"string","title":"Execution Id"},"status":{"type":"string","title":"Status"},"streaming_url":{"type":"string","title":"Streaming Url"}},"type":"object","required":["execution_id","status","streaming_url"],"title":"DockerExecutionStartResponse","description":"Response model with direct streaming URL"},"ExecutionCallbackData":{"properties":{"executionID":{"type":"string","title":"Executionid"},"execution_type":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Execution Type"},"callback_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Callback Url"},"callback_token":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Callback Token"},"user_callback_urls":{"items":{"type":"string"},"type":"array","title":"User Callback Urls"},"result":{"anyOf":[{"$ref":"#/components/schemas/JobResult"},{"type":"null"}]}},"additionalProperties":true,"type":"object","required":["executionID"],"title":"ExecutionCallbackData","description":"Complete Job data sent by gRPC service (protobuf Job message)"},"ExecutionHistory":{"properties":{"executions":{"items":{"$ref":"#/components/schemas/app__api__v2_streaming__external__billing__credits__ExecutionSummary"},"type":"array","title":"Executions"},"total_executions":{"type":"integer","title":"Total Executions"},"total_credits_spent":{"type":"number","title":"Total Credits Spent"}},"type":"object","required":["executions","total_executions","total_credits_spent"],"title":"ExecutionHistory"},"ExecutionOutput":{"properties":{"timestamp":{"type":"string","title":"Timestamp"},"channel":{"type":"string","title":"Channel"},"content":{"type":"string","title":"Content"}},"type":"object","required":["timestamp","channel","content"],"title":"ExecutionOutput","description":"Single output chunk from execution"},"ExecutionResponse":{"properties":{"execution_id":{"type":"string","title":"Execution Id"},"status":{"type":"string","title":"Status"},"output":{"type":"string","title":"Output"},"error":{"type":"string","title":"Error"},"user_error":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"User Error"},"execution_time":{"type":"number","title":"Execution Time"},"exit_code":{"type":"integer","title":"Exit Code"},"user_id":{"type":"string","title":"User Id"},"result_vars":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Result Vars"},"result_files":{"anyOf":[{"additionalProperties":{"additionalProperties":true,"type":"object"},"type":"object"},{"type":"null"}],"title":"Result Files"},"execution_type":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Execution Type","default":"cpu"}},"type":"object","required":["execution_id","status","user_id"],"title":"ExecutionResponse"},"ExecutionStartResponse":{"properties":{"execution_id":{"type":"string","title":"Execution Id"},"status":{"type":"string","title":"Status"},"streaming_url":{"type":"string","title":"Streaming Url"},"pythia_decision":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Pythia Decision"}},"type":"object","required":["execution_id","status","streaming_url"],"title":"ExecutionStartResponse","description":"Response model with direct streaming URL"},"FileInfo":{"properties":{"key":{"type":"string","title":"Key"},"size":{"type":"integer","title":"Size"},"last_modified":{"type":"string","format":"date-time","title":"Last Modified"},"etag":{"type":"string","title":"Etag"}},"type":"object","required":["key","size","last_modified","etag"],"title":"FileInfo"},"HTTPValidationError":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/ValidationError"},"type":"array","title":"Detail"}},"type":"object","title":"HTTPValidationError"},"JobResult":{"properties":{"startTime":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Starttime"},"endTime":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Endtime"},"status_updates":{"items":{"$ref":"#/components/schemas/StatusUpdate"},"type":"array","title":"Status Updates"},"outputs":{"items":{"$ref":"#/components/schemas/ExecutionOutput"},"type":"array","title":"Outputs"},"return_code":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Return Code"},"kernel_state":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Kernel State"}},"type":"object","title":"JobResult","description":"Job result data from protobuf"},"LoginRequest":{"properties":{"email":{"type":"string","title":"Email"},"password":{"type":"string","title":"Password"}},"type":"object","required":["email","password"],"title":"LoginRequest"},"LoginResponse":{"properties":{"access_token":{"type":"string","title":"Access Token"},"refresh_token":{"type":"string","title":"Refresh Token"},"user_id":{"type":"string","title":"User Id"},"email":{"type":"string","title":"Email"}},"type":"object","required":["access_token","refresh_token","user_id","email"],"title":"LoginResponse"},"MachineType":{"properties":{"hardware_profile":{"type":"string","title":"Hardware Profile"},"price_per_hour":{"type":"number","title":"Price Per Hour"}},"type":"object","required":["hardware_profile","price_per_hour"],"title":"MachineType"},"MachineTypesResponse":{"properties":{"machine_types":{"items":{"$ref":"#/components/schemas/MachineType"},"type":"array","title":"Machine Types"},"count":{"type":"integer","title":"Count"}},"type":"object","required":["machine_types","count"],"title":"MachineTypesResponse"},"ModelInfo":{"properties":{"model_id":{"type":"string","title":"Model Id"},"name":{"type":"string","title":"Name"},"description":{"type":"string","title":"Description"},"version":{"type":"string","title":"Version"},"type":{"type":"string","title":"Type"},"provider":{"type":"string","title":"Provider"},"input_types":{"items":{"type":"string"},"type":"array","title":"Input Types"},"output_types":{"items":{"type":"string"},"type":"array","title":"Output Types"},"max_input_tokens":{"type":"integer","title":"Max Input Tokens"},"max_output_tokens":{"type":"integer","title":"Max Output Tokens"},"price_per_1k_tokens":{"type":"number","title":"Price Per 1K Tokens"},"available":{"type":"boolean","title":"Available"},"gpu_required":{"type":"boolean","title":"Gpu Required"},"estimated_latency_ms":{"type":"integer","title":"Estimated Latency Ms"},"supports_sync":{"type":"boolean","title":"Supports Sync","default":true},"supports_async":{"type":"boolean","title":"Supports Async","default":true},"batch_pricing_discount":{"type":"number","title":"Batch Pricing Discount","default":0.5}},"type":"object","required":["model_id","name","description","version","type","provider","input_types","output_types","max_input_tokens","max_output_tokens","price_per_1k_tokens","available","gpu_required","estimated_latency_ms"],"title":"ModelInfo"},"ModelInstance":{"properties":{"id":{"type":"string","title":"Id"},"model_id":{"type":"string","title":"Model Id"},"instance_url":{"type":"string","title":"Instance Url"},"status":{"type":"string","title":"Status"},"node_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Node Id"},"last_health_check":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Last Health Check"}},"type":"object","required":["id","model_id","instance_url","status"],"title":"ModelInstance"},"PredictionInput":{"properties":{"text":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Text"},"image_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Image Url"},"audio_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Audio Url"},"parameters":{"anyOf":[{"additionalProperties":true,"type":"object"},{"type":"null"}],"title":"Parameters","default":{}}},"type":"object","title":"PredictionInput"},"RefreshRequest":{"properties":{"refresh_token":{"type":"string","title":"Refresh Token"}},"type":"object","required":["refresh_token"],"title":"RefreshRequest"},"RefreshResponse":{"properties":{"access_token":{"type":"string","title":"Access Token"},"refresh_token":{"type":"string","title":"Refresh Token"},"expires_at":{"type":"integer","title":"Expires At"}},"type":"object","required":["access_token","refresh_token","expires_at"],"title":"RefreshResponse"},"StartPrebuiltExecutionAWSCredentials":{"properties":{"ecr_token":{"type":"string","title":"Ecr Token"}},"type":"object","required":["ecr_token"],"title":"StartPrebuiltExecutionAWSCredentials"},"StartPrebuiltExecutionRequest":{"properties":{"docker_image":{"type":"string","title":"Docker Image"},"docker_run_args":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"title":"Docker Run Args"},"docker_run_env":{"anyOf":[{"additionalProperties":{"type":"string"},"type":"object"},{"type":"null"}],"title":"Docker Run Env"},"execution_type":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Execution Type"},"callback_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Callback Url"},"aws_credentials":{"anyOf":[{"$ref":"#/components/schemas/StartPrebuiltExecutionAWSCredentials"},{"type":"null"}]}},"type":"object","required":["docker_image"],"title":"StartPrebuiltExecutionRequest"},"StartPrebuiltExecutionResponse":{"properties":{"execution_id":{"type":"string","title":"Execution Id"}},"type":"object","required":["execution_id"],"title":"StartPrebuiltExecutionResponse"},"StatusUpdate":{"properties":{"timestamp":{"type":"string","title":"Timestamp"},"status":{"type":"string","title":"Status"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error"}},"type":"object","required":["timestamp","status"],"title":"StatusUpdate","description":"Status update from execution"},"StorageCredentials":{"properties":{"access_key":{"type":"string","title":"Access Key"},"secret_key":{"type":"string","title":"Secret Key"},"session_token":{"type":"string","title":"Session Token"},"endpoint":{"type":"string","title":"Endpoint"},"bucket_name":{"type":"string","title":"Bucket Name"},"region":{"type":"string","title":"Region","default":"us-east-1"},"expires_at":{"type":"string","format":"date-time","title":"Expires At"}},"type":"object","required":["access_key","secret_key","endpoint","bucket_name","expires_at"],"title":"StorageCredentials"},"StreamingExecutionRequest":{"properties":{"code":{"type":"string","title":"Code"},"timeout":{"type":"integer","maximum":600.0,"minimum":1.0,"title":"Timeout","default":60},"requirements":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Requirements"},"prior_imports":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"title":"Prior Imports"},"kernel_state":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Kernel State"},"file_name":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"File Name"},"execution_type":{"type":"string","pattern":"^(cpu|gpu|auto|a100)$","title":"Execution Type","default":"cpu"}},"type":"object","required":["code"],"title":"StreamingExecutionRequest","description":"Request model for streaming code execution"},"SyncRequest":{"properties":{"model_id":{"type":"string","title":"Model Id"},"input":{"$ref":"#/components/schemas/PredictionInput"},"max_tokens":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Max Tokens","default":1000},"temperature":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Temperature","default":0.7},"top_p":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Top P","default":1.0},"stream":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Stream","default":false}},"type":"object","required":["model_id","input"],"title":"SyncRequest"},"SyncResponse":{"properties":{"id":{"type":"string","title":"Id"},"model_id":{"type":"string","title":"Model Id"},"output":{"anyOf":[{"type":"string"},{"items":{"type":"string"},"type":"array"},{"additionalProperties":true,"type":"object"}],"title":"Output"},"usage":{"additionalProperties":{"type":"integer"},"type":"object","title":"Usage"},"latency_ms":{"type":"integer","title":"Latency Ms"},"cost":{"type":"number","title":"Cost"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"status":{"type":"string","title":"Status"}},"type":"object","required":["id","model_id","output","usage","latency_ms","cost","created_at","status"],"title":"SyncResponse"},"TestCredentialsRequest":{"properties":{"credentials":{"additionalProperties":true,"type":"object","title":"Credentials"}},"type":"object","required":["credentials"],"title":"TestCredentialsRequest"},"UpdateInstanceRequest":{"properties":{"status":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Status"},"node_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Node Id"},"health_check_url":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Health Check Url"}},"type":"object","title":"UpdateInstanceRequest"},"UploadFileResponse":{"properties":{"id":{"type":"string","title":"Id"},"object":{"type":"string","title":"Object","default":"file"},"bytes":{"type":"integer","title":"Bytes"},"created_at":{"type":"integer","title":"Created At"},"filename":{"type":"string","title":"Filename"},"purpose":{"type":"string","title":"Purpose"}},"type":"object","required":["id","bytes","created_at","filename","purpose"],"title":"UploadFileResponse"},"UploadResponse":{"properties":{"key":{"type":"string","title":"Key"},"size":{"type":"integer","title":"Size"},"etag":{"type":"string","title":"Etag"},"message":{"type":"string","title":"Message"}},"type":"object","required":["key","size","etag","message"],"title":"UploadResponse"},"UserCredits":{"properties":{"user_id":{"type":"string","title":"User Id"},"email":{"type":"string","title":"Email"},"available_credits":{"type":"number","title":"Available Credits"},"used_credits":{"type":"number","title":"Used Credits"},"total_credits_used":{"type":"number","title":"Total Credits Used"},"stripe_customer_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Stripe Customer Id"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"last_updated":{"type":"string","format":"date-time","title":"Last Updated"}},"type":"object","required":["user_id","email","available_credits","used_credits","total_credits_used","created_at","last_updated"],"title":"UserCredits"},"ValidationError":{"properties":{"loc":{"items":{"anyOf":[{"type":"string"},{"type":"integer"}]},"type":"array","title":"Location"},"msg":{"type":"string","title":"Message"},"type":{"type":"string","title":"Error Type"}},"type":"object","required":["loc","msg","type"],"title":"ValidationError"},"app__api__routes__abort_workloads__ExecutionSummary":{"properties":{"execution_id":{"type":"string","title":"Execution Id"},"status":{"type":"string","title":"Status"},"execution_type":{"type":"string","title":"Execution Type"},"hardware_profile":{"type":"string","title":"Hardware Profile"},"created_at":{"type":"string","title":"Created At"},"execution_owner":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Execution Owner"}},"type":"object","required":["execution_id","status","execution_type","hardware_profile","created_at"],"title":"ExecutionSummary","description":"Summary model for execution information."},"app__api__v2_streaming__external__billing__credits__ExecutionSummary":{"properties":{"execution_id":{"type":"string","title":"Execution Id"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"execution_type":{"type":"string","title":"Execution Type"},"status":{"type":"string","title":"Status"},"hardware_profile":{"type":"string","title":"Hardware Profile"},"billed":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Billed"},"execelet_start":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Execelet Start"},"start_time":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Start Time"},"end_time":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"End Time"},"finish_time":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Finish Time"},"job_start":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Job Start"},"job_end":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Job End"},"file_name":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"File Name"}},"type":"object","required":["execution_id","created_at","execution_type","status","hardware_profile"],"title":"ExecutionSummary"},"app__api__v2_streaming__external__compute__abort_workloads__ExecutionSummary":{"properties":{"execution_id":{"type":"string","title":"Execution Id"},"status":{"type":"string","title":"Status"},"execution_type":{"type":"string","title":"Execution Type"},"hardware_profile":{"type":"string","title":"Hardware Profile"},"created_at":{"type":"string","title":"Created At"},"execution_owner":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Execution Owner"}},"type":"object","required":["execution_id","status","execution_type","hardware_profile","created_at"],"title":"ExecutionSummary","description":"Summary model for execution information."}}}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lyceum Cloud Execution API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v2/external/health/ping": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Health"
+        ],
+        "summary": "Ping",
+        "description": "Health check endpoint for the Lyceum FastAPI Server.",
+        "operationId": "ping_api_v2_external_health_ping_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/health/version": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Health"
+        ],
+        "summary": "Version",
+        "description": "Get FastAPI and system version information.",
+        "operationId": "version_api_v2_external_health_version_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/auth/login": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Login with email and password, return JWT tokens.\nThis JWT can be used directly with MinIO STS.",
+        "operationId": "login_api_v2_external_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/auth/refresh": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Authentication"
+        ],
+        "summary": "Refresh Token",
+        "description": "Refresh an access token using a refresh token.",
+        "operationId": "refresh_token_api_v2_external_auth_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/auth/api-keys/": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "API Keys"
+        ],
+        "summary": "List Api Keys",
+        "description": "List all API keys for the authenticated user.",
+        "operationId": "list_api_keys_api_v2_external_auth_api_keys__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApiKeyResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Api Keys Api V2 External Auth Api Keys  Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "External API v2",
+          "API Keys"
+        ],
+        "summary": "Create Api Key",
+        "description": "Create a new API key for the authenticated user.",
+        "operationId": "create_api_key_api_v2_external_auth_api_keys__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiKeyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyCreateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/auth/api-keys/{api_key_id}": {
+      "delete": {
+        "tags": [
+          "External API v2",
+          "API Keys"
+        ],
+        "summary": "Revoke Api Key",
+        "description": "Revoke (delete) an API key.",
+        "operationId": "revoke_api_key_api_v2_external_auth_api_keys__api_key_id__delete",
+        "parameters": [
+          {
+            "name": "api_key_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Api Key Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/auth/api-keys/{api_key_id}/toggle": {
+      "patch": {
+        "tags": [
+          "External API v2",
+          "API Keys"
+        ],
+        "summary": "Toggle Api Key",
+        "description": "Toggle API key active status.",
+        "operationId": "toggle_api_key_api_v2_external_auth_api_keys__api_key_id__toggle_patch",
+        "parameters": [
+          {
+            "name": "api_key_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Api Key Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/user/delete": {
+      "delete": {
+        "tags": [
+          "External API v2",
+          "User Management"
+        ],
+        "summary": "Delete User",
+        "description": "Permanently delete user account and all associated data.",
+        "operationId": "delete_user_api_v2_external_user_delete_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/user/status": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "User Management"
+        ],
+        "summary": "Get User Status",
+        "description": "Check user's authentication status and profile information.",
+        "operationId": "get_user_status_api_v2_external_user_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/delete-user": {
+      "post": {
+        "tags": [
+          "External API v2"
+        ],
+        "summary": "Delete User",
+        "operationId": "delete_user_api_v2_external_delete_user_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/image/abort/{execution_id}": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Docker Execution"
+        ],
+        "summary": "Abort Docker Execution",
+        "description": "Abort a running Docker execution.",
+        "operationId": "abort_docker_execution_api_v2_external_execution_image_abort__execution_id__post",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/image/complete/{execution_id}": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Docker Execution"
+        ],
+        "summary": "Complete Docker Execution",
+        "description": "Complete Docker execution endpoint called after streaming finishes.\nUpdates the Supabase record with final output and status.",
+        "operationId": "complete_docker_execution_api_v2_external_execution_image_complete__execution_id__post",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/image/start": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Docker Execution"
+        ],
+        "summary": "Start Docker Execution",
+        "description": "Start Docker container execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
+        "operationId": "start_docker_execution_api_v2_external_execution_image_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DockerExecutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DockerExecutionStartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/streaming/abort/{execution_id}": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Streaming Execution"
+        ],
+        "summary": "Abort Execution",
+        "description": "Abort a running execution.",
+        "operationId": "abort_execution_api_v2_external_execution_streaming_abort__execution_id__post",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/streaming/complete/{execution_id}": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Streaming Execution"
+        ],
+        "summary": "Complete Execution",
+        "description": "Complete execution endpoint called by the extension after streaming finishes.\nUpdates the Supabase record with final output and status.",
+        "operationId": "complete_execution_api_v2_external_execution_streaming_complete__execution_id__post",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/streaming/start": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Streaming Execution"
+        ],
+        "summary": "Start Streaming Execution",
+        "description": "Start execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
+        "operationId": "start_streaming_execution_api_v2_external_execution_streaming_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamingExecutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionStartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/streaming/{execution_id}/status": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Streaming Execution"
+        ],
+        "summary": "Get Execution Status",
+        "description": "Get the current status of an execution.",
+        "operationId": "get_execution_status_api_v2_external_execution_streaming__execution_id__status_get",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/workloads/abort/{execution_id}": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Workload Management"
+        ],
+        "summary": "Abort Execution",
+        "description": "Abort a specific execution by setting cancel=true in the database.",
+        "operationId": "abort_execution_api_v2_external_workloads_abort__execution_id__post",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AbortResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/workloads/list": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Workload Management"
+        ],
+        "summary": "List Non Complete Executions",
+        "description": "List all non-completed executions for the current user.",
+        "operationId": "list_non_complete_executions_api_v2_external_workloads_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__api__v2_streaming__external__compute__abort_workloads__ExecutionSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Non Complete Executions Api V2 External Workloads List Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/{execution_id}": {
+      "delete": {
+        "tags": [
+          "External API v2",
+          "Execution Management"
+        ],
+        "summary": "Delete Execution",
+        "description": "Delete an execution record.",
+        "operationId": "delete_execution_api_v2_external_execution__execution_id__delete",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "External API v2",
+          "Execution Management"
+        ],
+        "summary": "Get Execution",
+        "description": "Get execution details.",
+        "operationId": "get_execution_api_v2_external_execution__execution_id__get",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/{execution_id}/timing": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Execution Management"
+        ],
+        "summary": "Get Execution Timing",
+        "description": "Get execution timing details.",
+        "operationId": "get_execution_timing_api_v2_external_execution__execution_id__timing_get",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/storage/list-files": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Storage Files"
+        ],
+        "summary": "List Files",
+        "description": "List files in user's S3 bucket.",
+        "operationId": "list_files_api_v2_external_storage_list_files_get",
+        "parameters": [
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Prefix"
+            }
+          },
+          {
+            "name": "max_files",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1000,
+              "title": "Max Files"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FileInfo"
+                  },
+                  "title": "Response List Files Api V2 External Storage List Files Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/storage/upload": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Storage Files"
+        ],
+        "summary": "Upload File",
+        "description": "Upload a file to user's S3 bucket.",
+        "operationId": "upload_file_api_v2_external_storage_upload_post",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_file_api_v2_external_storage_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/storage/upload-bulk": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Storage Files"
+        ],
+        "summary": "Upload Bulk Files",
+        "description": "Upload multiple files at once, optionally preserving folder structure.",
+        "operationId": "upload_bulk_files_api_v2_external_storage_upload_bulk_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_bulk_files_api_v2_external_storage_upload_bulk_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/storage/download/{file_key}": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Storage Files"
+        ],
+        "summary": "Download File",
+        "description": "Download a file from user's S3 bucket.",
+        "operationId": "download_file_api_v2_external_storage_download__file_key__get",
+        "parameters": [
+          {
+            "name": "file_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/storage/delete-folder/{folder_prefix}": {
+      "delete": {
+        "tags": [
+          "External API v2",
+          "Storage Files"
+        ],
+        "summary": "Delete Folder",
+        "description": "Delete all files in a folder (by prefix).",
+        "operationId": "delete_folder_api_v2_external_storage_delete_folder__folder_prefix__delete",
+        "parameters": [
+          {
+            "name": "folder_prefix",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Folder Prefix"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/storage/delete/{file_key}": {
+      "delete": {
+        "tags": [
+          "External API v2",
+          "Storage Files"
+        ],
+        "summary": "Delete File",
+        "description": "Delete a file from user's S3 bucket.",
+        "operationId": "delete_file_api_v2_external_storage_delete__file_key__delete",
+        "parameters": [
+          {
+            "name": "file_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/storage/credentials": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Storage Credentials"
+        ],
+        "summary": "Get Storage Credentials",
+        "description": "Generate temporary MinIO/S3 storage credentials using STS.",
+        "operationId": "get_storage_credentials_api_v2_external_storage_credentials_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageCredentials"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/billing/activities": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Billing Credits"
+        ],
+        "summary": "Get Billing Activities",
+        "description": "Get combined billing activities (executions + credit purchases).",
+        "operationId": "get_billing_activities_api_v2_external_billing_activities_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingHistory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/billing/checkout": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Billing Credits"
+        ],
+        "summary": "Create Checkout Session",
+        "description": "Create a Stripe checkout session for purchasing credits.",
+        "operationId": "create_checkout_session_api_v2_external_billing_checkout_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/billing/credits": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Billing Credits"
+        ],
+        "summary": "Get User Credits",
+        "description": "Get current user's credit balance.",
+        "operationId": "get_user_credits_api_v2_external_billing_credits_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditsBalance"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/billing/credits/details": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Billing Credits"
+        ],
+        "summary": "Get User Credits Details",
+        "description": "Get detailed user credits information including Stripe data.",
+        "operationId": "get_user_credits_details_api_v2_external_billing_credits_details_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCredits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/billing/history": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Billing Credits"
+        ],
+        "summary": "Get Execution History",
+        "description": "Get user's execution history.",
+        "operationId": "get_execution_history_api_v2_external_billing_history_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionHistory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/create-checkout-session": {
+      "post": {
+        "tags": [
+          "External API v2"
+        ],
+        "summary": "Create Checkout Session",
+        "operationId": "create_checkout_session_api_v2_external_create_checkout_session_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCheckoutSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/webhook": {
+      "post": {
+        "tags": [
+          "External API v2"
+        ],
+        "summary": "Stripe Webhook",
+        "operationId": "stripe_webhook_api_v2_external_webhook_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AbortResponse": {
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "title": "Execution Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "execution_id",
+          "status",
+          "message"
+        ],
+        "title": "AbortResponse",
+        "description": "Response model for abort execution endpoint."
+      },
+      "ApiKeyCreate": {
+        "properties": {
+          "key_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Key Name",
+            "description": "Human-readable name for the API key"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At",
+            "description": "When the API key expires (optional)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key_name"
+        ],
+        "title": "ApiKeyCreate"
+      },
+      "ApiKeyCreateResponse": {
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "title": "Api Key",
+            "description": "The full API key (only shown once)"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "key_name": {
+            "type": "string",
+            "title": "Key Name"
+          },
+          "key_prefix": {
+            "type": "string",
+            "title": "Key Prefix"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "api_key",
+          "id",
+          "key_name",
+          "key_prefix",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "ApiKeyCreateResponse",
+        "description": "Response when creating a new API key - includes the plaintext key"
+      },
+      "ApiKeyResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "key_name": {
+            "type": "string",
+            "title": "Key Name"
+          },
+          "key_prefix": {
+            "type": "string",
+            "title": "Key Prefix"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "key_name",
+          "key_prefix",
+          "is_active",
+          "last_used_at",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "ApiKeyResponse"
+      },
+      "BatchErrors": {
+        "properties": {
+          "object": {
+            "type": "string",
+            "title": "Object",
+            "default": "list"
+          },
+          "data": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Data",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "BatchErrors"
+      },
+      "BatchRequestCounts": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "completed",
+          "failed"
+        ],
+        "title": "BatchRequestCounts"
+      },
+      "BatchResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "object": {
+            "type": "string",
+            "title": "Object",
+            "default": "batch"
+          },
+          "endpoint": {
+            "type": "string",
+            "title": "Endpoint"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BatchErrors"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "input_file_id": {
+            "type": "string",
+            "title": "Input File Id"
+          },
+          "completion_window": {
+            "type": "string",
+            "title": "Completion Window"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchStatus"
+          },
+          "output_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output File Id"
+          },
+          "error_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error File Id"
+          },
+          "created_at": {
+            "type": "integer",
+            "title": "Created At"
+          },
+          "in_progress_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Progress At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "finalizing_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalizing At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "failed_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed At"
+          },
+          "expired_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expired At"
+          },
+          "cancelling_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelling At"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "request_counts": {
+            "$ref": "#/components/schemas/BatchRequestCounts"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "endpoint",
+          "input_file_id",
+          "completion_window",
+          "status",
+          "created_at",
+          "request_counts"
+        ],
+        "title": "BatchResponse"
+      },
+      "BatchStatus": {
+        "type": "string",
+        "enum": [
+          "validating",
+          "failed",
+          "in_progress",
+          "finalizing",
+          "completed",
+          "expired",
+          "cancelling",
+          "cancelled"
+        ],
+        "title": "BatchStatus"
+      },
+      "BillingActivity": {
+        "properties": {
+          "activity_id": {
+            "type": "string",
+            "title": "Activity Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "hardware_profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hardware Profile"
+          }
+        },
+        "type": "object",
+        "required": [
+          "activity_id",
+          "created_at",
+          "type",
+          "amount",
+          "description",
+          "status"
+        ],
+        "title": "BillingActivity"
+      },
+      "BillingHistory": {
+        "properties": {
+          "activities": {
+            "items": {
+              "$ref": "#/components/schemas/BillingActivity"
+            },
+            "type": "array",
+            "title": "Activities"
+          },
+          "total_activities": {
+            "type": "integer",
+            "title": "Total Activities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "activities",
+          "total_activities"
+        ],
+        "title": "BillingHistory"
+      },
+      "Body_upload_batch_file_api_v2_external_files_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_batch_file_api_v2_external_files_post"
+      },
+      "Body_upload_bulk_files_api_v2_external_storage_upload_bulk_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "folder_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Prefix"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_upload_bulk_files_api_v2_external_storage_upload_bulk_post"
+      },
+      "Body_upload_file_api_v2_external_storage_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_file_api_v2_external_storage_upload_post"
+      },
+      "BulkUploadResponse": {
+        "properties": {
+          "total_files": {
+            "type": "integer",
+            "title": "Total Files"
+          },
+          "successful_uploads": {
+            "type": "integer",
+            "title": "Successful Uploads"
+          },
+          "failed_uploads": {
+            "type": "integer",
+            "title": "Failed Uploads"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/BulkUploadResult"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_files",
+          "successful_uploads",
+          "failed_uploads",
+          "results",
+          "message"
+        ],
+        "title": "BulkUploadResponse"
+      },
+      "BulkUploadResult": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "etag": {
+            "type": "string",
+            "title": "Etag"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "size",
+          "etag",
+          "status"
+        ],
+        "title": "BulkUploadResult"
+      },
+      "CheckoutSessionRequest": {
+        "properties": {
+          "credits_amount": {
+            "type": "integer",
+            "title": "Credits Amount"
+          },
+          "success_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Success Url"
+          },
+          "cancel_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancel Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "credits_amount"
+        ],
+        "title": "CheckoutSessionRequest"
+      },
+      "CheckoutSessionResponse": {
+        "properties": {
+          "checkout_url": {
+            "type": "string",
+            "title": "Checkout Url"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "checkout_url",
+          "session_id"
+        ],
+        "title": "CheckoutSessionResponse"
+      },
+      "CreateBatchRequest": {
+        "properties": {
+          "input_file_id": {
+            "type": "string",
+            "title": "Input File Id"
+          },
+          "endpoint": {
+            "type": "string",
+            "title": "Endpoint"
+          },
+          "completion_window": {
+            "type": "string",
+            "title": "Completion Window",
+            "default": "24h"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_file_id",
+          "endpoint"
+        ],
+        "title": "CreateBatchRequest"
+      },
+      "CreateCheckoutSessionRequest": {
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "eur"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": "Lyceum Cloud Credits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "title": "CreateCheckoutSessionRequest"
+      },
+      "CreateInstanceRequest": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "instance_url": {
+            "type": "string",
+            "title": "Instance Url"
+          },
+          "node_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node Id"
+          },
+          "health_check_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Health Check Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "instance_url"
+        ],
+        "title": "CreateInstanceRequest"
+      },
+      "CreditsBalance": {
+        "properties": {
+          "available_credits": {
+            "type": "number",
+            "title": "Available Credits"
+          },
+          "used_credits": {
+            "type": "number",
+            "title": "Used Credits"
+          },
+          "total_credits_used": {
+            "type": "number",
+            "title": "Total Credits Used"
+          },
+          "remaining_credits": {
+            "type": "number",
+            "title": "Remaining Credits"
+          },
+          "monthly_free_credits": {
+            "type": "number",
+            "title": "Monthly Free Credits",
+            "default": 0.0
+          },
+          "purchased_credits": {
+            "type": "number",
+            "title": "Purchased Credits",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "available_credits",
+          "used_credits",
+          "total_credits_used",
+          "remaining_credits"
+        ],
+        "title": "CreditsBalance"
+      },
+      "DeleteUserRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "DeleteUserRequest"
+      },
+      "DockerExecutionRequest": {
+        "properties": {
+          "docker_image_ref": {
+            "type": "string",
+            "title": "Docker Image Ref",
+            "description": "Docker image reference (e.g., python:3.9)"
+          },
+          "docker_run_cmd": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Docker Run Cmd",
+            "description": "Command to run in the container"
+          },
+          "docker_run_env": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Docker Run Env",
+            "description": "Environment variables as string"
+          },
+          "docker_registry_credential_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Docker Registry Credential Type",
+            "description": "Registry auth type (e.g., 'aws', 'basic')"
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aws Access Key Id",
+            "description": "AWS Access Key ID for ECR"
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aws Secret Access Key",
+            "description": "AWS Secret Access Key for ECR"
+          },
+          "aws_session_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aws Session Token",
+            "description": "AWS Session Token for ECR"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region",
+            "description": "AWS region for ECR",
+            "default": "us-east-1"
+          },
+          "timeout": {
+            "type": "integer",
+            "maximum": 600.0,
+            "minimum": 1.0,
+            "title": "Timeout",
+            "default": 60
+          },
+          "execution_type": {
+            "type": "string",
+            "pattern": "^(cpu|gpu|auto|a100)$",
+            "title": "Execution Type",
+            "default": "cpu"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          },
+          "enable_s3_mount": {
+            "type": "boolean",
+            "title": "Enable S3 Mount",
+            "description": "Whether to enable S3 mount for this execution",
+            "default": true
+          },
+          "user_callback_urls": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Callback Urls",
+            "description": "URLs to call with job completion info"
+          }
+        },
+        "type": "object",
+        "required": [
+          "docker_image_ref",
+          "docker_run_cmd"
+        ],
+        "title": "DockerExecutionRequest",
+        "description": "Request model for Docker container execution"
+      },
+      "DockerExecutionStartResponse": {
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "title": "Execution Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "streaming_url": {
+            "type": "string",
+            "title": "Streaming Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "execution_id",
+          "status",
+          "streaming_url"
+        ],
+        "title": "DockerExecutionStartResponse",
+        "description": "Response model with direct streaming URL"
+      },
+      "ExecutionCallbackData": {
+        "properties": {
+          "executionID": {
+            "type": "string",
+            "title": "Executionid"
+          },
+          "execution_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Type"
+          },
+          "callback_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Callback Url"
+          },
+          "callback_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Callback Token"
+          },
+          "user_callback_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "User Callback Urls"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "executionID"
+        ],
+        "title": "ExecutionCallbackData",
+        "description": "Complete Job data sent by gRPC service (protobuf Job message)"
+      },
+      "ExecutionHistory": {
+        "properties": {
+          "executions": {
+            "items": {
+              "$ref": "#/components/schemas/app__api__v2_streaming__external__billing__credits__ExecutionSummary"
+            },
+            "type": "array",
+            "title": "Executions"
+          },
+          "total_executions": {
+            "type": "integer",
+            "title": "Total Executions"
+          },
+          "total_credits_spent": {
+            "type": "number",
+            "title": "Total Credits Spent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "executions",
+          "total_executions",
+          "total_credits_spent"
+        ],
+        "title": "ExecutionHistory"
+      },
+      "ExecutionOutput": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "channel",
+          "content"
+        ],
+        "title": "ExecutionOutput",
+        "description": "Single output chunk from execution"
+      },
+      "ExecutionStartResponse": {
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "title": "Execution Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "streaming_url": {
+            "type": "string",
+            "title": "Streaming Url"
+          },
+          "pythia_decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pythia Decision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "execution_id",
+          "status",
+          "streaming_url"
+        ],
+        "title": "ExecutionStartResponse",
+        "description": "Response model with direct streaming URL"
+      },
+      "FileInfo": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "last_modified": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Modified"
+          },
+          "etag": {
+            "type": "string",
+            "title": "Etag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "size",
+          "last_modified",
+          "etag"
+        ],
+        "title": "FileInfo"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JobResult": {
+        "properties": {
+          "startTime": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starttime"
+          },
+          "endTime": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endtime"
+          },
+          "status_updates": {
+            "items": {
+              "$ref": "#/components/schemas/StatusUpdate"
+            },
+            "type": "array",
+            "title": "Status Updates"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/ExecutionOutput"
+            },
+            "type": "array",
+            "title": "Outputs"
+          },
+          "return_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return Code"
+          },
+          "kernel_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kernel State"
+          }
+        },
+        "type": "object",
+        "title": "JobResult",
+        "description": "Job result data from protobuf"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "LoginResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "user_id",
+          "email"
+        ],
+        "title": "LoginResponse"
+      },
+      "MachineType": {
+        "properties": {
+          "hardware_profile": {
+            "type": "string",
+            "title": "Hardware Profile"
+          },
+          "price_per_hour": {
+            "type": "number",
+            "title": "Price Per Hour"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hardware_profile",
+          "price_per_hour"
+        ],
+        "title": "MachineType"
+      },
+      "MachineTypesResponse": {
+        "properties": {
+          "machine_types": {
+            "items": {
+              "$ref": "#/components/schemas/MachineType"
+            },
+            "type": "array",
+            "title": "Machine Types"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "machine_types",
+          "count"
+        ],
+        "title": "MachineTypesResponse"
+      },
+      "ModelInfo": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "input_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Input Types"
+          },
+          "output_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Output Types"
+          },
+          "max_input_tokens": {
+            "type": "integer",
+            "title": "Max Input Tokens"
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "title": "Max Output Tokens"
+          },
+          "price_per_1k_tokens": {
+            "type": "number",
+            "title": "Price Per 1K Tokens"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "gpu_required": {
+            "type": "boolean",
+            "title": "Gpu Required"
+          },
+          "estimated_latency_ms": {
+            "type": "integer",
+            "title": "Estimated Latency Ms"
+          },
+          "supports_sync": {
+            "type": "boolean",
+            "title": "Supports Sync",
+            "default": true
+          },
+          "supports_async": {
+            "type": "boolean",
+            "title": "Supports Async",
+            "default": true
+          },
+          "batch_pricing_discount": {
+            "type": "number",
+            "title": "Batch Pricing Discount",
+            "default": 0.5
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "name",
+          "description",
+          "version",
+          "type",
+          "provider",
+          "input_types",
+          "output_types",
+          "max_input_tokens",
+          "max_output_tokens",
+          "price_per_1k_tokens",
+          "available",
+          "gpu_required",
+          "estimated_latency_ms"
+        ],
+        "title": "ModelInfo"
+      },
+      "ModelInstance": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "instance_url": {
+            "type": "string",
+            "title": "Instance Url"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "node_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node Id"
+          },
+          "last_health_check": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Health Check"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "model_id",
+          "instance_url",
+          "status"
+        ],
+        "title": "ModelInstance"
+      },
+      "PredictionInput": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "audio_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Url"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameters",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "PredictionInput"
+      },
+      "RefreshRequest": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "RefreshRequest"
+      },
+      "RefreshResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "expires_at": {
+            "type": "integer",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "expires_at"
+        ],
+        "title": "RefreshResponse"
+      },
+      "StatusUpdate": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "status"
+        ],
+        "title": "StatusUpdate",
+        "description": "Status update from execution"
+      },
+      "StorageCredentials": {
+        "properties": {
+          "access_key": {
+            "type": "string",
+            "title": "Access Key"
+          },
+          "secret_key": {
+            "type": "string",
+            "title": "Secret Key"
+          },
+          "session_token": {
+            "type": "string",
+            "title": "Session Token"
+          },
+          "endpoint": {
+            "type": "string",
+            "title": "Endpoint"
+          },
+          "bucket_name": {
+            "type": "string",
+            "title": "Bucket Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region",
+            "default": "us-east-1"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_key",
+          "secret_key",
+          "endpoint",
+          "bucket_name",
+          "expires_at"
+        ],
+        "title": "StorageCredentials"
+      },
+      "StreamingExecutionRequest": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "timeout": {
+            "type": "integer",
+            "maximum": 600.0,
+            "minimum": 1.0,
+            "title": "Timeout",
+            "default": 60
+          },
+          "requirements": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirements"
+          },
+          "prior_imports": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prior Imports"
+          },
+          "kernel_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kernel State"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          },
+          "execution_type": {
+            "type": "string",
+            "pattern": "^(cpu|gpu|auto|a100)$",
+            "title": "Execution Type",
+            "default": "cpu"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "StreamingExecutionRequest",
+        "description": "Request model for streaming code execution"
+      },
+      "SyncRequest": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "input": {
+            "$ref": "#/components/schemas/PredictionInput"
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens",
+            "default": 1000
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "default": 0.7
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P",
+            "default": 1.0
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "input"
+        ],
+        "title": "SyncRequest"
+      },
+      "SyncResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ],
+            "title": "Output"
+          },
+          "usage": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Usage"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          },
+          "cost": {
+            "type": "number",
+            "title": "Cost"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "model_id",
+          "output",
+          "usage",
+          "latency_ms",
+          "cost",
+          "created_at",
+          "status"
+        ],
+        "title": "SyncResponse"
+      },
+      "UpdateInstanceRequest": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "node_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node Id"
+          },
+          "health_check_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Health Check Url"
+          }
+        },
+        "type": "object",
+        "title": "UpdateInstanceRequest"
+      },
+      "UploadFileResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "object": {
+            "type": "string",
+            "title": "Object",
+            "default": "file"
+          },
+          "bytes": {
+            "type": "integer",
+            "title": "Bytes"
+          },
+          "created_at": {
+            "type": "integer",
+            "title": "Created At"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "bytes",
+          "created_at",
+          "filename",
+          "purpose"
+        ],
+        "title": "UploadFileResponse"
+      },
+      "UploadResponse": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "etag": {
+            "type": "string",
+            "title": "Etag"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "size",
+          "etag",
+          "message"
+        ],
+        "title": "UploadResponse"
+      },
+      "UserCredits": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "available_credits": {
+            "type": "number",
+            "title": "Available Credits"
+          },
+          "used_credits": {
+            "type": "number",
+            "title": "Used Credits"
+          },
+          "total_credits_used": {
+            "type": "number",
+            "title": "Total Credits Used"
+          },
+          "stripe_customer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stripe Customer Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "last_updated": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "email",
+          "available_credits",
+          "used_credits",
+          "total_credits_used",
+          "created_at",
+          "last_updated"
+        ],
+        "title": "UserCredits"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "app__api__v2_streaming__external__billing__credits__ExecutionSummary": {
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "title": "Execution Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "execution_type": {
+            "type": "string",
+            "title": "Execution Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "hardware_profile": {
+            "type": "string",
+            "title": "Hardware Profile"
+          },
+          "billed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billed"
+          },
+          "execelet_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execelet Start"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Time"
+          },
+          "finish_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Time"
+          },
+          "job_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Start"
+          },
+          "job_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job End"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "execution_id",
+          "created_at",
+          "execution_type",
+          "status",
+          "hardware_profile"
+        ],
+        "title": "ExecutionSummary"
+      },
+      "app__api__v2_streaming__external__compute__abort_workloads__ExecutionSummary": {
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "title": "Execution Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "execution_type": {
+            "type": "string",
+            "title": "Execution Type"
+          },
+          "hardware_profile": {
+            "type": "string",
+            "title": "Hardware Profile"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "execution_owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Owner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "execution_id",
+          "status",
+          "execution_type",
+          "hardware_profile",
+          "created_at"
+        ],
+        "title": "ExecutionSummary",
+        "description": "Summary model for execution information."
+      }
+    }
+  }
+}
