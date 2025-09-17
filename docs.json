@@ -14,41 +14,32 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Platform Components",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "vscode-extension",
+              "web-dashboard",
+              "storage",
+              "machine-types"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Core Features",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "billing",
+              "best-practices"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
             "group": "Getting Started",
@@ -57,7 +48,7 @@
             ]
           },
           {
-            "group": "API Reference",
+            "group": "Endpoints",
             "openapi": "api-reference/openapi.json"
           }
         ]

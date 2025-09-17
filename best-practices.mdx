@@ -1,0 +1,198 @@
+---
+title: "Best Practices"
+description: "Guidelines for effectively using the Lyceum Cloud platform"
+---
+
+## Code Preparation
+
+### Dependencies
+Clearly specify your Python dependencies to ensure consistent execution environments:
+
+```python
+# requirements.txt
+pandas>=1.5.0
+numpy>=1.24.0
+scikit-learn>=1.2.0
+```
+
+### File Paths
+Use relative paths to ensure your code works both locally and on the cloud:
+
+```python
+from pathlib import Path
+
+# Good: Relative paths
+data_path = Path("data/input.csv")
+output_path = Path("outputs/results.json")
+
+# Avoid: Absolute paths
+# data_path = "/home/user/project/data/input.csv"
+```
+
+### Error Handling
+Include proper error handling for robust execution:
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+try:
+    # Your processing code
+    result = process_data()
+    logger.info("Processing completed successfully")
+except Exception as e:
+    logger.error(f"Processing failed: {e}")
+    raise
+```
+
+## File Management
+
+### Upload Organization
+Organize your files logically in cloud storage:
+- Group related files in folders
+- Use descriptive names
+- Clean up temporary files after use
+
+### Data Formats
+Choose efficient data formats:
+- Use Parquet for large tabular data instead of CSV
+- Compress large files when possible
+- Consider chunking very large datasets
+
+## Execution Optimization
+
+### Resource Selection
+- Start with smaller resource configurations and scale up as needed
+- Monitor execution logs to understand resource usage
+- Use GPU instances only when your code benefits from GPU acceleration
+
+### Progress Monitoring
+Provide feedback during long-running operations:
+
+```python
+from tqdm import tqdm
+
+for item in tqdm(data, desc="Processing"):
+    process_item(item)
+```
+
+### Checkpointing
+Save intermediate results for long-running processes:
+
+```python
+import pickle
+
+# Save checkpoint
+with open('checkpoint.pkl', 'wb') as f:
+    pickle.dump(state, f)
+
+# Resume from checkpoint
+with open('checkpoint.pkl', 'rb') as f:
+    state = pickle.load(f)
+```
+
+## Cost Management
+
+### Efficient Execution
+- Combine multiple small tasks into single executions
+- Stop executions that are no longer needed
+- Monitor your credit usage in the dashboard
+
+### Storage Optimization
+- Regularly clean up files you no longer need
+- Use the storage API to list and manage files programmatically
+- Download only the files you need
+
+## Using the API
+
+### Authentication
+Always store credentials securely:
+
+```python
+import os
+
+# Use environment variables
+api_token = os.environ.get('LYCEUM_API_TOKEN')
+
+# Never hardcode credentials in your code
+```
+
+### Error Handling
+Handle API responses properly:
+
+```python
+import requests
+
+response = requests.post(
+    'https://api.lyceum.technology/api/v2/external/execution/streaming/start',
+    headers={'Authorization': f'Bearer {token}'},
+    json={'code': code, 'execution_type': 'cpu'}
+)
+
+if response.status_code == 200:
+    result = response.json()
+else:
+    print(f"Error: {response.status_code} - {response.text}")
+```
+
+### Rate Limiting
+Respect rate limits when using the API:
+
+```python
+import time
+
+def api_call_with_retry(url, headers, data, max_retries=3):
+    for attempt in range(max_retries):
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 429:  # Rate limited
+            wait_time = 2 ** attempt  # Exponential backoff
+            time.sleep(wait_time)
+            continue
+        
+        return response
+    
+    raise Exception("Max retries exceeded")
+```
+
+## Security
+
+### Data Protection
+- Don't include sensitive information in your code
+- Use environment variables for API keys and credentials
+- Be careful with files containing personal or confidential data
+
+### Access Control
+- Regularly rotate API keys
+- Use minimal permissions needed
+- Monitor API key usage in the dashboard
+
+## Troubleshooting
+
+### Common Issues
+
+**Execution Fails to Start**
+- Check your authentication token is valid
+- Verify you have sufficient credits
+- Ensure your code syntax is correct
+
+**Files Not Found**
+- Verify files are uploaded to cloud storage
+- Check file paths are correct
+- Use the storage API to list available files
+
+**Out of Memory Errors**
+- Process data in smaller chunks
+- Choose a machine type with more memory
+- Optimize your code to use less memory
+
+### Getting Help
+- Check execution logs for detailed error messages
+- Contact support at info@lyceum.technology
+- Review the API documentation for endpoint details
+
+<Note>
+These best practices will help you use Lyceum Cloud effectively. For specific API endpoints and parameters, refer to the API Reference section.
+</Note>
