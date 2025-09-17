@@ -1,0 +1,316 @@
+---
+title: "Cloud Storage"
+description: "S3-compatible storage with seamless file upload/download capabilities for your computational workloads"
+---
+
+## Overview
+
+Lyceum Cloud provides S3-compatible storage that seamlessly integrates with your computational workloads. Upload data files, scripts, and dependencies, then access them from any execution environment.
+
+## Key Features
+
+### Persistent Storage
+- **Data Persistence**: Files remain available across multiple executions
+- **Automatic Backup**: Built-in redundancy and data protection
+- **High Performance**: Optimized storage for computational workloads
+- **Scalable**: Storage scales automatically with your usage
+
+### S3 Compatibility
+- **Standard S3 API**: Full compatibility with S3 protocols and tools
+- **Existing Tools**: Use familiar S3 clients and libraries
+- **Bucket Management**: Organize files with bucket-like folder structures
+- **Access Control**: Granular permissions and access management
+
+### Integration
+- **Automatic Mounting**: Files automatically available in execution environments
+- **Seamless Access**: Direct file access from Python, notebooks, and containers
+- **Real-time Sync**: Immediate availability of uploaded files
+- **Download Results**: Easily retrieve output files and results
+
+## File Operations
+
+### Upload Files
+
+#### Via VS Code Extension
+1. **Right-click Upload**: Right-click files/folders in Explorer → "Upload to Lyceum Cloud"
+2. **Keyboard Shortcut**: Use `Ctrl+Shift+U` to upload selected files
+3. **Drag & Drop**: Drag files to the "Lyceum Cloud Files" panel
+
+#### Via Web Dashboard
+1. Navigate to the Files section in the dashboard
+2. Click "Upload Files" or drag files to the upload area
+3. Select files or folders to upload
+4. Monitor upload progress in real-time
+
+#### Via API
+```bash
+curl -X POST https://api.lyceum.technology/api/v2/external/storage/upload \
+  -H "Authorization: Bearer <token>" \
+  -F "file=@/path/to/your/file.txt" \
+  -F "key=data/file.txt"
+```
+
+### Download Files
+
+#### Via VS Code Extension
+- **File Browser**: Click download icon next to any file in the cloud files panel
+- **Automatic Download**: Results automatically downloaded after execution
+- **Bulk Download**: Select multiple files for batch download
+
+#### Via Web Dashboard
+- **Individual Files**: Click download button on any file
+- **Execution Results**: Download all outputs from an execution
+- **Zip Archives**: Download multiple files as compressed archives
+
+#### Via API
+```bash
+curl -X GET https://api.lyceum.technology/api/v2/external/storage/download/{file_key} \
+  -H "Authorization: Bearer <token>" \
+  -o downloaded_file.txt
+```
+
+### List Files
+
+#### Via API
+```bash
+curl -X GET https://api.lyceum.technology/api/v2/external/storage/list-files \
+  -H "Authorization: Bearer <token>" \
+  -G -d "prefix=data/" -d "max_files=100"
+```
+
+#### Response Format
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "key": "data/dataset.csv",
+      "size": 1024000,
+      "last_modified": "2024-01-15T10:30:00Z",
+      "etag": "\"9bb58f26192e4ba00f01e2e7b136bbd8\""
+    }
+  ]
+}
+```
+
+### Delete Files
+
+#### Via VS Code Extension
+- Click trash icon next to any file in the cloud files panel
+
+#### Via API
+```bash
+# Delete single file
+curl -X DELETE https://api.lyceum.technology/api/v2/external/storage/delete/{file_key} \
+  -H "Authorization: Bearer <token>"
+
+# Delete folder (all files with prefix)
+curl -X DELETE https://api.lyceum.technology/api/v2/external/storage/delete-folder/{folder_prefix} \
+  -H "Authorization: Bearer <token>"
+```
+
+## File Organization
+
+### Folder Structure
+Organize your files using a logical folder structure:
+
+```
+/
+├── datasets/
+│   ├── training_data.csv
+│   └── test_data.csv
+├── models/
+│   ├── model_v1.pkl
+│   └── model_v2.pkl
+├── scripts/
+│   ├── preprocess.py
+│   └── train.py
+└── outputs/
+    ├── results.json
+    └── plots/
+        └── accuracy.png
+```
+
+### Best Practices
+- **Descriptive Names**: Use clear, descriptive file and folder names
+- **Consistent Structure**: Maintain consistent organization across projects
+- **Version Control**: Include version numbers or dates in file names
+- **Separation**: Keep inputs, scripts, and outputs in separate folders
+
+## S3 Credentials
+
+### Temporary Credentials
+Generate temporary S3 credentials for direct access:
+
+```bash
+curl -X POST https://api.lyceum.technology/api/v2/external/storage/credentials \
+  -H "Authorization: Bearer <token>"
+```
+
+Response:
+```json
+{
+  "success": true,
+  "data": {
+    "access_key": "AKIAIOSFODNN7EXAMPLE",
+    "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+    "session_token": "AQoDYXdzEPT//////////",
+    "endpoint": "https://s3.lyceum.technology",
+    "bucket_name": "user-bucket-123",
+    "region": "us-east-1",
+    "expires_at": "2024-01-15T12:00:00Z"
+  }
+}
+```
+
+### Using S3 Clients
+
+#### Python (boto3)
+```python
+import boto3
+from botocore.config import Config
+
+# Configure S3 client with Lyceum credentials
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id='AKIAIOSFODNN7EXAMPLE',
+    aws_secret_access_key='wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+    aws_session_token='AQoDYXdzEPT///////////',
+    endpoint_url='https://s3.lyceum.technology',
+    region_name='us-east-1',
+    config=Config(signature_version='s3v4')
+)
+
+# Upload file
+s3_client.upload_file('local_file.txt', 'user-bucket-123', 'remote_file.txt')
+
+# Download file
+s3_client.download_file('user-bucket-123', 'remote_file.txt', 'local_file.txt')
+
+# List objects
+response = s3_client.list_objects_v2(Bucket='user-bucket-123', Prefix='data/')
+for obj in response.get('Contents', []):
+    print(obj['Key'])
+```
+
+#### AWS CLI
+```bash
+# Configure AWS CLI with Lyceum credentials
+export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+export AWS_SESSION_TOKEN=AQoDYXdzEPT//////////
+
+# Upload file
+aws s3 cp local_file.txt s3://user-bucket-123/remote_file.txt \
+  --endpoint-url https://s3.lyceum.technology
+
+# Download file
+aws s3 cp s3://user-bucket-123/remote_file.txt local_file.txt \
+  --endpoint-url https://s3.lyceum.technology
+
+# Sync directory
+aws s3 sync ./local_folder s3://user-bucket-123/remote_folder \
+  --endpoint-url https://s3.lyceum.technology
+```
+
+## File Access in Executions
+
+### Automatic Mounting
+Files are automatically available in your execution environment:
+
+```python
+# Files are mounted at /lyceum/storage/
+import os
+print(os.listdir('/lyceum/storage/'))
+
+# Read uploaded data
+import pandas as pd
+df = pd.read_csv('/lyceum/storage/datasets/data.csv')
+
+# Save results
+df.to_csv('/lyceum/storage/outputs/results.csv')
+```
+
+### Environment Variables
+Access storage information via environment variables:
+
+```python
+import os
+
+storage_path = os.environ.get('LYCEUM_STORAGE_PATH', '/lyceum/storage/')
+bucket_name = os.environ.get('LYCEUM_BUCKET_NAME')
+s3_endpoint = os.environ.get('LYCEUM_S3_ENDPOINT')
+```
+
+## Bulk Operations
+
+### Bulk Upload
+Upload multiple files at once:
+
+```bash
+curl -X POST https://api.lyceum.technology/api/v2/external/storage/upload-bulk \
+  -H "Authorization: Bearer <token>" \
+  -F "files=@file1.txt" \
+  -F "files=@file2.txt" \
+  -F "files=@file3.txt" \
+  -F "folder_prefix=data/"
+```
+
+### Bulk Download
+Download multiple files as a zip archive:
+
+```python
+import requests
+import zipfile
+
+# Request bulk download
+response = requests.post(
+    'https://api.lyceum.technology/api/v2/external/storage/bulk-download',
+    headers={'Authorization': 'Bearer <token>'},
+    json={'file_keys': ['data/file1.txt', 'data/file2.txt']}
+)
+
+# Save zip file
+with open('files.zip', 'wb') as f:
+    f.write(response.content)
+
+# Extract files
+with zipfile.ZipFile('files.zip', 'r') as zip_ref:
+    zip_ref.extractall('extracted/')
+```
+
+## Storage Limits & Pricing
+
+### Storage Quotas
+- **Free Tier**: 1GB storage included
+- **Paid Plans**: Additional storage available per GB/month
+- **Temporary Files**: Files older than 30 days may be archived
+
+### Data Transfer
+- **Upload**: Free unlimited uploads
+- **Download**: Included in execution costs
+- **External Transfer**: Charged for downloads outside executions
+
+### Cost Optimization
+- **File Cleanup**: Regularly remove unnecessary files
+- **Compression**: Use compressed formats when possible
+- **Archival**: Move old files to cheaper archival storage
+- **Monitoring**: Track storage usage in the dashboard
+
+## Security & Privacy
+
+### Data Protection
+- **Encryption**: All data encrypted in transit and at rest
+- **Access Control**: User-scoped access with no cross-user visibility
+- **Audit Logs**: Complete logging of all file operations
+- **Compliance**: SOC 2 and GDPR compliant storage infrastructure
+
+### Best Practices
+- **Sensitive Data**: Avoid storing credentials or sensitive information
+- **Access Management**: Use temporary credentials when possible
+- **Regular Cleanup**: Remove files that are no longer needed
+- **Backup**: Keep local copies of critical data
+
+<Note>
+File storage is user-scoped - you can only access files you upload. All data is encrypted and securely isolated.
+</Note>

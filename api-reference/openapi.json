@@ -285,15 +285,15 @@
         }
       }
     },
-    "/api/v2/external/user/delete": {
-      "delete": {
+    "/api/v2/external/user/status": {
+      "get": {
         "tags": [
           "External API v2",
           "User Management"
         ],
-        "summary": "Delete User",
-        "description": "Permanently delete user account and all associated data.",
-        "operationId": "delete_user_api_v2_external_user_delete_delete",
+        "summary": "Get User Status",
+        "description": "Check user's authentication status and profile information.",
+        "operationId": "get_user_status_api_v2_external_user_status_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -306,15 +306,15 @@
         }
       }
     },
-    "/api/v2/external/user/status": {
-      "get": {
+    "/api/v2/external/user/delete": {
+      "delete": {
         "tags": [
           "External API v2",
           "User Management"
         ],
-        "summary": "Get User Status",
-        "description": "Check user's authentication status and profile information.",
-        "operationId": "get_user_status_api_v2_external_user_status_get",
+        "summary": "Delete User",
+        "description": "Permanently delete user account and all associated data.",
+        "operationId": "delete_user_api_v2_external_user_delete_delete",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -366,32 +366,33 @@
         }
       }
     },
-    "/api/v2/external/execution/image/abort/{execution_id}": {
+    "/api/v2/external/execution/image/start": {
       "post": {
         "tags": [
           "External API v2",
           "Docker Execution"
         ],
-        "summary": "Abort Docker Execution",
-        "description": "Abort a running Docker execution.",
-        "operationId": "abort_docker_execution_api_v2_external_execution_image_abort__execution_id__post",
-        "parameters": [
-          {
-            "name": "execution_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Execution Id"
+        "summary": "Start Docker Execution",
+        "description": "Start Docker container execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
+        "operationId": "start_docker_execution_api_v2_external_execution_image_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DockerExecutionRequest"
+              }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/DockerExecutionStartResponse"
+                }
               }
             }
           },
@@ -462,58 +463,15 @@
         }
       }
     },
-    "/api/v2/external/execution/image/start": {
+    "/api/v2/external/execution/image/abort/{execution_id}": {
       "post": {
         "tags": [
           "External API v2",
           "Docker Execution"
         ],
-        "summary": "Start Docker Execution",
-        "description": "Start Docker container execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
-        "operationId": "start_docker_execution_api_v2_external_execution_image_start_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DockerExecutionRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DockerExecutionStartResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v2/external/execution/streaming/abort/{execution_id}": {
-      "post": {
-        "tags": [
-          "External API v2",
-          "Streaming Execution"
-        ],
-        "summary": "Abort Execution",
-        "description": "Abort a running execution.",
-        "operationId": "abort_execution_api_v2_external_execution_streaming_abort__execution_id__post",
+        "summary": "Abort Docker Execution",
+        "description": "Abort a running Docker execution.",
+        "operationId": "abort_docker_execution_api_v2_external_execution_image_abort__execution_id__post",
         "parameters": [
           {
             "name": "execution_id",
@@ -531,6 +489,49 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/execution/streaming/start": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Streaming Execution"
+        ],
+        "summary": "Start Streaming Execution",
+        "description": "Start execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
+        "operationId": "start_streaming_execution_api_v2_external_execution_streaming_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamingExecutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionStartResponse"
+                }
               }
             }
           },
@@ -601,33 +602,32 @@
         }
       }
     },
-    "/api/v2/external/execution/streaming/start": {
+    "/api/v2/external/execution/streaming/abort/{execution_id}": {
       "post": {
         "tags": [
           "External API v2",
           "Streaming Execution"
         ],
-        "summary": "Start Streaming Execution",
-        "description": "Start execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
-        "operationId": "start_streaming_execution_api_v2_external_execution_streaming_start_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StreamingExecutionRequest"
-              }
+        "summary": "Abort Execution",
+        "description": "Abort a running execution.",
+        "operationId": "abort_execution_api_v2_external_execution_streaming_abort__execution_id__post",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Execution Id"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExecutionStartResponse"
-                }
+                "schema": {}
               }
             }
           },
@@ -686,6 +686,33 @@
         }
       }
     },
+    "/api/v2/external/workloads/list": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Workload Management"
+        ],
+        "summary": "List Non Complete Executions",
+        "description": "List all non-completed executions for the current user.",
+        "operationId": "list_non_complete_executions_api_v2_external_workloads_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__api__v2_streaming__external__compute__abort_workloads__ExecutionSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Non Complete Executions Api V2 External Workloads List Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/external/workloads/abort/{execution_id}": {
       "post": {
         "tags": [
@@ -723,33 +750,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v2/external/workloads/list": {
-      "get": {
-        "tags": [
-          "External API v2",
-          "Workload Management"
-        ],
-        "summary": "List Non Complete Executions",
-        "description": "List all non-completed executions for the current user.",
-        "operationId": "list_non_complete_executions_api_v2_external_workloads_list_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/app__api__v2_streaming__external__compute__abort_workloads__ExecutionSummary"
-                  },
-                  "type": "array",
-                  "title": "Response List Non Complete Executions Api V2 External Workloads List Get"
                 }
               }
             }
@@ -1086,48 +1086,6 @@
         }
       }
     },
-    "/api/v2/external/storage/delete-folder/{folder_prefix}": {
-      "delete": {
-        "tags": [
-          "External API v2",
-          "Storage Files"
-        ],
-        "summary": "Delete Folder",
-        "description": "Delete all files in a folder (by prefix).",
-        "operationId": "delete_folder_api_v2_external_storage_delete_folder__folder_prefix__delete",
-        "parameters": [
-          {
-            "name": "folder_prefix",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Folder Prefix"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v2/external/storage/delete/{file_key}": {
       "delete": {
         "tags": [
@@ -1170,6 +1128,48 @@
         }
       }
     },
+    "/api/v2/external/storage/delete-folder/{folder_prefix}": {
+      "delete": {
+        "tags": [
+          "External API v2",
+          "Storage Files"
+        ],
+        "summary": "Delete Folder",
+        "description": "Delete all files in a folder (by prefix).",
+        "operationId": "delete_folder_api_v2_external_storage_delete_folder__folder_prefix__delete",
+        "parameters": [
+          {
+            "name": "folder_prefix",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Folder Prefix"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/external/storage/credentials": {
       "post": {
         "tags": [
@@ -1186,104 +1186,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StorageCredentials"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v2/external/billing/activities": {
-      "get": {
-        "tags": [
-          "External API v2",
-          "Billing Credits"
-        ],
-        "summary": "Get Billing Activities",
-        "description": "Get combined billing activities (executions + credit purchases).",
-        "operationId": "get_billing_activities_api_v2_external_billing_activities_get",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 10,
-              "title": "Limit"
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 0,
-              "title": "Offset"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BillingHistory"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v2/external/billing/checkout": {
-      "post": {
-        "tags": [
-          "External API v2",
-          "Billing Credits"
-        ],
-        "summary": "Create Checkout Session",
-        "description": "Create a Stripe checkout session for purchasing credits.",
-        "operationId": "create_checkout_session_api_v2_external_billing_checkout_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckoutSessionRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckoutSessionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1337,6 +1239,49 @@
         }
       }
     },
+    "/api/v2/external/billing/checkout": {
+      "post": {
+        "tags": [
+          "External API v2",
+          "Billing Credits"
+        ],
+        "summary": "Create Checkout Session",
+        "description": "Create a Stripe checkout session for purchasing credits.",
+        "operationId": "create_checkout_session_api_v2_external_billing_checkout_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/external/billing/history": {
       "get": {
         "tags": [
@@ -1375,6 +1320,61 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ExecutionHistory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/billing/activities": {
+      "get": {
+        "tags": [
+          "External API v2",
+          "Billing Credits"
+        ],
+        "summary": "Get Billing Activities",
+        "description": "Get combined billing activities (executions + credit purchases).",
+        "operationId": "get_billing_activities_api_v2_external_billing_activities_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingHistory"
                 }
               }
             }
@@ -1631,241 +1631,6 @@
         ],
         "title": "ApiKeyResponse"
       },
-      "BatchErrors": {
-        "properties": {
-          "object": {
-            "type": "string",
-            "title": "Object",
-            "default": "list"
-          },
-          "data": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Data",
-            "default": []
-          }
-        },
-        "type": "object",
-        "title": "BatchErrors"
-      },
-      "BatchRequestCounts": {
-        "properties": {
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "completed": {
-            "type": "integer",
-            "title": "Completed"
-          },
-          "failed": {
-            "type": "integer",
-            "title": "Failed"
-          }
-        },
-        "type": "object",
-        "required": [
-          "total",
-          "completed",
-          "failed"
-        ],
-        "title": "BatchRequestCounts"
-      },
-      "BatchResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "object": {
-            "type": "string",
-            "title": "Object",
-            "default": "batch"
-          },
-          "endpoint": {
-            "type": "string",
-            "title": "Endpoint"
-          },
-          "errors": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BatchErrors"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "input_file_id": {
-            "type": "string",
-            "title": "Input File Id"
-          },
-          "completion_window": {
-            "type": "string",
-            "title": "Completion Window"
-          },
-          "status": {
-            "$ref": "#/components/schemas/BatchStatus"
-          },
-          "output_file_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Output File Id"
-          },
-          "error_file_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error File Id"
-          },
-          "created_at": {
-            "type": "integer",
-            "title": "Created At"
-          },
-          "in_progress_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "In Progress At"
-          },
-          "expires_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expires At"
-          },
-          "finalizing_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Finalizing At"
-          },
-          "completed_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Completed At"
-          },
-          "failed_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Failed At"
-          },
-          "expired_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expired At"
-          },
-          "cancelling_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cancelling At"
-          },
-          "cancelled_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cancelled At"
-          },
-          "request_counts": {
-            "$ref": "#/components/schemas/BatchRequestCounts"
-          },
-          "metadata": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "endpoint",
-          "input_file_id",
-          "completion_window",
-          "status",
-          "created_at",
-          "request_counts"
-        ],
-        "title": "BatchResponse"
-      },
-      "BatchStatus": {
-        "type": "string",
-        "enum": [
-          "validating",
-          "failed",
-          "in_progress",
-          "finalizing",
-          "completed",
-          "expired",
-          "cancelling",
-          "cancelled"
-        ],
-        "title": "BatchStatus"
-      },
       "BillingActivity": {
         "properties": {
           "activity_id": {
@@ -1943,20 +1708,6 @@
           "total_activities"
         ],
         "title": "BillingHistory"
-      },
-      "Body_upload_batch_file_api_v2_external_files_post": {
-        "properties": {
-          "file": {
-            "type": "string",
-            "format": "binary",
-            "title": "File"
-          }
-        },
-        "type": "object",
-        "required": [
-          "file"
-        ],
-        "title": "Body_upload_batch_file_api_v2_external_files_post"
       },
       "Body_upload_bulk_files_api_v2_external_storage_upload_bulk_post": {
         "properties": {
@@ -2128,41 +1879,6 @@
         ],
         "title": "CheckoutSessionResponse"
       },
-      "CreateBatchRequest": {
-        "properties": {
-          "input_file_id": {
-            "type": "string",
-            "title": "Input File Id"
-          },
-          "endpoint": {
-            "type": "string",
-            "title": "Endpoint"
-          },
-          "completion_window": {
-            "type": "string",
-            "title": "Completion Window",
-            "default": "24h"
-          },
-          "metadata": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata"
-          }
-        },
-        "type": "object",
-        "required": [
-          "input_file_id",
-          "endpoint"
-        ],
-        "title": "CreateBatchRequest"
-      },
       "CreateCheckoutSessionRequest": {
         "properties": {
           "amount": {
@@ -2185,46 +1901,6 @@
           "amount"
         ],
         "title": "CreateCheckoutSessionRequest"
-      },
-      "CreateInstanceRequest": {
-        "properties": {
-          "model_id": {
-            "type": "string",
-            "title": "Model Id"
-          },
-          "instance_url": {
-            "type": "string",
-            "title": "Instance Url"
-          },
-          "node_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Node Id"
-          },
-          "health_check_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Health Check Url"
-          }
-        },
-        "type": "object",
-        "required": [
-          "model_id",
-          "instance_url"
-        ],
-        "title": "CreateInstanceRequest"
       },
       "CreditsBalance": {
         "properties": {
@@ -2443,71 +2119,6 @@
         "title": "DockerExecutionStartResponse",
         "description": "Response model with direct streaming URL"
       },
-      "ExecutionCallbackData": {
-        "properties": {
-          "executionID": {
-            "type": "string",
-            "title": "Executionid"
-          },
-          "execution_type": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Execution Type"
-          },
-          "callback_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Callback Url"
-          },
-          "callback_token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Callback Token"
-          },
-          "user_callback_urls": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "User Callback Urls"
-          },
-          "result": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/JobResult"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": true,
-        "type": "object",
-        "required": [
-          "executionID"
-        ],
-        "title": "ExecutionCallbackData",
-        "description": "Complete Job data sent by gRPC service (protobuf Job message)"
-      },
       "ExecutionHistory": {
         "properties": {
           "executions": {
@@ -2533,30 +2144,6 @@
           "total_credits_spent"
         ],
         "title": "ExecutionHistory"
-      },
-      "ExecutionOutput": {
-        "properties": {
-          "timestamp": {
-            "type": "string",
-            "title": "Timestamp"
-          },
-          "channel": {
-            "type": "string",
-            "title": "Channel"
-          },
-          "content": {
-            "type": "string",
-            "title": "Content"
-          }
-        },
-        "type": "object",
-        "required": [
-          "timestamp",
-          "channel",
-          "content"
-        ],
-        "title": "ExecutionOutput",
-        "description": "Single output chunk from execution"
       },
       "ExecutionStartResponse": {
         "properties": {
@@ -2635,71 +2222,6 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "JobResult": {
-        "properties": {
-          "startTime": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Starttime"
-          },
-          "endTime": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Endtime"
-          },
-          "status_updates": {
-            "items": {
-              "$ref": "#/components/schemas/StatusUpdate"
-            },
-            "type": "array",
-            "title": "Status Updates"
-          },
-          "outputs": {
-            "items": {
-              "$ref": "#/components/schemas/ExecutionOutput"
-            },
-            "type": "array",
-            "title": "Outputs"
-          },
-          "return_code": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Return Code"
-          },
-          "kernel_state": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Kernel State"
-          }
-        },
-        "type": "object",
-        "title": "JobResult",
-        "description": "Job result data from protobuf"
-      },
       "LoginRequest": {
         "properties": {
           "email": {
@@ -2746,247 +2268,6 @@
         ],
         "title": "LoginResponse"
       },
-      "MachineType": {
-        "properties": {
-          "hardware_profile": {
-            "type": "string",
-            "title": "Hardware Profile"
-          },
-          "price_per_hour": {
-            "type": "number",
-            "title": "Price Per Hour"
-          }
-        },
-        "type": "object",
-        "required": [
-          "hardware_profile",
-          "price_per_hour"
-        ],
-        "title": "MachineType"
-      },
-      "MachineTypesResponse": {
-        "properties": {
-          "machine_types": {
-            "items": {
-              "$ref": "#/components/schemas/MachineType"
-            },
-            "type": "array",
-            "title": "Machine Types"
-          },
-          "count": {
-            "type": "integer",
-            "title": "Count"
-          }
-        },
-        "type": "object",
-        "required": [
-          "machine_types",
-          "count"
-        ],
-        "title": "MachineTypesResponse"
-      },
-      "ModelInfo": {
-        "properties": {
-          "model_id": {
-            "type": "string",
-            "title": "Model Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "version": {
-            "type": "string",
-            "title": "Version"
-          },
-          "type": {
-            "type": "string",
-            "title": "Type"
-          },
-          "provider": {
-            "type": "string",
-            "title": "Provider"
-          },
-          "input_types": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Input Types"
-          },
-          "output_types": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Output Types"
-          },
-          "max_input_tokens": {
-            "type": "integer",
-            "title": "Max Input Tokens"
-          },
-          "max_output_tokens": {
-            "type": "integer",
-            "title": "Max Output Tokens"
-          },
-          "price_per_1k_tokens": {
-            "type": "number",
-            "title": "Price Per 1K Tokens"
-          },
-          "available": {
-            "type": "boolean",
-            "title": "Available"
-          },
-          "gpu_required": {
-            "type": "boolean",
-            "title": "Gpu Required"
-          },
-          "estimated_latency_ms": {
-            "type": "integer",
-            "title": "Estimated Latency Ms"
-          },
-          "supports_sync": {
-            "type": "boolean",
-            "title": "Supports Sync",
-            "default": true
-          },
-          "supports_async": {
-            "type": "boolean",
-            "title": "Supports Async",
-            "default": true
-          },
-          "batch_pricing_discount": {
-            "type": "number",
-            "title": "Batch Pricing Discount",
-            "default": 0.5
-          }
-        },
-        "type": "object",
-        "required": [
-          "model_id",
-          "name",
-          "description",
-          "version",
-          "type",
-          "provider",
-          "input_types",
-          "output_types",
-          "max_input_tokens",
-          "max_output_tokens",
-          "price_per_1k_tokens",
-          "available",
-          "gpu_required",
-          "estimated_latency_ms"
-        ],
-        "title": "ModelInfo"
-      },
-      "ModelInstance": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "model_id": {
-            "type": "string",
-            "title": "Model Id"
-          },
-          "instance_url": {
-            "type": "string",
-            "title": "Instance Url"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "node_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Node Id"
-          },
-          "last_health_check": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Health Check"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "model_id",
-          "instance_url",
-          "status"
-        ],
-        "title": "ModelInstance"
-      },
-      "PredictionInput": {
-        "properties": {
-          "text": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Text"
-          },
-          "image_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Image Url"
-          },
-          "audio_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Audio Url"
-          },
-          "parameters": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Parameters",
-            "default": {}
-          }
-        },
-        "type": "object",
-        "title": "PredictionInput"
-      },
       "RefreshRequest": {
         "properties": {
           "refresh_token": {
@@ -3022,47 +2303,6 @@
           "expires_at"
         ],
         "title": "RefreshResponse"
-      },
-      "StatusUpdate": {
-        "properties": {
-          "timestamp": {
-            "type": "string",
-            "title": "Timestamp"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          }
-        },
-        "type": "object",
-        "required": [
-          "timestamp",
-          "status"
-        ],
-        "title": "StatusUpdate",
-        "description": "Status update from execution"
       },
       "StorageCredentials": {
         "properties": {
@@ -3180,214 +2420,6 @@
         ],
         "title": "StreamingExecutionRequest",
         "description": "Request model for streaming code execution"
-      },
-      "SyncRequest": {
-        "properties": {
-          "model_id": {
-            "type": "string",
-            "title": "Model Id"
-          },
-          "input": {
-            "$ref": "#/components/schemas/PredictionInput"
-          },
-          "max_tokens": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Tokens",
-            "default": 1000
-          },
-          "temperature": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Temperature",
-            "default": 0.7
-          },
-          "top_p": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Top P",
-            "default": 1.0
-          },
-          "stream": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Stream",
-            "default": false
-          }
-        },
-        "type": "object",
-        "required": [
-          "model_id",
-          "input"
-        ],
-        "title": "SyncRequest"
-      },
-      "SyncResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "model_id": {
-            "type": "string",
-            "title": "Model Id"
-          },
-          "output": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "additionalProperties": true,
-                "type": "object"
-              }
-            ],
-            "title": "Output"
-          },
-          "usage": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Usage"
-          },
-          "latency_ms": {
-            "type": "integer",
-            "title": "Latency Ms"
-          },
-          "cost": {
-            "type": "number",
-            "title": "Cost"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "model_id",
-          "output",
-          "usage",
-          "latency_ms",
-          "cost",
-          "created_at",
-          "status"
-        ],
-        "title": "SyncResponse"
-      },
-      "UpdateInstanceRequest": {
-        "properties": {
-          "status": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Status"
-          },
-          "node_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Node Id"
-          },
-          "health_check_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Health Check Url"
-          }
-        },
-        "type": "object",
-        "title": "UpdateInstanceRequest"
-      },
-      "UploadFileResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "object": {
-            "type": "string",
-            "title": "Object",
-            "default": "file"
-          },
-          "bytes": {
-            "type": "integer",
-            "title": "Bytes"
-          },
-          "created_at": {
-            "type": "integer",
-            "title": "Created At"
-          },
-          "filename": {
-            "type": "string",
-            "title": "Filename"
-          },
-          "purpose": {
-            "type": "string",
-            "title": "Purpose"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "bytes",
-          "created_at",
-          "filename",
-          "purpose"
-        ],
-        "title": "UploadFileResponse"
       },
       "UploadResponse": {
         "properties": {
