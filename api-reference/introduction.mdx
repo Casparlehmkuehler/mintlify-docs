@@ -1,91 +1,201 @@
 ---
-title: 'Introduction'
-description: 'Lyceum API documentation for cloud compute and AI inference'
+title: 'REST API Reference'
+description: 'Programmatic access to all Lyceum Cloud platform functionality for custom integrations and automated workflows'
 ---
 
-## Welcome to Lyceum API
+## Overview
 
-The Lyceum API provides comprehensive access to cloud compute resources, AI model inference, and storage capabilities.
+The Lyceum Cloud REST API provides programmatic access to all platform functionality, enabling custom integrations and automated workflows. Use the API to execute code, manage files, monitor executions, and integrate Lyceum Cloud into your applications.
 
 ## Base URL
 
 ```
-https://api.lyceum.cloud/api/v2/external
+https://api.lyceum.technology/api/v2/external
 ```
 
 ## Authentication
 
-All API endpoints require authentication using either:
+### JWT Tokens (Recommended)
+Use JWT tokens for user authentication. Obtain a token by logging in:
 
-### API Key Authentication
-Include your API key in the request header:
-```
-X-API-Key: lyceum_xxx
+```bash
+curl -X POST https://api.lyceum.technology/api/v2/external/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "your-email@example.com",
+    "password": "your-password"
+  }'
 ```
 
-### Bearer Token Authentication
-Exchange your API key for a JWT token and include it in the Authorization header:
+Include the token in requests:
 ```
-Authorization: Bearer <token>
+Authorization: Bearer <jwt_token>
 ```
+
+### API Keys
+Alternative authentication for service-to-service communication. Create API keys in the [Dashboard](https://dashboard.lyceum.technology):
+
+```
+Authorization: Bearer <api_key>
+```
+
+## Core Endpoints
+
+### Health Monitoring
+- `GET /health/ping` - Health check endpoint
+- `GET /health/version` - Get system version information
+
+### Code Execution
+- `POST /execution/streaming/start` - Execute Python code on cloud infrastructure
+- `POST /execution/image/start` - Run Docker containers
+- `GET /execution/streaming/{execution_id}/status` - Get execution status
+- `POST /execution/streaming/abort/{execution_id}` - Stop running executions
+
+### File Storage
+- `POST /storage/upload` - Upload files to cloud storage
+- `GET /storage/list-files` - List stored files with metadata
+- `GET /storage/download/{file_key}` - Download files
+- `DELETE /storage/delete/{file_key}` - Remove files
+- `POST /storage/credentials` - Generate temporary S3 credentials
+
+### Billing & Credits
+- `GET /billing/credits` - Get current credit balance
+- `GET /billing/history` - View execution history and costs
+- `POST /billing/checkout` - Create Stripe checkout session
 
 ## Response Format
 
-All API responses follow a consistent JSON format:
+All API responses use JSON format with consistent error handling:
 
 ```json
 {
-  "data": {...},
-  "status": "success",
-  "timestamp": "2024-01-01T00:00:00Z"
+  "success": true,
+  "data": { /* response data */ },
+  "message": "Operation completed successfully"
 }
 ```
 
-## Error Handling
-
-Error responses include appropriate HTTP status codes and descriptive messages:
-
+### Error Responses
 ```json
 {
+  "success": false,
   "error": {
-    "code": "RESOURCE_NOT_FOUND",
-    "message": "The requested resource was not found",
-    "details": {...}
+    "code": "INVALID_REQUEST",
+    "message": "Missing required parameter: code",
+    "details": {
+      "parameter": "code",
+      "expected_type": "string"
+    }
   }
 }
 ```
 
 ## Getting Started
 
-1. **Create an account** at [lyceum.cloud](https://lyceum.cloud)
-2. **Generate an API key** using the dashboard or the API
-3. **Make your first request** to test connectivity
-4. **Explore the endpoints** below to see what's available
+### 1. Obtain Authentication
+```bash
+# Login to get JWT token
+curl -X POST https://api.lyceum.technology/api/v2/external/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "your-email@example.com", 
+    "password": "your-password"
+  }'
+```
 
-## SDK and Libraries
+### 2. Execute Your First Code
+```bash
+# Execute Python code
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/streaming/start \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "print(\"Hello from Lyceum Cloud!\")",
+    "execution_type": "cpu"
+  }'
+```
 
-We provide official SDKs for popular programming languages:
+### 3. Monitor Execution
+```bash
+# Check execution status
+curl -X GET https://api.lyceum.technology/api/v2/external/execution/streaming/{execution_id}/status \
+  -H "Authorization: Bearer <your_token>"
+```
 
-- **Python**: `pip install lyceum-sdk`
-- **JavaScript/Node.js**: `npm install lyceum-sdk`
-- **Go**: `go get github.com/lyceum/lyceum-go`
+## Code Examples
 
-## Rate Limits
+### Python
+```python
+import requests
 
-API requests are rate limited to ensure fair usage:
+# Authenticate
+response = requests.post('https://api.lyceum.technology/api/v2/external/auth/login', 
+    json={'email': 'user@example.com', 'password': 'password'})
+token = response.json()['access_token']
 
-- **General endpoints**: 1000 requests per hour
-- **Compute endpoints**: 100 requests per hour
-- **Storage endpoints**: 500 requests per hour
+# Execute code
+response = requests.post('https://api.lyceum.technology/api/v2/external/execution/streaming/start',
+    headers={'Authorization': f'Bearer {token}'},
+    json={'code': 'print("Hello World")', 'execution_type': 'cpu'})
+```
 
-Rate limit headers are included in all responses:
-- `X-RateLimit-Limit`: Request limit per hour
+### JavaScript
+```javascript
+// Authenticate
+const authResponse = await fetch('https://api.lyceum.technology/api/v2/external/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: 'user@example.com', password: 'password' })
+});
+const { access_token } = await authResponse.json();
+
+// Execute code
+const execResponse = await fetch('https://api.lyceum.technology/api/v2/external/execution/streaming/start', {
+  method: 'POST',
+  headers: { 
+    'Authorization': `Bearer ${access_token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ code: 'print("Hello World")', execution_type: 'cpu' })
+});
+```
+
+## Rate Limiting
+
+Standard rate limits apply to prevent abuse:
+- **Authentication endpoints**: 10 requests per minute
+- **Execution endpoints**: 100 requests per hour per user
+- **Storage endpoints**: 1000 requests per hour per user
+- **General endpoints**: 500 requests per hour per user
+
+Rate limit headers are included in responses:
+- `X-RateLimit-Limit`: Request limit for the endpoint
 - `X-RateLimit-Remaining`: Requests remaining in current window
-- `X-RateLimit-Reset`: Time when rate limit resets
+- `X-RateLimit-Reset`: Timestamp when rate limit resets
 
-## Support
+## Error Codes
 
-For help with the API:
-- **Documentation**: Browse the endpoints below
-- **Support**: Contact us at [support@lyceum.cloud](mailto:support@lyceum.cloud)
-- **Status**: Check service status at [status.lyceum.cloud](https://status.lyceum.cloud)
+Common HTTP status codes and their meanings:
+
+| Code | Meaning | Description |
+|------|---------|-------------|
+| 200 | Success | Request completed successfully |
+| 400 | Bad Request | Invalid request parameters |
+| 401 | Unauthorized | Invalid or missing authentication |
+| 403 | Forbidden | Insufficient permissions |
+| 404 | Not Found | Resource does not exist |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Server error occurred |
+
+## Best Practices
+
+- **Use JWT tokens** for better security and performance
+- **Handle rate limits** gracefully with exponential backoff
+- **Monitor execution status** for long-running operations
+- **Clean up resources** by stopping unnecessary executions
+- **Validate inputs** before making API calls
+- **Store credentials securely** and rotate them regularly
+
+<Note>
+For detailed endpoint documentation, see the API reference sections below.
+</Note>

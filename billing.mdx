@@ -1,0 +1,262 @@
+---
+title: "Billing & Credits"
+description: "Transparent credit-based pricing with detailed usage tracking and cost management tools"
+---
+
+## Overview
+
+Lyceum Cloud uses a transparent credit-based billing system where you only pay for actual resource usage. Credits are consumed based on the computational resources and time used for your executions.
+
+## Credit System
+
+### How Credits Work
+- **Pay-as-you-go**: Only pay for actual resource usage
+- **Transparent Pricing**: Clear per-hour rates for each resource type
+- **Real-time Tracking**: Monitor credit consumption as executions run
+- **No Hidden Fees**: What you see is what you pay
+
+### Credit Balance
+- **Current Balance**: Available credits for execution
+- **Usage Tracking**: Real-time consumption monitoring
+- **Low Balance Alerts**: Notifications when credits run low
+- **Purchase History**: Complete record of all credit transactions
+
+## Pricing Structure
+
+### Machine Types & Pricing
+
+#### CPU Instances
+| Type | Specs | Credits/Hour | Best For |
+|------|-------|--------------|----------|
+| cpu-small | 2 vCPU, 4GB RAM | 1.0 | Light processing, testing |
+| cpu-medium | 4 vCPU, 8GB RAM | 2.0 | Data analysis, medium workloads |
+| cpu-large | 8 vCPU, 16GB RAM | 4.0 | Heavy computation, large datasets |
+| cpu-xlarge | 16 vCPU, 32GB RAM | 8.0 | Intensive processing, parallel jobs |
+
+#### GPU Instances
+| Type | Specs | Credits/Hour | Best For |
+|------|-------|--------------|----------|
+| gpu-t4 | 1x NVIDIA T4, 4 vCPU, 16GB RAM | 8.0 | ML training, inference |
+| gpu-v100 | 1x NVIDIA V100, 8 vCPU, 32GB RAM | 20.0 | Deep learning, research |
+| gpu-a100 | 1x NVIDIA A100, 12 vCPU, 64GB RAM | 40.0 | Large models, HPC |
+
+### Storage Pricing
+- **File Storage**: 0.1 credits per GB per month
+- **Data Transfer**: Free uploads, downloads included in execution costs
+- **Temporary Storage**: Free for files under 7 days old
+
+### Additional Costs
+- **Network Egress**: 0.01 credits per GB for external downloads
+- **Premium Support**: Optional paid support tiers available
+
+## Credit Management
+
+### Purchasing Credits
+
+#### Via Web Dashboard
+1. Navigate to Billing → Purchase Credits
+2. Select credit amount (minimum 10 credits)
+3. Complete payment via Stripe integration
+4. Credits available immediately after payment
+
+#### Payment Methods
+- **Credit Cards**: All major cards accepted
+- **Bank Transfer**: Available for enterprise customers
+- **Cryptocurrency**: Bitcoin and Ethereum accepted
+
+#### Credit Packages
+- **Starter Pack**: 25 credits for $25 (perfect for testing)
+- **Developer Pack**: 100 credits for $90 (10% bonus)
+- **Pro Pack**: 500 credits for $400 (20% bonus)
+- **Enterprise**: Custom pricing for large volumes
+
+### Auto-refill
+Set up automatic credit purchases to avoid interruptions:
+
+1. **Threshold Setting**: Set minimum credit balance (e.g., 10 credits)
+2. **Purchase Amount**: Configure auto-purchase amount (e.g., 50 credits)
+3. **Payment Method**: Select default payment method
+4. **Notifications**: Receive alerts before auto-purchase
+
+### Credit Expiration
+- **Standard Credits**: No expiration date
+- **Bonus Credits**: Expire 12 months after purchase
+- **Free Credits**: Expire 30 days after account creation
+
+## Usage Tracking
+
+### Real-time Monitoring
+
+#### Dashboard Overview
+- **Current Usage**: Live view of running executions and credit consumption
+- **Daily Spending**: Today's credit usage with hourly breakdown
+- **Monthly Trends**: Usage patterns and spending projections
+
+#### Execution Details
+Track costs for individual executions:
+- **Start/End Times**: Precise timing for billing calculation
+- **Resource Usage**: CPU, memory, and GPU utilization
+- **Credit Cost**: Exact credits consumed per execution
+- **Cost Breakdown**: Detailed billing components
+
+### Historical Analytics
+
+#### Usage Reports
+- **Weekly Reports**: Summary of usage and spending
+- **Monthly Statements**: Detailed billing statements
+- **Annual Overview**: Yearly usage trends and totals
+
+#### Cost Analysis
+- **Resource Breakdown**: Spending by machine type
+- **Project Tracking**: Costs organized by project or tag
+- **Trend Analysis**: Usage patterns and optimization opportunities
+
+### API Access
+Programmatically access billing information:
+
+```bash
+# Get current credit balance
+curl -X GET https://api.lyceum.technology/api/v2/external/billing/credits \
+  -H "Authorization: Bearer <token>"
+
+# Get usage history
+curl -X GET https://api.lyceum.technology/api/v2/external/billing/history \
+  -H "Authorization: Bearer <token>" \
+  -G -d "limit=50" -d "offset=0"
+```
+
+## Cost Optimization
+
+### Resource Selection
+- **Right-sizing**: Choose appropriate machine types for your workload
+- **CPU vs GPU**: Use CPUs for general computation, GPUs for ML/AI
+- **Automatic Selection**: Let the platform choose optimal resources
+
+### Execution Optimization
+- **Code Efficiency**: Optimize code for faster execution
+- **Batch Processing**: Combine multiple tasks into single executions
+- **Resource Monitoring**: Stop unused or idle executions
+- **Dependency Management**: Pre-install common packages to reduce startup time
+
+### Storage Optimization
+- **File Cleanup**: Regularly remove unnecessary files
+- **Compression**: Use compressed formats to reduce storage costs
+- **Temporary Files**: Clean up intermediate files after processing
+
+### Budget Controls
+- **Spending Limits**: Set maximum daily/monthly spending limits
+- **Alert Thresholds**: Receive notifications at custom spending levels
+- **Execution Limits**: Limit maximum execution time to prevent runaway costs
+- **Team Controls**: Manage spending across team members
+
+## Billing Dashboard
+
+### Credit Overview
+- **Available Balance**: Current credits available for use
+- **Recent Transactions**: Latest purchases and usage
+- **Usage Forecast**: Projected spending based on current usage
+- **Cost Breakdown**: Detailed view of where credits are spent
+
+### Payment Management
+- **Payment Methods**: Manage credit cards and payment sources
+- **Auto-refill Settings**: Configure automatic credit purchases
+- **Transaction History**: Complete record of all payments
+- **Invoices**: Download receipts and invoices for accounting
+
+### Usage Analytics
+- **Resource Utilization**: Charts showing resource usage over time
+- **Cost Trends**: Spending patterns and trend analysis
+- **Efficiency Metrics**: Insights into resource optimization opportunities
+
+## Enterprise Features
+
+### Team Management
+- **Shared Credits**: Pool credits across team members
+- **Usage Allocation**: Distribute credits among projects or users
+- **Spending Controls**: Set individual user spending limits
+- **Reporting**: Consolidated billing across team members
+
+### Advanced Analytics
+- **Custom Reports**: Generate detailed usage reports
+- **Cost Allocation**: Attribute costs to specific projects or departments
+- **Trend Analysis**: Advanced analytics and forecasting
+- **API Integration**: Export billing data to external systems
+
+### Volume Discounts
+- **Large Purchases**: Discounted rates for bulk credit purchases
+- **Committed Use**: Lower rates for committed spending levels
+- **Enterprise Agreements**: Custom pricing for large organizations
+
+## Payment Integration
+
+### Stripe Integration
+Secure payment processing through Stripe:
+
+```bash
+# Create checkout session
+curl -X POST https://api.lyceum.technology/api/v2/external/billing/checkout \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "credits_amount": 100,
+    "success_url": "https://yourapp.com/success",
+    "cancel_url": "https://yourapp.com/cancel"
+  }'
+```
+
+### Webhook Integration
+Receive real-time payment notifications:
+
+```python
+import requests
+
+def handle_payment_webhook(payload):
+    """Handle Stripe webhook for payment completion"""
+    if payload['type'] == 'payment_intent.succeeded':
+        # Credit purchase completed
+        user_id = payload['data']['object']['metadata']['user_id']
+        credits = payload['data']['object']['metadata']['credits']
+        
+        # Update user credit balance
+        update_user_credits(user_id, credits)
+```
+
+## Tax & Compliance
+
+### Tax Handling
+- **Automatic Tax**: Sales tax calculated based on billing address
+- **VAT Support**: EU VAT handling for European customers
+- **Tax Invoices**: Detailed invoices with tax breakdown
+- **Exemption Certificates**: Support for tax-exempt organizations
+
+### Compliance
+- **SOC 2 Type II**: Certified security and compliance controls
+- **GDPR**: Full GDPR compliance for EU customers
+- **PCI DSS**: Secure payment processing standards
+- **Data Retention**: Billing data retained per legal requirements
+
+## Support & FAQ
+
+### Billing Support
+- **Email Support**: billing@lyceum.technology
+- **Live Chat**: Available during business hours
+- **Knowledge Base**: Comprehensive billing documentation
+- **Video Tutorials**: Step-by-step billing guides
+
+### Common Questions
+
+**Q: Do credits expire?**
+A: Standard credits never expire. Bonus credits expire 12 months after purchase.
+
+**Q: Can I get a refund for unused credits?**
+A: Credits are non-refundable, but they never expire so you can use them anytime.
+
+**Q: How is execution time calculated?**
+A: Billing starts when your code begins executing and stops when it completes or is aborted.
+
+**Q: What happens if I run out of credits?**
+A: Running executions will complete, but new executions cannot start until you purchase more credits.
+
+<Note>
+For billing questions or disputes, contact our support team at [info@lyceum.technology](mailto:info@lyceum.technology)
+</Note>

@@ -1,0 +1,291 @@
+---
+title: "Machine Types & Resources"
+description: "Access various CPU and GPU configurations that scale with your computational needs"
+---
+
+## Overview
+
+Lyceum Cloud offers a variety of machine types optimized for different computational workloads. Choose from CPU-only instances for general computation or GPU-accelerated machines for machine learning and parallel processing.
+
+## CPU Instances
+
+### Standard CPU Configurations
+
+#### cpu-small
+- **vCPU**: 2 cores
+- **Memory**: 4GB RAM
+- **Storage**: 20GB SSD
+- **Credits/Hour**: 1.0
+- **Best For**: Light processing, testing, development
+- **Use Cases**: Small scripts, data exploration, prototyping
+
+#### cpu-medium  
+- **vCPU**: 4 cores
+- **Memory**: 8GB RAM
+- **Storage**: 40GB SSD
+- **Credits/Hour**: 2.0
+- **Best For**: Data analysis, medium workloads
+- **Use Cases**: Data processing, web scraping, API development
+
+#### cpu-large
+- **vCPU**: 8 cores
+- **Memory**: 16GB RAM
+- **Storage**: 80GB SSD
+- **Credits/Hour**: 4.0
+- **Best For**: Heavy computation, large datasets
+- **Use Cases**: Large data analysis, batch processing, simulations
+
+#### cpu-xlarge
+- **vCPU**: 16 cores
+- **Memory**: 32GB RAM
+- **Storage**: 160GB SSD
+- **Credits/Hour**: 8.0
+- **Best For**: Intensive processing, parallel jobs
+- **Use Cases**: High-performance computing, large-scale data processing
+
+### High-Memory Instances
+
+#### memory-optimized-large
+- **vCPU**: 8 cores
+- **Memory**: 64GB RAM
+- **Storage**: 80GB SSD
+- **Credits/Hour**: 6.0
+- **Best For**: Memory-intensive workloads
+- **Use Cases**: In-memory databases, big data analytics, caching
+
+#### memory-optimized-xlarge
+- **vCPU**: 16 cores
+- **Memory**: 128GB RAM
+- **Storage**: 160GB SSD
+- **Credits/Hour**: 12.0
+- **Best For**: Very large datasets in memory
+- **Use Cases**: Large model training, massive data analysis
+
+## GPU Instances
+
+### Entry-Level GPU
+
+#### gpu-t4
+- **GPU**: 1x NVIDIA Tesla T4 (16GB VRAM)
+- **vCPU**: 4 cores
+- **Memory**: 16GB RAM
+- **Storage**: 100GB SSD
+- **Credits/Hour**: 8.0
+- **Best For**: ML training, inference, light GPU workloads
+- **Use Cases**: Model training, computer vision, deep learning inference
+
+### Professional GPU
+
+#### gpu-v100
+- **GPU**: 1x NVIDIA Tesla V100 (32GB VRAM)
+- **vCPU**: 8 cores
+- **Memory**: 32GB RAM
+- **Storage**: 200GB SSD
+- **Credits/Hour**: 20.0
+- **Best For**: Deep learning, research, large model training
+- **Use Cases**: Transformer models, computer vision, scientific computing
+
+### High-Performance GPU
+
+#### gpu-a100
+- **GPU**: 1x NVIDIA A100 (80GB VRAM)
+- **vCPU**: 12 cores
+- **Memory**: 64GB RAM
+- **Storage**: 500GB SSD
+- **Credits/Hour**: 40.0
+- **Best For**: Large models, HPC, cutting-edge research
+- **Use Cases**: Large language models, multi-GPU training, HPC simulations
+
+## Automatic Resource Selection
+
+### Smart Matching
+The platform can automatically select optimal resources based on your code:
+
+- **Code Analysis**: Examines imports and computational patterns
+- **Resource Requirements**: Estimates memory and compute needs
+- **Cost Optimization**: Balances performance with cost efficiency
+- **Fallback Options**: Provides alternatives if preferred types are unavailable
+
+### Selection Criteria
+- **Package Detection**: Identifies ML/AI frameworks requiring GPU
+- **Memory Usage**: Estimates memory requirements from data loading
+- **Parallel Processing**: Detects multi-threading and parallel patterns
+- **Historical Usage**: Learns from your previous execution patterns
+
+## Choosing the Right Machine Type
+
+### CPU vs GPU Decision Matrix
+
+| Workload Type | Recommended | Why |
+|---------------|-------------|-----|
+| Data Analysis | CPU (medium/large) | Pandas, NumPy operations are CPU-optimized |
+| Web Scraping | CPU (small/medium) | I/O bound, doesn't need heavy compute |
+| Machine Learning Training | GPU (T4/V100) | Accelerated tensor operations |
+| Deep Learning | GPU (V100/A100) | Large model training requires GPU memory |
+| Computer Vision | GPU (T4/V100) | Image processing benefits from GPU |
+| Natural Language Processing | GPU (V100/A100) | Transformer models need GPU memory |
+| Statistical Analysis | CPU (medium/large) | Traditional stats packages are CPU-based |
+| Simulation | CPU (large/xlarge) | Parallel CPU cores for Monte Carlo |
+
+### Memory Requirements Guide
+
+| Dataset Size | Recommended Memory | Machine Type |
+|--------------|-------------------|--------------|
+| < 1GB | 4-8GB | cpu-small, cpu-medium |
+| 1-5GB | 8-16GB | cpu-medium, cpu-large |
+| 5-20GB | 16-32GB | cpu-large, cpu-xlarge |
+| 20-50GB | 32-64GB | memory-optimized-large |
+| > 50GB | 64GB+ | memory-optimized-xlarge |
+
+### GPU Memory Guidelines
+
+| Model Type | VRAM Needed | Recommended GPU |
+|------------|--------------|-----------------|
+| Small CNN | 2-8GB | gpu-t4 |
+| Medium Transformer | 8-16GB | gpu-t4, gpu-v100 |
+| Large Language Model | 16-32GB | gpu-v100 |
+| Very Large Models | 32GB+ | gpu-a100 |
+
+## Software & Environment
+
+### Pre-installed Software
+
+#### All Instances
+- **Python**: 3.8, 3.9, 3.10, 3.11
+- **Conda**: Miniconda with conda-forge
+- **System Tools**: git, curl, wget, vim, nano
+- **Compilers**: GCC, G++, Make
+
+#### CPU Instances
+- **Scientific Computing**: NumPy, SciPy, Pandas, Matplotlib
+- **Machine Learning**: Scikit-learn, XGBoost, LightGBM
+- **Data Processing**: Dask, Polars, DuckDB
+- **Development**: Jupyter, IPython, pytest
+
+#### GPU Instances
+- **CUDA Toolkit**: Latest CUDA drivers and libraries
+- **Deep Learning**: PyTorch, TensorFlow, JAX
+- **Computer Vision**: OpenCV, Pillow, scikit-image
+- **ML Frameworks**: Transformers, Lightning, Detectron2
+- **GPU Libraries**: CuPy, Rapids, Numba
+
+### Custom Dependencies
+Install additional packages in your execution:
+
+```python
+# Install packages at runtime
+import subprocess
+import sys
+
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# Install specific versions
+install("transformers==4.21.0")
+install("torch==1.12.0+cu116 -f https://download.pytorch.org/whl/torch_stable.html")
+```
+
+### Environment Configuration
+```python
+# requirements.txt for your project
+torch>=1.12.0
+transformers>=4.21.0
+datasets>=2.4.0
+accelerate>=0.12.0
+tensorboard>=2.9.0
+```
+
+## Performance Optimization
+
+### CPU Optimization
+- **Multi-threading**: Use all available CPU cores
+- **Vectorization**: Leverage NumPy and Pandas optimizations
+- **Memory Management**: Optimize data structures and memory usage
+- **Parallel Processing**: Use multiprocessing for CPU-bound tasks
+
+```python
+import multiprocessing as mp
+import numpy as np
+
+# Use all CPU cores
+def parallel_computation(data_chunk):
+    return np.sum(data_chunk ** 2)
+
+# Process data in parallel
+with mp.Pool(mp.cpu_count()) as pool:
+    results = pool.map(parallel_computation, data_chunks)
+```
+
+### GPU Optimization
+- **Batch Processing**: Maximize GPU utilization with larger batches
+- **Memory Management**: Optimize VRAM usage
+- **Mixed Precision**: Use float16 for faster training
+- **Data Loading**: Use GPU-accelerated data loaders
+
+```python
+import torch
+
+# Optimize for GPU
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+
+# Use mixed precision
+from torch.cuda.amp import autocast, GradScaler
+scaler = GradScaler()
+
+with autocast():
+    outputs = model(inputs)
+    loss = criterion(outputs, targets)
+```
+
+## Monitoring & Metrics
+
+### Resource Monitoring
+Track resource usage during execution:
+
+```python
+import psutil
+import GPUtil
+
+# Monitor CPU and memory
+print(f"CPU Usage: {psutil.cpu_percent()}%")
+print(f"Memory Usage: {psutil.virtual_memory().percent}%")
+
+# Monitor GPU (if available)
+try:
+    gpus = GPUtil.getGPUs()
+    for gpu in gpus:
+        print(f"GPU {gpu.id}: {gpu.load*100:.1f}% | Memory: {gpu.memoryUtil*100:.1f}%")
+except:
+    print("No GPU available")
+```
+
+### Performance Metrics
+- **Execution Time**: Total runtime for billing calculation
+- **Resource Utilization**: CPU, memory, and GPU usage percentages
+- **Cost Efficiency**: Performance per credit spent
+- **Throughput**: Data processed per unit time
+
+## Best Practices
+
+### Resource Selection
+- **Start Small**: Begin with smaller instances and scale up as needed
+- **Monitor Usage**: Check resource utilization to optimize selection
+- **Consider Costs**: Balance performance needs with credit consumption
+- **Test Locally**: Estimate resource needs with local profiling
+
+### Performance Tips
+- **Profile Code**: Identify bottlenecks before running on cloud
+- **Optimize Data Loading**: Use efficient data formats and loading
+- **Cache Results**: Save intermediate results to avoid recomputation
+- **Clean Memory**: Free memory explicitly in long-running processes
+
+### Cost Management
+- **Right-sizing**: Choose the minimum resources needed
+- **Time Limits**: Set execution timeouts to prevent runaway costs
+- **Resource Monitoring**: Stop executions that aren't using resources efficiently
+- **Batch Processing**: Combine multiple tasks to minimize startup overhead
+
+<Note>
+Machine type availability may vary based on demand. The platform will suggest alternatives if your preferred type is unavailable.
+</Note>
