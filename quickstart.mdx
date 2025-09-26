@@ -1,6 +1,6 @@
 ---
 title: "Quick Start Guide"
-description: "Get started with Lyceum Cloud in under 5 minutes"
+description: "Get started with Lyceum Cloud in under 2 minutes"
 ---
 
 ## Get started in three steps
@@ -13,39 +13,38 @@ Set up your Lyceum Cloud account and execute your first code on cloud infrastruc
   <Accordion icon="user-plus" title="Sign up for Lyceum Cloud">
     1. Visit the [Lyceum Cloud Dashboard](https://dashboard.lyceum.technology)
     2. Create your account using email or social login
-    3. Verify your email address
-    4. Your account comes with free credits to get started
     
     <Tip>New accounts receive starter credits for immediate testing</Tip>
   </Accordion>
+</AccordionGroup>
+
+<Tabs>
+<Tab title="VSCode Extension" icon="code">
+
+### Step 2: Configure Authentication
+
+<AccordionGroup>
   <Accordion icon="download" title="Install VS Code Extension">
     1. Open VS Code
     2. Go to Extensions (Ctrl+Shift+X)
     3. Search for "Lyceum Cloud"
     4. Click Install on the official Lyceum Cloud extension
+
+    <img 
+      src="/images/install.png" 
+      alt="Install Lyceum Cloud"
+      height="10"
+      width="10"
+    />
     
     <Tip>The extension provides the easiest way to interact with the platform</Tip>
   </Accordion>
-</AccordionGroup>
-
-### Step 2: Configure Authentication
-
-<AccordionGroup>
-  <Accordion icon="key" title="Get your API token">
-    1. Open the [Dashboard](https://dashboard.lyceum.technology)
-    2. Navigate to Settings → API Keys
-    3. Click "Create New API Key"
-    4. Copy the generated token
+  <Accordion icon="settings" title="Authenticate Lyceum Cloud">
+    1. Open any .py or .ipynb file
+    2. Click the cloud icon 
+    3. You will be redirected to the dashboard and then back to the extension
+    4. You are all set up!
     
-    <Warning>Save your API key securely - it won't be shown again</Warning>
-  </Accordion>
-  <Accordion icon="settings" title="Configure VS Code">
-    1. Open VS Code Command Palette (Ctrl+Shift+P)
-    2. Type "Lyceum: Configure API Token"
-    3. Paste your API token
-    4. Confirm the configuration
-    
-    <Tip>You can also configure the API URL if using a custom endpoint</Tip>
   </Accordion>
 </AccordionGroup>
 
@@ -55,13 +54,125 @@ Set up your Lyceum Cloud account and execute your first code on cloud infrastruc
   1. Create a new Python file (e.g., `hello.py`)
   2. Write some simple code:
      ```python
-     print("Hello from Lyceum Cloud!")
-     import sys
-     print(f"Python version: {sys.version}")
+     def hello_world():
+         print("Hello World, I was executed on a Lyceum Machine!")
+         return
+     hello_world()
      ```
   3. Click the cloud icon in the editor or use Ctrl+Shift+E
+
+   <img 
+      src="/images/execution.png" 
+      alt="Install Lyceum Cloud"
+      height="1000"
+    />
   4. Watch your code execute on cloud infrastructure!
 </Accordion>
+</Tab>
+
+<Tab title="CLI" icon="terminal">
+
+### Step 2: Install and Configure CLI
+
+<AccordionGroup>
+  <Accordion icon="download" title="Install Lyceum CLI">
+    Install the CLI tool using pip:
+    
+    ```bash
+    pip install lyceum-cli
+    ```
+    
+    <Tip>Requires Python 3.7 or higher</Tip>
+  </Accordion>
+  
+  <Accordion icon="key" title="Authenticate with Lyceum">
+    Log in to your Lyceum account:
+    
+    ```bash
+    lyceum login
+    ```
+    
+    This will open your browser for authentication and save your credentials locally.
+  </Accordion>
+</AccordionGroup>
+
+### Step 3: Execute Your First Code
+
+<Accordion icon="rocket" title="Run code via CLI">
+  Execute Python code directly from the command line:
+  
+  ```bash
+  lyceum python run "print('Hello from Lyceum Cloud!')"
+  ```
+  
+  Or run a Python file:
+  
+  ```bash
+  lyceum python run hello.py
+  ```
+  
+  <Note>Your code executes on cloud infrastructure and returns results to your terminal</Note>
+</Accordion>
+
+</Tab>
+<Tab title="API Reference" icon="play">
+
+### Step 2: Get API Credentials
+
+<AccordionGroup>
+  <Accordion icon="key" title="Create API Key">
+    1. Navigate to the [Lyceum Dashboard](https://dashboard.lyceum.technology)
+    2. Go to **API Keys** section
+    3. Click **Create New API Key**
+    4. Copy and securely store your API key
+
+    <img 
+      src="/images/api-keys.png" 
+      alt="Install Lyceum Cloud"
+      height="1000"
+    />
+    
+    <Warning>API keys provide full account access. Keep them secure and never commit to version control.</Warning>
+  </Accordion>
+  
+  <Accordion icon="clock" title="Use JWT Token (Alternative)">
+    For short-term access, use a JWT token:
+    
+    1. Go to the **JWT** tab in your dashboard
+    2. Copy the JWT token
+    
+    <Note>JWT tokens are more secure but expire quickly. Ideal for testing.</Note>
+  </Accordion>
+</AccordionGroup>
+
+### Step 3: Make Your First API Call
+
+<Accordion icon="rocket" title="Execute code via API">
+  The API is mainly desgined for docker image execution. Here's a simple code execution example:
+
+  ```bash
+  curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "image": "lyceum/python:3.9:latest",
+      "docker_run_cmd": ["python", "-c", "print(\"Hello from Docker!\")"],
+      "execution_type": "cpu",
+      "docker_registry_credential_type": "aws",
+      "aws_access_key_id": "${AWS_ACCESS_KEY}",
+      "aws_secret_access_key": "${AWS_SECRET_ACCESS_KEY}",
+      "aws_session_token": "${AWS_SESSION_TOKEN}",
+      "aws_region": "${AWS_REGION}"
+    }'
+  ```
+  
+  <Note>
+    Replace `YOUR_API_KEY` with your actual API key. Find more API documentation here: [API Reference](/api-reference)
+  </Note>
+</Accordion>
+
+</Tab>
+</Tabs>
 
 ## Next Steps
 
