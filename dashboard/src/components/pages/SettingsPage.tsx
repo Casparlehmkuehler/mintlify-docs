@@ -401,7 +401,7 @@ const SettingsPage: React.FC = () => {
         return
       }
 
-      const response = await fetch(buildApiUrl("/api/v2/external/auth/user/delete"), {
+      const response = await fetch(buildApiUrl("/api/v2/external/user/delete"), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,

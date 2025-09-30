@@ -21,11 +21,12 @@ print("Hello from Lyceum Cloud!")
 ```
 
 ```bash API
-curl -X POST https://api.lyceum.technology/api/v2/external/execution/python/start \
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/streaming/start \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "python_code": "print(\"Hello from Lyceum Cloud!\")",
+    "code": "print(\"Hello from Lyceum Cloud!\")",
+    "nbcode": 0,
     "execution_type": "cpu"
   }'
 ```
@@ -245,11 +246,13 @@ Specify exact package versions for reproducible results:
 
   <Tab title="API with Requirements">
     ```bash
-    curl -X POST https://api.lyceum.technology/api/v2/external/execution/python/start \
+    curl -X POST https://api.lyceum.technology/api/v2/external/execution/streaming/start \
       -H "Authorization: Bearer <token>" \
+      -H "Content-Type: application/json" \
       -d '{
-        "python_code": "import requests; print(requests.__version__)",
-        "python_requirements": ["requests==2.31.0"],
+        "code": "import requests; print(requests.__version__)",
+        "nbcode": 0,
+        "requirements_content": "requests==2.31.0",
         "execution_type": "cpu"
       }'
     ```

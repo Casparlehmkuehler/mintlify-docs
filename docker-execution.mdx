@@ -48,6 +48,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     ```bash
     curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
       -H "Authorization: Bearer <TOKEN>" \
+      -H "Content-Type: application/json" \
       -d '{
         "docker_image_ref": "myregistry.com/myimage:latest",
         "docker_registry_credential_type": "basic",
@@ -66,6 +67,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     ```bash
     curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
       -H "Authorization: Bearer <TOKEN>" \
+      -H "Content-Type: application/json" \
       -d '{
         "docker_image_ref": "pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime",
         "docker_run_cmd": ["python", "train_model.py"],
@@ -163,7 +165,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
   
   response = requests.post(
       "https://api.lyceum.technology/api/v2/external/execution/image/start",
-      headers={"Authorization": f"Bearer {token}"},
+      headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
       json={
           "docker_image_ref": "python:3.11",
           "docker_run_cmd": ["python", "script.py"],

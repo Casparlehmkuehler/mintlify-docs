@@ -127,8 +127,8 @@ import requests
 
 response = requests.post(
     'https://api.lyceum.technology/api/v2/external/execution/streaming/start',
-    headers={'Authorization': f'Bearer {token}'},
-    json={'code': code, 'execution_type': 'cpu'}
+    headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
+    json={'code': code, 'nbcode': 0, 'execution_type': 'cpu'}
 )
 
 if response.status_code == 200:

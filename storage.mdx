@@ -288,14 +288,18 @@ Generate temporary S3 credentials for direct access using standard S3 tools:
     ```python
     import requests
     
-    response = requests.post(
-        'https://api.lyceum.technology/api/v2/external/storage/bulk-download',
-        headers={'Authorization': f'Bearer {token}'},
-        json={'file_keys': ['file1.txt', 'file2.txt']}
-    )
-    
-    with open('files.zip', 'wb') as f:
-        f.write(response.content)
+    # Download multiple files individually
+    file_keys = ['file1.txt', 'file2.txt']
+    for file_key in file_keys:
+        response = requests.get(
+            f'https://api.lyceum.technology/api/v2/external/storage/download/{file_key}',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        
+        if response.status_code == 200:
+            with open(file_key, 'wb') as f:
+                f.write(response.content)
+            print(f"Downloaded {file_key}")
     ```
   </Card>
 </CardGroup>

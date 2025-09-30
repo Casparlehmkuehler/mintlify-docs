@@ -1,13 +1,16 @@
 ---
 title: 'REST API Reference'
-description: 'Programmatic access to all Lyceum Cloud platform functionality for custom integrations and automated workflows'
+description: 'Complete API documentation for Lyceum Cloud platform - execute code, manage files, and build powerful integrations'
+icon: 'code'
 ---
 
-## Overview
-
-The Lyceum Cloud REST API provides programmatic access to all platform functionality, enabling custom integrations and automated workflows. Use the API to execute code, manage files, monitor executions, and integrate Lyceum Cloud into your applications.
+<Info>
+  The Lyceum Cloud API enables you to programmatically execute code, manage files, monitor usage, and integrate our cloud compute platform into your applications.
+</Info>
 
 ## Base URL
+
+All API requests use this base URL:
 
 ```
 https://api.lyceum.technology/api/v2/external
@@ -15,187 +18,513 @@ https://api.lyceum.technology/api/v2/external
 
 ## Authentication
 
-### JWT Tokens (Recommended)
-Use JWT tokens for user authentication. Obtain a token by logging in:
+<CardGroup cols={2}>
+  <Card title="JWT Tokens" icon="key">
+    **Best for**: Web applications, user sessions
+    - 24-hour expiration
+    - Automatic refresh support
+    - Obtained via login endpoint
+  </Card>
+  
+  <Card title="API Keys" icon="code">
+    **Best for**: CI/CD, automation, services
+    - No expiration (configurable)
+    - Revocable anytime
+    - Created in dashboard
+  </Card>
+</CardGroup>
 
-```bash
-curl -X POST https://api.lyceum.technology/api/v2/external/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "your-email@example.com",
-    "password": "your-password"
-  }'
-```
+### Quick Start Authentication
 
-Include the token in requests:
-```
-Authorization: Bearer <jwt_token>
-```
+<Tabs>
+  <Tab title="Get JWT Token">
+    ```bash
+    curl -X POST https://api.lyceum.technology/api/v2/external/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email": "your-email@example.com",
+        "password": "your-password"
+      }'
+    ```
+    
+    **Response:**
+    ```json
+    {
+      "access_token": "eyJhbGci...",
+      "refresh_token": "eyJhbGci...",
+      "expires_in": 86400
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Use Token">
+    ```bash
+    curl -X GET https://api.lyceum.technology/api/v2/external/billing/credits \
+      -H "Authorization: Bearer <your-token>"
+    ```
+  </Tab>
+  
+  <Tab title="API Keys">
+    Get API keys from [Dashboard](https://dashboard.lyceum.technology/api-keys)
+    
+    ```bash
+    curl -X GET https://api.lyceum.technology/api/v2/external/billing/credits \
+      -H "Authorization: Bearer lk_live_..."
+    ```
+  </Tab>
+</Tabs>
 
-### API Keys
-Alternative authentication for service-to-service communication. Create API keys in the [Dashboard](https://dashboard.lyceum.technology):
+## API Endpoints
 
-```
-Authorization: Bearer <api_key>
-```
+### 🚀 Code Execution
 
-## Core Endpoints
+Execute Python code or Docker containers on cloud infrastructure.
 
-### Health Monitoring
-- `GET /health/ping` - Health check endpoint
-- `GET /health/version` - Get system version information
+<AccordionGroup>
+  <Accordion title="Python Execution" icon="python">
+    **POST** `/execution/streaming/start`
+    
+    ```json
+    {
+      "code": "print('Hello World')",
+      "nbcode": 0,
+      "execution_type": "cpu",
+      "timeout": 300,
+      "requirements_content": "pandas==2.0.0"
+    }
+    ```
+    
+    **Response:**
+    ```json
+    {
+      "execution_id": "uuid",
+      "status": "running",
+      "streaming_url": "wss://..."
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Docker Containers" icon="docker">
+    **POST** `/execution/image/start`
+    
+    ```json
+    {
+      "docker_image_ref": "python:3.11",
+      "docker_run_cmd": ["python", "-c", "print('Hello')"],
+      "execution_type": "cpu",
+      "timeout": 600
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Execution Management" icon="list-check">
+    - **GET** `/execution/streaming/{id}/status` - Check status
+    - **POST** `/execution/streaming/abort/{id}` - Stop execution
+    - **POST** `/execution/streaming/complete/{id}` - Mark complete
+  </Accordion>
+</AccordionGroup>
 
-### Code Execution
-- `POST /execution/streaming/start` - Execute Python code on cloud infrastructure
-- `POST /execution/image/start` - Run Docker containers
-- `GET /execution/streaming/{execution_id}/status` - Get execution status
-- `POST /execution/streaming/abort/{execution_id}` - Stop running executions
+### 📁 File Storage
 
-### File Storage
-- `POST /storage/upload` - Upload files to cloud storage
-- `GET /storage/list-files` - List stored files with metadata
-- `GET /storage/download/{file_key}` - Download files
-- `DELETE /storage/delete/{file_key}` - Remove files
-- `POST /storage/credentials` - Generate temporary S3 credentials
+Manage files in cloud storage with S3-compatible API.
 
-### Billing & Credits
-- `GET /billing/credits` - Get current credit balance
-- `GET /billing/history` - View execution history and costs
-- `POST /billing/checkout` - Create Stripe checkout session
+<AccordionGroup>
+  <Accordion title="Upload Files" icon="upload">
+    **POST** `/storage/upload`
+    
+    ```bash
+    curl -X POST .../storage/upload \
+      -H "Authorization: Bearer <token>" \
+      -F "file=@data.csv" \
+      -F "key=datasets/data.csv"
+    ```
+  </Accordion>
+  
+  <Accordion title="List & Download" icon="folder">
+    - **GET** `/storage/list-files?prefix=datasets/` - List files
+    - **GET** `/storage/download/{file_key}` - Download file
+    - **DELETE** `/storage/delete/{file_key}` - Delete file
+  </Accordion>
+  
+  <Accordion title="S3 Credentials" icon="aws">
+    **POST** `/storage/credentials`
+    
+    Get temporary S3 credentials for direct access:
+    ```json
+    {
+      "access_key_id": "AKIA...",
+      "secret_access_key": "...",
+      "session_token": "...",
+      "expiration": "2024-01-01T12:00:00Z"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 💳 Billing & Credits
+
+Monitor usage and manage billing.
+
+<AccordionGroup>
+  <Accordion title="Credit Balance" icon="coins">
+    **GET** `/billing/credits`
+    
+    ```json
+    {
+      "available_credits": 100.0,
+      "used_credits": 25.0,
+      "remaining_credits": 75.0,
+      "monthly_free_credits": 20.0,
+      "purchased_credits": 80.0
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Usage History" icon="clock">
+    **GET** `/billing/history?limit=50&offset=0`
+    
+    Returns execution history with costs.
+  </Accordion>
+  
+  <Accordion title="Purchase Credits" icon="credit-card">
+    **POST** `/billing/checkout`
+    
+    ```json
+    {
+      "credits_amount": 100,
+      "success_url": "https://yourapp.com/success",
+      "cancel_url": "https://yourapp.com/cancel"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 🔐 Authentication & Users
+
+Manage authentication and API keys.
+
+<AccordionGroup>
+  <Accordion title="Authentication" icon="lock">
+    - **POST** `/auth/login` - Login with email/password
+    - **POST** `/auth/refresh` - Refresh access token
+  </Accordion>
+  
+  <Accordion title="API Key Management" icon="key">
+    - **GET** `/auth/api-keys/` - List API keys
+    - **POST** `/auth/api-keys/` - Create new key
+    - **DELETE** `/auth/api-keys/{id}` - Delete key
+    - **PATCH** `/auth/api-keys/{id}/toggle` - Enable/disable
+  </Accordion>
+  
+  <Accordion title="User Management" icon="user">
+    - **DELETE** `/user/delete` - Delete account
+  </Accordion>
+</AccordionGroup>
+
+### 🏥 System Health
+
+Monitor API status and version.
+
+- **GET** `/health/ping` - Health check
+- **GET** `/health/version` - API version info
+
+## Quick Start Examples
+
+<Tabs>
+  <Tab title="Python" icon="python">
+    ```python
+    import requests
+    
+    class LyceumClient:
+        def __init__(self, email, password):
+            self.base_url = "https://api.lyceum.technology/api/v2/external"
+            self.token = self._authenticate(email, password)
+        
+        def _authenticate(self, email, password):
+            response = requests.post(
+                f"{self.base_url}/auth/login",
+                json={"email": email, "password": password}
+            )
+            return response.json()["access_token"]
+        
+        def execute_code(self, code):
+            response = requests.post(
+                f"{self.base_url}/execution/streaming/start",
+                headers={
+                    "Authorization": f"Bearer {self.token}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "code": code,
+                    "nbcode": 0,
+                    "execution_type": "cpu"
+                }
+            )
+            return response.json()
+    
+    # Usage
+    client = LyceumClient("user@example.com", "password")
+    result = client.execute_code("print('Hello World')")
+    print(f"Execution ID: {result['execution_id']}")
+    ```
+  </Tab>
+  
+  <Tab title="JavaScript" icon="js">
+    ```javascript
+    class LyceumClient {
+      constructor(email, password) {
+        this.baseUrl = 'https://api.lyceum.technology/api/v2/external';
+        this.token = null;
+        this.authenticate(email, password);
+      }
+      
+      async authenticate(email, password) {
+        const response = await fetch(`${this.baseUrl}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        this.token = data.access_token;
+      }
+      
+      async executeCode(code) {
+        const response = await fetch(`${this.baseUrl}/execution/streaming/start`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            code,
+            nbcode: 0,
+            execution_type: 'cpu'
+          })
+        });
+        return response.json();
+      }
+    }
+    
+    // Usage
+    const client = new LyceumClient('user@example.com', 'password');
+    await client.authenticate();
+    const result = await client.executeCode("print('Hello World')");
+    console.log(`Execution ID: ${result.execution_id}`);
+    ```
+  </Tab>
+  
+  <Tab title="cURL" icon="terminal">
+    ```bash
+    # 1. Authenticate
+    TOKEN=$(curl -s -X POST \
+      https://api.lyceum.technology/api/v2/external/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"email":"user@example.com","password":"password"}' \
+      | jq -r .access_token)
+    
+    # 2. Execute code
+    curl -X POST \
+      https://api.lyceum.technology/api/v2/external/execution/streaming/start \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "code": "print(\"Hello World\")",
+        "nbcode": 0,
+        "execution_type": "cpu"
+      }'
+    
+    # 3. Check credits
+    curl -X GET \
+      https://api.lyceum.technology/api/v2/external/billing/credits \
+      -H "Authorization: Bearer $TOKEN"
+    ```
+  </Tab>
+</Tabs>
 
 ## Response Format
 
-All API responses use JSON format with consistent error handling:
+### Success Response
 
 ```json
 {
-  "success": true,
-  "data": { /* response data */ },
+  "status": "success",
+  "data": {
+    // Response data
+  },
   "message": "Operation completed successfully"
 }
 ```
 
-### Error Responses
+### Error Response
+
 ```json
 {
-  "success": false,
-  "error": {
-    "code": "INVALID_REQUEST",
-    "message": "Missing required parameter: code",
-    "details": {
-      "parameter": "code",
-      "expected_type": "string"
+  "detail": "Error message",
+  "status": 400,
+  "type": "validation_error",
+  "errors": [
+    {
+      "field": "code",
+      "message": "Required field missing"
     }
-  }
+  ]
 }
 ```
 
-## Getting Started
+## Rate Limits
 
-### 1. Obtain Authentication
-```bash
-# Login to get JWT token
-curl -X POST https://api.lyceum.technology/api/v2/external/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "your-email@example.com", 
-    "password": "your-password"
-  }'
-```
+<Note>
+  Rate limits help ensure fair usage and platform stability. Headers indicate your current usage.
+</Note>
 
-### 2. Execute Your First Code
-```bash
-# Execute Python code
-curl -X POST https://api.lyceum.technology/api/v2/external/execution/streaming/start \
-  -H "Authorization: Bearer <your_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "code": "print(\"Hello from Lyceum Cloud!\")",
-    "execution_type": "cpu"
-  }'
-```
+| Endpoint Category | Limit | Window |
+|------------------|-------|--------|
+| Authentication | 10 requests | per minute |
+| Code Execution | 100 requests | per hour |
+| File Storage | 1000 requests | per hour |
+| Billing | 100 requests | per hour |
 
-### 3. Monitor Execution
-```bash
-# Check execution status
-curl -X GET https://api.lyceum.technology/api/v2/external/execution/streaming/{execution_id}/status \
-  -H "Authorization: Bearer <your_token>"
-```
+**Rate Limit Headers:**
+- `X-RateLimit-Limit`: Maximum requests allowed
+- `X-RateLimit-Remaining`: Requests remaining
+- `X-RateLimit-Reset`: Unix timestamp when limit resets
 
-## Code Examples
+## HTTP Status Codes
 
-### Python
-```python
-import requests
+| Code | Status | Description |
+|------|--------|-------------|
+| **200** | OK | Request successful |
+| **201** | Created | Resource created successfully |
+| **400** | Bad Request | Invalid request parameters |
+| **401** | Unauthorized | Authentication required or invalid |
+| **403** | Forbidden | Access denied to resource |
+| **404** | Not Found | Resource doesn't exist |
+| **429** | Too Many Requests | Rate limit exceeded |
+| **500** | Internal Error | Server error occurred |
+| **503** | Service Unavailable | Service temporarily down |
 
-# Authenticate
-response = requests.post('https://api.lyceum.technology/api/v2/external/auth/login', 
-    json={'email': 'user@example.com', 'password': 'password'})
-token = response.json()['access_token']
+## Error Handling
 
-# Execute code
-response = requests.post('https://api.lyceum.technology/api/v2/external/execution/streaming/start',
-    headers={'Authorization': f'Bearer {token}'},
-    json={'code': 'print("Hello World")', 'execution_type': 'cpu'})
-```
-
-### JavaScript
-```javascript
-// Authenticate
-const authResponse = await fetch('https://api.lyceum.technology/api/v2/external/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: 'user@example.com', password: 'password' })
-});
-const { access_token } = await authResponse.json();
-
-// Execute code
-const execResponse = await fetch('https://api.lyceum.technology/api/v2/external/execution/streaming/start', {
-  method: 'POST',
-  headers: { 
-    'Authorization': `Bearer ${access_token}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ code: 'print("Hello World")', execution_type: 'cpu' })
-});
-```
-
-## Rate Limiting
-
-Standard rate limits apply to prevent abuse:
-- **Authentication endpoints**: 10 requests per minute
-- **Execution endpoints**: 100 requests per hour per user
-- **Storage endpoints**: 1000 requests per hour per user
-- **General endpoints**: 500 requests per hour per user
-
-Rate limit headers are included in responses:
-- `X-RateLimit-Limit`: Request limit for the endpoint
-- `X-RateLimit-Remaining`: Requests remaining in current window
-- `X-RateLimit-Reset`: Timestamp when rate limit resets
-
-## Error Codes
-
-Common HTTP status codes and their meanings:
-
-| Code | Meaning | Description |
-|------|---------|-------------|
-| 200 | Success | Request completed successfully |
-| 400 | Bad Request | Invalid request parameters |
-| 401 | Unauthorized | Invalid or missing authentication |
-| 403 | Forbidden | Insufficient permissions |
-| 404 | Not Found | Resource does not exist |
-| 429 | Too Many Requests | Rate limit exceeded |
-| 500 | Internal Server Error | Server error occurred |
+<CodeGroup>
+  ```python Python
+  import time
+  import requests
+  from requests.exceptions import RequestException
+  
+  def api_call_with_retry(url, headers, json_data, max_retries=3):
+      for attempt in range(max_retries):
+          try:
+              response = requests.post(url, headers=headers, json=json_data)
+              
+              if response.status_code == 429:  # Rate limited
+                  retry_after = int(response.headers.get('Retry-After', 60))
+                  time.sleep(retry_after)
+                  continue
+              
+              response.raise_for_status()
+              return response.json()
+              
+          except RequestException as e:
+              if attempt == max_retries - 1:
+                  raise
+              time.sleep(2 ** attempt)  # Exponential backoff
+      
+      return None
+  ```
+  
+  ```javascript JavaScript
+  async function apiCallWithRetry(url, options, maxRetries = 3) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await fetch(url, options);
+        
+        if (response.status === 429) {  // Rate limited
+          const retryAfter = response.headers.get('Retry-After') || 60;
+          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+          continue;
+        }
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+        
+      } catch (error) {
+        if (attempt === maxRetries - 1) throw error;
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+  }
+  ```
+</CodeGroup>
 
 ## Best Practices
 
-- **Use JWT tokens** for better security and performance
-- **Handle rate limits** gracefully with exponential backoff
-- **Monitor execution status** for long-running operations
-- **Clean up resources** by stopping unnecessary executions
-- **Validate inputs** before making API calls
-- **Store credentials securely** and rotate them regularly
+<Steps>
+  <Step title="Use Environment Variables">
+    Store API credentials securely:
+    ```bash
+    export LYCEUM_API_TOKEN="your-token"
+    export LYCEUM_API_KEY="lk_live_..."
+    ```
+  </Step>
+  
+  <Step title="Implement Retry Logic">
+    Handle transient failures gracefully with exponential backoff.
+  </Step>
+  
+  <Step title="Monitor Rate Limits">
+    Check rate limit headers and implement appropriate throttling.
+  </Step>
+  
+  <Step title="Clean Up Resources">
+    Stop unnecessary executions and delete temporary files.
+  </Step>
+  
+  <Step title="Validate Inputs">
+    Check parameters before making API calls to avoid errors.
+  </Step>
+  
+  <Step title="Use Appropriate Timeouts">
+    Set reasonable timeouts for long-running operations.
+  </Step>
+</Steps>
 
-<Note>
-For detailed endpoint documentation, see the API reference sections below.
-</Note>
+## SDK & Tools
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="https://github.com/lyceum-cloud/python-sdk">
+    Official Python client library
+    ```bash
+    pip install lyceum-cloud
+    ```
+  </Card>
+  
+  <Card title="CLI Tool" icon="terminal" href="https://github.com/lyceum-cloud/cli">
+    Command-line interface
+    ```bash
+    npm install -g @lyceum/cli
+    ```
+  </Card>
+  
+  <Card title="VS Code Extension" icon="code" href="https://marketplace.visualstudio.com/items?itemName=lyceum.cloud-code">
+    Execute code directly from VS Code
+  </Card>
+  
+  <Card title="Postman Collection" icon="bolt" href="https://postman.com/lyceum-cloud">
+    Interactive API testing
+  </Card>
+</CardGroup>
+
+## Support
+
+<CardGroup cols={2}>
+  <Card title="API Status" icon="signal" href="https://status.lyceum.technology">
+    Check current API status and incidents
+  </Card>
+  
+  <Card title="Support" icon="headset" href="mailto:support@lyceum.technology">
+    Get help from our technical team
+  </Card>
+</CardGroup>
