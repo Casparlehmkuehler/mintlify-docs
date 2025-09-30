@@ -14,9 +14,9 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
 
 <CardGroup cols={3}>
   <Card title="Any Registry" icon="box">
-    Docker Hub, ECR, GCR, or private registries
+    Docker Hub, ECR, GCR (Coming Soon), or private registries (Coming Soon)
   </Card>
-  <Card title="GPU Support" icon="microchip">
+  <Card title="GPU Support" icon="chip">
     Automatic NVIDIA runtime for ML workloads
   </Card>
   <Card title="Real-time Output" icon="terminal">
@@ -61,7 +61,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     ```
   </Tab>
 
-  <Tab title="GPU Workload" icon="gpu-card">
+  <Tab title="GPU Workload" icon="rocket">
     Run ML models with GPU acceleration:
     
     ```bash
@@ -124,7 +124,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     </Tip>
   </Accordion>
 
-  <Accordion title="Google Container Registry" icon="google">
+  <Accordion title="Google Container Registry (Coming Soon)" icon="google" disabled>
     ### Using Service Account
     ```json
     {
@@ -138,7 +138,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     ```
   </Accordion>
 
-  <Accordion title="GitHub Container Registry" icon="github">
+  <Accordion title="GitHub Container Registry (Coming Soon)" icon="github" disabled>
     ### Personal Access Token
     ```json
     {
@@ -288,7 +288,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     ```
   </Tab>
 
-  <Tab title="Storage Access" icon="database">
+  <Tab title="Storage Access (Coming Soon)" icon="database" disabled>
     Access Lyceum storage from your container:
     
     ```python
@@ -317,7 +317,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
 ## Common Use Cases
 
 <CardGroup cols={2}>
-  <Card title="ML Training" icon="brain">
+  <Card title="ML Training" icon="sparkles">
     ```python
     # PyTorch training job
     {
@@ -342,7 +342,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     ```
   </Card>
 
-  <Card title="Web Scraping" icon="spider">
+  <Card title="Web Scraping" icon="link">
     ```python
     # Selenium automation
     {
@@ -372,7 +372,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
 ### Real-time Output Streaming
 
 <Tabs>
-  <Tab title="Server-Sent Events" icon="broadcast">
+  <Tab title="Server-Sent Events" icon="play">
     ```python
     import sseclient
     
@@ -413,7 +413,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
 ## Best Practices
 
 <AccordionGroup>
-  <Accordion title="Image Optimization" icon="gauge-high">
+  <Accordion title="Image Optimization" icon="gauge">
     - Use slim base images (alpine, slim variants)
     - Multi-stage builds to reduce size
     - Cache dependencies in layers
@@ -485,26 +485,6 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     # Test locally first
     docker pull your-image:tag
     ```
-  </Accordion>
-
-  <Accordion title="Execution Timeouts" icon="clock">
-    **Issue:** Execution exceeds timeout limit
-    
-    **Solutions:**
-    - Increase timeout value
-    - Optimize code performance
-    - Use GPU for compute-intensive tasks
-    - Break into smaller jobs
-  </Accordion>
-
-  <Accordion title="Out of Memory" icon="memory">
-    **Issue:** Container runs out of memory
-    
-    **Solutions:**
-    - Use larger machine type
-    - Optimize memory usage
-    - Process data in chunks
-    - Clear unused variables
   </Accordion>
 </AccordionGroup>
 
