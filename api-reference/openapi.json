@@ -8,7 +8,6 @@
     "/api/v2/external/health/ping": {
       "get": {
         "tags": [
-          "External API v2",
           "Health"
         ],
         "summary": "Ping",
@@ -29,7 +28,6 @@
     "/api/v2/external/health/version": {
       "get": {
         "tags": [
-          "External API v2",
           "Health"
         ],
         "summary": "Version",
@@ -50,7 +48,6 @@
     "/api/v2/external/auth/login": {
       "post": {
         "tags": [
-          "External API v2",
           "Authentication"
         ],
         "summary": "Login",
@@ -93,7 +90,6 @@
     "/api/v2/external/auth/refresh": {
       "post": {
         "tags": [
-          "External API v2",
           "Authentication"
         ],
         "summary": "Refresh Token",
@@ -136,7 +132,6 @@
     "/api/v2/external/auth/api-keys/": {
       "get": {
         "tags": [
-          "External API v2",
           "API Keys"
         ],
         "summary": "List Api Keys",
@@ -161,7 +156,6 @@
       },
       "post": {
         "tags": [
-          "External API v2",
           "API Keys"
         ],
         "summary": "Create Api Key",
@@ -204,7 +198,6 @@
     "/api/v2/external/auth/api-keys/{api_key_id}": {
       "delete": {
         "tags": [
-          "External API v2",
           "API Keys"
         ],
         "summary": "Revoke Api Key",
@@ -246,7 +239,6 @@
     "/api/v2/external/auth/api-keys/{api_key_id}/toggle": {
       "patch": {
         "tags": [
-          "External API v2",
           "API Keys"
         ],
         "summary": "Toggle Api Key",
@@ -288,7 +280,6 @@
     "/api/v2/external/user/status": {
       "get": {
         "tags": [
-          "External API v2",
           "User Management"
         ],
         "summary": "Get User Status",
@@ -309,7 +300,6 @@
     "/api/v2/external/user/delete": {
       "delete": {
         "tags": [
-          "External API v2",
           "User Management"
         ],
         "summary": "Delete User",
@@ -329,9 +319,7 @@
     },
     "/api/v2/external/delete-user": {
       "post": {
-        "tags": [
-          "External API v2"
-        ],
+        "tags": [],
         "summary": "Delete User",
         "operationId": "delete_user_api_v2_external_delete_user_post",
         "requestBody": {
@@ -369,7 +357,6 @@
     "/api/v2/external/execution/image/start": {
       "post": {
         "tags": [
-          "External API v2",
           "Docker Execution"
         ],
         "summary": "Start Docker Execution",
@@ -412,7 +399,6 @@
     "/api/v2/external/execution/image/complete/{execution_id}": {
       "post": {
         "tags": [
-          "External API v2",
           "Docker Execution"
         ],
         "summary": "Complete Docker Execution",
@@ -466,7 +452,6 @@
     "/api/v2/external/execution/image/abort/{execution_id}": {
       "post": {
         "tags": [
-          "External API v2",
           "Docker Execution"
         ],
         "summary": "Abort Docker Execution",
@@ -508,7 +493,6 @@
     "/api/v2/external/execution/streaming/start": {
       "post": {
         "tags": [
-          "External API v2",
           "Streaming Execution"
         ],
         "summary": "Start Streaming Execution",
@@ -551,7 +535,6 @@
     "/api/v2/external/execution/streaming/complete/{execution_id}": {
       "post": {
         "tags": [
-          "External API v2",
           "Streaming Execution"
         ],
         "summary": "Complete Execution",
@@ -605,7 +588,6 @@
     "/api/v2/external/execution/streaming/abort/{execution_id}": {
       "post": {
         "tags": [
-          "External API v2",
           "Streaming Execution"
         ],
         "summary": "Abort Execution",
@@ -647,7 +629,6 @@
     "/api/v2/external/execution/streaming/{execution_id}/status": {
       "get": {
         "tags": [
-          "External API v2",
           "Streaming Execution"
         ],
         "summary": "Get Execution Status",
@@ -689,7 +670,6 @@
     "/api/v2/external/workloads/list": {
       "get": {
         "tags": [
-          "External API v2",
           "Workload Management"
         ],
         "summary": "List Non Complete Executions",
@@ -716,7 +696,6 @@
     "/api/v2/external/workloads/abort/{execution_id}": {
       "post": {
         "tags": [
-          "External API v2",
           "Workload Management"
         ],
         "summary": "Abort Execution",
@@ -760,7 +739,6 @@
     "/api/v2/external/execution/{execution_id}": {
       "delete": {
         "tags": [
-          "External API v2",
           "Execution Management"
         ],
         "summary": "Delete Execution",
@@ -800,7 +778,6 @@
       },
       "get": {
         "tags": [
-          "External API v2",
           "Execution Management"
         ],
         "summary": "Get Execution",
@@ -842,7 +819,6 @@
     "/api/v2/external/execution/{execution_id}/timing": {
       "get": {
         "tags": [
-          "External API v2",
           "Execution Management"
         ],
         "summary": "Get Execution Timing",
@@ -884,7 +860,6 @@
     "/api/v2/external/storage/list-files": {
       "get": {
         "tags": [
-          "External API v2",
           "Storage Files"
         ],
         "summary": "List Files",
@@ -943,7 +918,6 @@
     "/api/v2/external/storage/upload": {
       "post": {
         "tags": [
-          "External API v2",
           "Storage Files"
         ],
         "summary": "Upload File",
@@ -1004,7 +978,6 @@
     "/api/v2/external/storage/upload-bulk": {
       "post": {
         "tags": [
-          "External API v2",
           "Storage Files"
         ],
         "summary": "Upload Bulk Files",
@@ -1047,7 +1020,6 @@
     "/api/v2/external/storage/download/{file_key}": {
       "get": {
         "tags": [
-          "External API v2",
           "Storage Files"
         ],
         "summary": "Download File",
@@ -1089,7 +1061,6 @@
     "/api/v2/external/storage/delete/{file_key}": {
       "delete": {
         "tags": [
-          "External API v2",
           "Storage Files"
         ],
         "summary": "Delete File",
@@ -1131,7 +1102,6 @@
     "/api/v2/external/storage/delete-folder/{folder_prefix}": {
       "delete": {
         "tags": [
-          "External API v2",
           "Storage Files"
         ],
         "summary": "Delete Folder",
@@ -1173,7 +1143,6 @@
     "/api/v2/external/storage/credentials": {
       "post": {
         "tags": [
-          "External API v2",
           "Storage Credentials"
         ],
         "summary": "Get Storage Credentials",
@@ -1196,7 +1165,6 @@
     "/api/v2/external/billing/credits": {
       "get": {
         "tags": [
-          "External API v2",
           "Billing Credits"
         ],
         "summary": "Get User Credits",
@@ -1219,7 +1187,6 @@
     "/api/v2/external/billing/credits/details": {
       "get": {
         "tags": [
-          "External API v2",
           "Billing Credits"
         ],
         "summary": "Get User Credits Details",
@@ -1242,7 +1209,6 @@
     "/api/v2/external/billing/checkout": {
       "post": {
         "tags": [
-          "External API v2",
           "Billing Credits"
         ],
         "summary": "Create Checkout Session",
@@ -1285,7 +1251,6 @@
     "/api/v2/external/billing/history": {
       "get": {
         "tags": [
-          "External API v2",
           "Billing Credits"
         ],
         "summary": "Get Execution History",
@@ -1340,7 +1305,6 @@
     "/api/v2/external/billing/activities": {
       "get": {
         "tags": [
-          "External API v2",
           "Billing Credits"
         ],
         "summary": "Get Billing Activities",
@@ -1394,9 +1358,7 @@
     },
     "/api/v2/external/create-checkout-session": {
       "post": {
-        "tags": [
-          "External API v2"
-        ],
+        "tags": [],
         "summary": "Create Checkout Session",
         "operationId": "create_checkout_session_api_v2_external_create_checkout_session_post",
         "requestBody": {
@@ -1433,27 +1395,9 @@
     },
     "/api/v2/external/webhook": {
       "post": {
-        "tags": [
-          "External API v2"
-        ],
+        "tags": [],
         "summary": "Stripe Webhook",
         "operationId": "stripe_webhook_api_v2_external_webhook_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/": {
-      "get": {
-        "summary": "Root",
-        "operationId": "root__get",
         "responses": {
           "200": {
             "description": "Successful Response",
