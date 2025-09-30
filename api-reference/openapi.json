@@ -402,59 +402,6 @@
         }
       }
     },
-    "/api/v2/external/execution/image/complete/{execution_id}": {
-      "post": {
-        "tags": [
-          "Docker Execution"
-        ],
-        "summary": "Complete Docker Execution",
-        "description": "Complete Docker execution endpoint called after streaming finishes.\nUpdates the Supabase record with final output and status.",
-        "operationId": "complete_docker_execution_api_v2_external_execution_image_complete__execution_id__post",
-        "parameters": [
-          {
-            "name": "execution_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Execution Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true,
-                "title": "Request"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v2/external/execution/image/abort/{execution_id}": {
       "post": {
         "tags": [
@@ -499,7 +446,7 @@
     "/api/v2/external/execution/streaming/start": {
       "post": {
         "tags": [
-          "Streaming Execution"
+          "Python Execution"
         ],
         "summary": "Start Streaming Execution",
         "description": "Start execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
@@ -676,9 +623,9 @@
     "/api/v2/external/workloads/list": {
       "get": {
         "tags": [
-          "Workload Management"
+          "Active Workload Management"
         ],
-        "summary": "List Non Complete Executions",
+        "summary": "List Active Executions",
         "description": "List all non-completed executions for the current user.",
         "operationId": "list_non_complete_executions_api_v2_external_workloads_list_get",
         "responses": {
@@ -702,7 +649,7 @@
     "/api/v2/external/workloads/abort/{execution_id}": {
       "post": {
         "tags": [
-          "Workload Management"
+          "Active Workload Management"
         ],
         "summary": "Abort Execution",
         "description": "Abort a specific execution by setting cancel=true in the database.",
@@ -745,7 +692,7 @@
     "/api/v2/external/execution/{execution_id}": {
       "delete": {
         "tags": [
-          "Execution Management"
+          "Past Execution Management"
         ],
         "summary": "Delete Execution",
         "description": "Delete an execution record.",
@@ -784,7 +731,7 @@
       },
       "get": {
         "tags": [
-          "Execution Management"
+          "Past Execution Management"
         ],
         "summary": "Get Execution",
         "description": "Get execution details.",
@@ -825,7 +772,7 @@
     "/api/v2/external/execution/{execution_id}/timing": {
       "get": {
         "tags": [
-          "Execution Management"
+          "Past Execution Management"
         ],
         "summary": "Get Execution Timing",
         "description": "Get execution timing details.",
@@ -866,7 +813,7 @@
     "/api/v2/external/storage/list-files": {
       "get": {
         "tags": [
-          "Storage Files"
+          "Storage"
         ],
         "summary": "List Files",
         "description": "List files in user's S3 bucket.",
@@ -924,7 +871,7 @@
     "/api/v2/external/storage/upload": {
       "post": {
         "tags": [
-          "Storage Files"
+          "Storage"
         ],
         "summary": "Upload File",
         "description": "Upload a file to user's S3 bucket.",
@@ -984,7 +931,7 @@
     "/api/v2/external/storage/upload-bulk": {
       "post": {
         "tags": [
-          "Storage Files"
+          "Storage"
         ],
         "summary": "Upload Bulk Files",
         "description": "Upload multiple files at once, optionally preserving folder structure.",
@@ -1026,7 +973,7 @@
     "/api/v2/external/storage/download/{file_key}": {
       "get": {
         "tags": [
-          "Storage Files"
+          "Storage"
         ],
         "summary": "Download File",
         "description": "Download a file from user's S3 bucket.",
@@ -1067,7 +1014,7 @@
     "/api/v2/external/storage/delete/{file_key}": {
       "delete": {
         "tags": [
-          "Storage Files"
+          "Storage"
         ],
         "summary": "Delete File",
         "description": "Delete a file from user's S3 bucket.",
@@ -1108,7 +1055,7 @@
     "/api/v2/external/storage/delete-folder/{folder_prefix}": {
       "delete": {
         "tags": [
-          "Storage Files"
+          "Storage"
         ],
         "summary": "Delete Folder",
         "description": "Delete all files in a folder (by prefix).",
@@ -1149,7 +1096,7 @@
     "/api/v2/external/storage/credentials": {
       "post": {
         "tags": [
-          "Storage Credentials"
+          "Storage"
         ],
         "summary": "Get Storage Credentials",
         "description": "Generate temporary MinIO/S3 storage credentials using STS.",
@@ -1171,7 +1118,7 @@
     "/api/v2/external/billing/credits": {
       "get": {
         "tags": [
-          "Billing Credits"
+          "Billing"
         ],
         "summary": "Get User Credits",
         "description": "Get current user's credit balance.",
@@ -1193,7 +1140,7 @@
     "/api/v2/external/billing/credits/details": {
       "get": {
         "tags": [
-          "Billing Credits"
+          "Billing"
         ],
         "summary": "Get User Credits Details",
         "description": "Get detailed user credits information including Stripe data.",
@@ -1215,7 +1162,7 @@
     "/api/v2/external/billing/checkout": {
       "post": {
         "tags": [
-          "Billing Credits"
+          "Billing"
         ],
         "summary": "Create Checkout Session",
         "description": "Create a Stripe checkout session for purchasing credits.",
@@ -1257,7 +1204,7 @@
     "/api/v2/external/billing/history": {
       "get": {
         "tags": [
-          "Billing Credits"
+          "Billing"
         ],
         "summary": "Get Execution History",
         "description": "Get user's execution history.",
@@ -1311,7 +1258,7 @@
     "/api/v2/external/billing/activities": {
       "get": {
         "tags": [
-          "Billing Credits"
+          "Billing"
         ],
         "summary": "Get Billing Activities",
         "description": "Get combined billing activities (executions + credit purchases).",
