@@ -12,6 +12,7 @@
     "tabs": [
       {
         "tab": "Docs",
+        "page": "index",
         "groups": [
           {
             "group": "Getting Started",
