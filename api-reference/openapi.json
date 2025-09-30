@@ -4,6 +4,12 @@
     "title": "Lyceum Cloud Execution API",
     "version": "0.1.0"
   },
+  "servers": [
+    {
+      "url": "https://api.lyceum.technology",
+      "description": "Production API Server"
+    }
+  ],
   "paths": {
     "/api/v2/external/health/ping": {
       "get": {
