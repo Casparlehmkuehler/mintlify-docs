@@ -16,53 +16,29 @@
           {
             "group": "Getting Started",
             "pages": [
-              {
-                "page": "index",
-                "icon": "home"
-              },
-              {
-                "page": "quickstart", 
-                "icon": "rocket"
-              }
+              "docs/index",
+              "docs/quickstart"
             ]
           },
           {
             "group": "Execution Methods",
             "pages": [
-              {
-                "page": "vscode-extension",
-                "icon": "code"
-              },
-              {
-                "page": "docker-execution",
-                "icon": "docker"
-              }
+              "docs/vscode-extension",
+              "docs/docker-execution"
             ]
           },
           {
             "group": "Platform Components",
             "pages": [
-              {
-                "page": "storage",
-                "icon": "database"
-              },
-              {
-                "page": "machine-types",
-                "icon": "server"
-              },
-              {
-                "page": "billing",
-                "icon": "credit-card"
-              }
+              "docs/storage",
+              "docs/machine-types",
+              "docs/billing"
             ]
           },
           {
             "group": "Resources",
             "pages": [
-              {
-                "page": "best-practices",
-                "icon": "lightbulb"
-              }
+              "docs/best-practices"
             ]
           }
         ]
