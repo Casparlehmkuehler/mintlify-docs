@@ -488,7 +488,7 @@
     "/api/v2/external/execution/streaming/complete/{execution_id}": {
       "post": {
         "tags": [
-          "Streaming Execution"
+          "Python Execution"
         ],
         "summary": "Complete Execution",
         "description": "Complete execution endpoint called by the extension after streaming finishes.\nUpdates the Supabase record with final output and status.",
@@ -541,7 +541,7 @@
     "/api/v2/external/execution/streaming/abort/{execution_id}": {
       "post": {
         "tags": [
-          "Streaming Execution"
+          "Python Execution"
         ],
         "summary": "Abort Execution",
         "description": "Abort a running execution.",
@@ -582,7 +582,7 @@
     "/api/v2/external/execution/streaming/{execution_id}/status": {
       "get": {
         "tags": [
-          "Streaming Execution"
+          "Python Execution"
         ],
         "summary": "Get Execution Status",
         "description": "Get the current status of an execution.",
