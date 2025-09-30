@@ -21,18 +21,23 @@
             ]
           },
           {
-            "group": "Platform Components",
+            "group": "Execution Methods",
             "pages": [
               "vscode-extension",
-              "web-dashboard",
-              "storage",
-              "machine-types"
+              "docker-execution"
             ]
           },
           {
-            "group": "Core Features",
+            "group": "Platform Components",
             "pages": [
-              "billing",
+              "storage",
+              "machine-types",
+              "billing"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
               "best-practices"
             ]
           }
