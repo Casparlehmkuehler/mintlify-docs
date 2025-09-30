@@ -11,13 +11,13 @@ icon: "credit-card"
 ## How It Works
 
 <CardGroup cols={3}>
-  <Card title="Pay As You Go" icon="coins">
+  <Card title="Pay As You Go" icon="credit-card">
     Only charged for actual execution time
   </Card>
-  <Card title="Real-time Tracking" icon="chart-line">
+  <Card title="Real-time Tracking" icon="chart">
     Monitor usage and costs live
   </Card>
-  <Card title="No Hidden Fees" icon="receipt">
+  <Card title="No Hidden Fees" icon="check">
     Transparent pricing, no surprises
   </Card>
 </CardGroup>
@@ -25,7 +25,7 @@ icon: "credit-card"
 ## Check Your Balance
 
 <Tabs>
-  <Tab title="Dashboard" icon="browser">
+  <Tab title="Dashboard" icon="window">
     View your current balance and usage at [dashboard.lyceum.technology](https://dashboard.lyceum.technology)
     
     <Steps>
@@ -41,14 +41,6 @@ icon: "credit-card"
     </Steps>
   </Tab>
 
-  <Tab title="VS Code" icon="code">
-    Your credit balance appears in the VS Code status bar when the extension is active.
-    
-    <Tip>
-      The balance updates automatically after each execution
-    </Tip>
-  </Tab>
-
   <Tab title="API" icon="terminal">
     ```bash
     curl -X GET https://api.lyceum.technology/api/v2/external/billing/credits \
@@ -60,7 +52,6 @@ icon: "credit-card"
     {
       "available_credits": 125.50,
       "used_credits": 24.50,
-      "total_credits_used": 324.50,
       "remaining_credits": 101.00,
       "monthly_free_credits": 100.0,
       "purchased_credits": 25.50
@@ -107,7 +98,7 @@ icon: "credit-card"
 ## Track Your Usage
 
 <AccordionGroup>
-  <Accordion title="Execution History" icon="history">
+  <Accordion title="Execution History" icon="clock">
     View detailed execution history with costs:
     
     ```bash
@@ -135,7 +126,7 @@ icon: "credit-card"
     Includes both executions and credit purchases.
   </Accordion>
 
-  <Accordion title="Usage Analytics" icon="chart-pie">
+  <Accordion title="Usage Analytics" icon="chart">
     The dashboard provides visual analytics:
     - Daily and monthly usage trends
     - Cost breakdown by execution type
@@ -158,7 +149,7 @@ icon: "credit-card"
     Use GPU only when needed for ML workloads
   </Card>
 
-  <Card title="Batch Operations" icon="layer-group">
+  <Card title="Batch Operations" icon="layers">
     ```python
     # Combine multiple tasks
     tasks = [task1, task2, task3]
@@ -225,7 +216,7 @@ icon: "credit-card"
     ```
   </Tab>
 
-  <Tab title="JavaScript" icon="js">
+  <Tab title="JavaScript" icon="code">
     ```javascript
     class BillingManager {
       constructor(token) {
@@ -261,60 +252,22 @@ icon: "credit-card"
     ```
   </Tab>
 </Tabs>
-
-## Webhook Integration
-
-Handle payment events automatically:
-
-```python
-import stripe
-from flask import Flask, request
-
-app = Flask(__name__)
-
-@app.route('/webhook', methods=['POST'])
-def handle_webhook():
-    payload = request.get_data(as_text=True)
-    sig_header = request.headers.get('Stripe-Signature')
-    
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, webhook_secret
-        )
-        
-        if event['type'] == 'checkout.session.completed':
-            session = event['data']['object']
-            # Credits automatically added to user account
-            print(f"Payment completed: {session['id']}")
-            
-        return '', 200
-        
-    except Exception as e:
-        return str(e), 400
-```
-
 ## FAQ
 
 <AccordionGroup>
-  <Accordion title="How are credits calculated?" icon="calculator">
+  <Accordion title="How are credits calculated?" icon="dollar-sign">
     Credits are consumed based on:
     - Machine type (CPU/GPU)
     - Execution duration
     - Storage usage
-    
-    Current rates are visible in your dashboard.
-  </Accordion>
+      </Accordion>
 
   <Accordion title="Do credits expire?" icon="clock">
     Check your account settings for credit expiration policies. Generally, credits don't expire for active accounts.
   </Accordion>
 
-  <Accordion title="Can I set spending limits?" icon="shield">
-    Yes, configure spending limits and alerts in your dashboard settings to prevent unexpected charges.
-  </Accordion>
-
-  <Accordion title="How do I get invoices?" icon="file-invoice">
-    Invoices are automatically generated and available in the billing section of your dashboard. They're also emailed after each purchase.
+  <Accordion title="Can I set spending limits?" icon="lock">
+    More advanced budgeting tool will be added soon but are not available at this point. 
   </Accordion>
 </AccordionGroup>
 
@@ -325,13 +278,13 @@ def handle_webhook():
 ## Support
 
 <CardGroup cols={2}>
-  <Card title="Billing Support" icon="envelope">
+  <Card title="Billing Support" icon="mail">
     Contact: info@lyceum.technology
     
     For billing inquiries and payment issues
   </Card>
   
-  <Card title="Documentation" icon="book">
+  <Card title="Documentation" icon="file-text">
     Visit our [API Reference](/api-reference) for detailed endpoint documentation
   </Card>
 </CardGroup>

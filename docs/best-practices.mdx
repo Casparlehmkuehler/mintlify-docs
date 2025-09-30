@@ -16,8 +16,13 @@ numpy>=1.24.0
 scikit-learn>=1.2.0
 ```
 
+<Tip>
+If no `requirements.txt` is provided we will attempt to automatically detect any imports that could be needed during execution. 
+However, this can be unreliable and directly stating requirements is encouraged.
+</Tip>
+
 ### File Paths
-Use relative paths to ensure your code works both locally and on the cloud:
+Use paths relative to your current working directory to ensure your code works both locally and on the cloud:
 
 ```python
 from pathlib import Path
@@ -48,26 +53,7 @@ except Exception as e:
     raise
 ```
 
-## File Management
-
-### Upload Organization
-Organize your files logically in cloud storage:
-- Group related files in folders
-- Use descriptive names
-- Clean up temporary files after use
-
-### Data Formats
-Choose efficient data formats:
-- Use Parquet for large tabular data instead of CSV
-- Compress large files when possible
-- Consider chunking very large datasets
-
 ## Execution Optimization
-
-### Resource Selection
-- Start with smaller resource configurations and scale up as needed
-- Monitor execution logs to understand resource usage
-- Use GPU instances only when your code benefits from GPU acceleration
 
 ### Progress Monitoring
 Provide feedback during long-running operations:
@@ -93,18 +79,6 @@ with open('checkpoint.pkl', 'wb') as f:
 with open('checkpoint.pkl', 'rb') as f:
     state = pickle.load(f)
 ```
-
-## Cost Management
-
-### Efficient Execution
-- Combine multiple small tasks into single executions
-- Stop executions that are no longer needed
-- Monitor your credit usage in the dashboard
-
-### Storage Optimization
-- Regularly clean up files you no longer need
-- Use the storage API to list and manage files programmatically
-- Download only the files you need
 
 ## Using the API
 
@@ -138,37 +112,6 @@ else:
     print(f"Error: {response.status_code} - {response.text}")
 ```
 
-### Rate Limiting
-Respect rate limits when using the API:
-
-```python
-import time
-
-def api_call_with_retry(url, headers, data, max_retries=3):
-    for attempt in range(max_retries):
-        response = requests.post(url, headers=headers, json=data)
-        
-        if response.status_code == 429:  # Rate limited
-            wait_time = 2 ** attempt  # Exponential backoff
-            time.sleep(wait_time)
-            continue
-        
-        return response
-    
-    raise Exception("Max retries exceeded")
-```
-
-## Security
-
-### Data Protection
-- Don't include sensitive information in your code
-- Use environment variables for API keys and credentials
-- Be careful with files containing personal or confidential data
-
-### Access Control
-- Regularly rotate API keys
-- Use minimal permissions needed
-- Monitor API key usage in the dashboard
 
 ## Troubleshooting
 

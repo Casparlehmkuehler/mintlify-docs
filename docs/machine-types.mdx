@@ -15,7 +15,7 @@ When starting an execution through the API, you can specify the `execution_type`
 ```json
 {
   "code": "your_python_code",
-  "execution_type": "cpu"  // or "gpu", "auto", "a100"
+  "execution_type": "cpu"  // or "gpu", "auto"
 }
 ```
 
@@ -23,7 +23,6 @@ When starting an execution through the API, you can specify the `execution_type`
 - **cpu**: Standard CPU execution environment
 - **gpu**: GPU-accelerated execution
 - **auto**: Automatic selection based on your code
-- **a100**: High-performance A100 GPU execution
 
 ## Automatic Resource Selection
 
@@ -85,21 +84,6 @@ except ImportError:
 - Parallel computing with CUDA
 - Large-scale matrix operations
 
-## Docker Execution
-
-For containerized workloads, use the Docker execution endpoint:
-
-```bash
-curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "docker_image_ref": "python:3.9",
-    "docker_run_cmd": ["python", "script.py"],
-    "execution_type": "cpu"
-  }'
-```
-
 ## Timeout Settings
 
 Configure execution timeouts (1-600 seconds) to prevent runaway processes:
@@ -111,48 +95,6 @@ Configure execution timeouts (1-600 seconds) to prevent runaway processes:
   "execution_type": "cpu"
 }
 ```
-
-## Best Practices
-
-### Start Small
-Begin with standard CPU execution and upgrade only if needed:
-
-```python
-# Start with CPU
-execution_type = "cpu"
-
-# Monitor performance
-# If GPU is needed, switch to:
-execution_type = "gpu"
-```
-
-### Profile Your Code
-Test locally to understand resource requirements:
-
-```python
-import time
-import tracemalloc
-
-# Start memory profiling
-tracemalloc.start()
-
-# Your code here
-start_time = time.time()
-result = your_function()
-end_time = time.time()
-
-# Get memory usage
-current, peak = tracemalloc.get_traced_memory()
-tracemalloc.stop()
-
-print(f"Execution time: {end_time - start_time:.2f} seconds")
-print(f"Peak memory usage: {peak / 1024 / 1024:.1f} MB")
-```
-
-### Optimize Usage
-- Use batch processing for multiple small tasks
-- Clean up resources after use
-- Monitor execution logs for performance insights
 
 ## Environment Variables
 
@@ -180,10 +122,10 @@ storage_path = os.environ.get('LYCEUM_STORAGE_PATH', '/lyceum/storage/')
 
 # Access your uploaded files
 import pandas as pd
-df = pd.read_csv(f"{storage_path}/data/input.csv")
+df = pd.read_csv("{storage_path}")
 
 # Save results
-df.to_csv(f"{storage_path}/outputs/results.csv")
+df.to_csv("{storage_path}")
 ```
 
 <Note>
