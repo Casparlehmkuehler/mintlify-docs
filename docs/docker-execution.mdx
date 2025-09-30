@@ -124,32 +124,12 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
     </Tip>
   </Accordion>
 
-  <Accordion title="Google Container Registry (Coming Soon)" icon="google" disabled>
-    ### Using Service Account
-    ```json
-    {
-      "docker_image_ref": "gcr.io/project-id/image:tag",
-      "docker_registry_credential_type": "basic",
-      "docker_registry_credentials": {
-        "username": "_json_key",
-        "password": "{\"type\": \"service_account\", ...}"
-      }
-    }
-    ```
+  <Accordion title="Google Container Registry (Coming Soon)" icon="google">
+    <Note>This registry integration is coming soon and is not yet available.</Note>
   </Accordion>
 
-  <Accordion title="GitHub Container Registry (Coming Soon)" icon="github" disabled>
-    ### Personal Access Token
-    ```json
-    {
-      "docker_image_ref": "ghcr.io/username/image:tag",
-      "docker_registry_credential_type": "basic",
-      "docker_registry_credentials": {
-        "username": "github-username",
-        "password": "ghp_xxxxxxxxxxxxxxxxxxxx"
-      }
-    }
-    ```
+  <Accordion title="GitHub Container Registry (Coming Soon)" icon="github">
+    <Note>This registry integration is coming soon and is not yet available.</Note>
   </Accordion>
 </AccordionGroup>
 
@@ -289,28 +269,7 @@ Docker execution allows you to run containerized workloads on Lyceum's infrastru
   </Tab>
 
   <Tab title="Storage Access (Coming Soon)" icon="database" disabled>
-    Access Lyceum storage from your container:
-    
-    ```python
-    # Files are automatically mounted at /lyceum/storage
-    {
-        "docker_image_ref": "python:3.11",
-        "docker_run_cmd": ["python", "-c", """
-    import os
-    
-    # List storage files
-    print(os.listdir('/lyceum/storage'))
-    
-    # Read data
-    with open('/lyceum/storage/data.csv') as f:
-        data = f.read()
-    
-    # Save results
-    with open('/lyceum/storage/results.txt', 'w') as f:
-        f.write('Processing complete')
-    """]
-    }
-    ```
+    <Note>Storage access functionality is coming soon and is not yet available.</Note>
   </Tab>
 </Tabs>
 
