@@ -1,198 +1,335 @@
 ---
 title: "Billing & Credits"
-description: "Understand the credit system and manage your usage"
+description: "Transparent pay-as-you-go pricing for cloud compute resources"
+icon: "credit-card"
 ---
 
-## Overview
+<Info>
+  Lyceum uses a credit-based system. Pay only for the compute resources you actually use, with transparent pricing and real-time tracking.
+</Info>
 
-Lyceum Cloud uses a credit-based billing system where you pay for the computational resources you use. Credits are consumed based on the machine type and duration of your executions.
+## How It Works
 
-## How Credits Work
+<CardGroup cols={3}>
+  <Card title="Pay As You Go" icon="coins">
+    Only charged for actual execution time
+  </Card>
+  <Card title="Real-time Tracking" icon="chart-line">
+    Monitor usage and costs live
+  </Card>
+  <Card title="No Hidden Fees" icon="receipt">
+    Transparent pricing, no surprises
+  </Card>
+</CardGroup>
 
-### Credit System
-- **Pay-as-you-go**: Only pay for actual resource usage
-- **Transparent Usage**: Track credit consumption in real-time
-- **No Hidden Fees**: Clear pricing visible in your dashboard
+## Check Your Balance
 
-### Credit Balance
-Monitor your credits through multiple channels:
-- **Dashboard**: View balance at [dashboard.lyceum.technology](https://dashboard.lyceum.technology)
-- **API**: Check programmatically via `/billing/credits` endpoint
-- **VS Code**: See balance in the extension status bar
+<Tabs>
+  <Tab title="Dashboard" icon="browser">
+    View your current balance and usage at [dashboard.lyceum.technology](https://dashboard.lyceum.technology)
+    
+    <Steps>
+      <Step title="Navigate to Billing">
+        Click on "Billing" in the dashboard navigation
+      </Step>
+      <Step title="View Balance">
+        See your current credits and recent usage
+      </Step>
+      <Step title="Purchase Credits">
+        Click "Add Credits" to top up your balance
+      </Step>
+    </Steps>
+  </Tab>
 
-## Managing Credits
+  <Tab title="VS Code" icon="code">
+    Your credit balance appears in the VS Code status bar when the extension is active.
+    
+    <Tip>
+      The balance updates automatically after each execution
+    </Tip>
+  </Tab>
 
-### Viewing Your Balance
+  <Tab title="API" icon="terminal">
+    ```bash
+    curl -X GET https://api.lyceum.technology/api/v2/external/billing/credits \
+      -H "Authorization: Bearer <token>"
+    ```
 
-Via API:
-```bash
-curl -X GET https://api.lyceum.technology/api/v2/external/billing/credits \
-  -H "Authorization: Bearer <token>"
-```
+    **Response:**
+    ```json
+    {
+      "available_credits": 125.50,
+      "used_credits": 24.50,
+      "total_credits_used": 324.50,
+      "remaining_credits": 125.50
+    }
+    ```
+  </Tab>
+</Tabs>
 
-Response:
-```json
-{
-  "available_credits": 125.50,
-  "used_credits": 24.50,
-  "total_credits_used": 324.50,
-  "remaining_credits": 125.50
-}
-```
+## Purchase Credits
 
-### Purchasing Credits
+<Steps>
+  <Step title="Create Checkout Session">
+    ```bash
+    curl -X POST https://api.lyceum.technology/api/v2/external/billing/checkout \
+      -H "Authorization: Bearer <token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "credits_amount": 100,
+        "success_url": "https://yourapp.com/success",
+        "cancel_url": "https://yourapp.com/cancel"
+      }'
+    ```
+  </Step>
+  
+  <Step title="Complete Payment">
+    You'll receive a Stripe checkout URL:
+    ```json
+    {
+      "checkout_url": "https://checkout.stripe.com/...",
+      "session_id": "cs_test_..."
+    }
+    ```
+  </Step>
+  
+  <Step title="Credits Added">
+    Credits are automatically added to your account upon successful payment
+  </Step>
+</Steps>
 
-Create a checkout session through the API:
-```bash
-curl -X POST https://api.lyceum.technology/api/v2/external/billing/checkout \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "credits_amount": 100,
-    "success_url": "https://yourapp.com/success",
-    "cancel_url": "https://yourapp.com/cancel"
-  }'
-```
+<Note>
+  All payments are securely processed through Stripe. Receipts are automatically generated.
+</Note>
 
-The response includes a Stripe checkout URL:
-```json
-{
-  "checkout_url": "https://checkout.stripe.com/...",
-  "session_id": "cs_test_..."
-}
-```
+## Track Your Usage
 
-### Payment Methods
-- Credit cards via Stripe integration
-- Secure payment processing
-- Automatic receipt generation
+<AccordionGroup>
+  <Accordion title="Execution History" icon="history">
+    View detailed execution history with costs:
+    
+    ```bash
+    curl -X GET https://api.lyceum.technology/api/v2/external/billing/history \
+      -H "Authorization: Bearer <token>" \
+      -G -d "limit=50" -d "offset=0"
+    ```
+    
+    Returns execution records with:
+    - Execution ID and duration
+    - Machine type used
+    - Credits consumed
+    - Timestamp
+  </Accordion>
 
-## Usage Tracking
+  <Accordion title="Billing Activities" icon="list">
+    Get combined view of all billing events:
+    
+    ```bash
+    curl -X GET https://api.lyceum.technology/api/v2/external/billing/activities \
+      -H "Authorization: Bearer <token>" \
+      -G -d "limit=10" -d "offset=0"
+    ```
+    
+    Includes both executions and credit purchases.
+  </Accordion>
 
-### Execution History
-View your execution history and associated costs:
-
-```bash
-curl -X GET https://api.lyceum.technology/api/v2/external/billing/history \
-  -H "Authorization: Bearer <token>" \
-  -G -d "limit=50" -d "offset=0"
-```
-
-### Billing Activities
-Get combined view of executions and credit purchases:
-
-```bash
-curl -X GET https://api.lyceum.technology/api/v2/external/billing/activities \
-  -H "Authorization: Bearer <token>" \
-  -G -d "limit=10" -d "offset=0"
-```
+  <Accordion title="Usage Analytics" icon="chart-pie">
+    The dashboard provides visual analytics:
+    - Daily and monthly usage trends
+    - Cost breakdown by execution type
+    - Resource utilization patterns
+    - Credit consumption forecasts
+  </Accordion>
+</AccordionGroup>
 
 ## Cost Optimization
 
+<CardGroup cols={2}>
+  <Card title="Smart Resource Selection" icon="cpu">
+    ```python
+    # Let the platform choose optimal resources
+    execution_config = {
+        "execution_type": "auto",
+        "timeout": 300
+    }
+    ```
+    Use GPU only when needed for ML workloads
+  </Card>
+
+  <Card title="Batch Operations" icon="layer-group">
+    ```python
+    # Combine multiple tasks
+    tasks = [task1, task2, task3]
+    for task in tasks:
+        process(task)
+    # Single execution, lower cost
+    ```
+    Group related operations together
+  </Card>
+</CardGroup>
+
 ### Best Practices
-1. **Choose Appropriate Resources**: Use CPU for general tasks, GPU only when needed
-2. **Monitor Usage**: Check execution logs to understand resource consumption
-3. **Set Timeouts**: Prevent runaway executions with timeout limits
-4. **Batch Operations**: Combine multiple small tasks into single executions
 
-### Resource Selection
-```python
-# Use auto selection for optimal resource allocation
-execution_config = {
-    "code": your_code,
-    "execution_type": "auto",  # Let platform choose
-    "timeout": 300  # Set reasonable timeout
-}
-```
+<Steps>
+  <Step title="Set Timeouts">
+    Always set reasonable timeout limits to prevent runaway executions
+  </Step>
+  <Step title="Monitor Usage">
+    Regularly check execution logs to understand resource consumption patterns
+  </Step>
+  <Step title="Choose Right Resources">
+    Use CPU for general tasks, GPU only for parallel computing and ML
+  </Step>
+  <Step title="Clean Up Storage">
+    Remove unnecessary files to optimize storage costs
+  </Step>
+</Steps>
 
-### Monitoring Costs
-Track spending patterns in the dashboard:
-- Daily and monthly usage charts
-- Cost breakdown by execution type
-- Credit consumption trends
+## Programmatic Integration
 
-## Dashboard Features
-
-### Credit Management
-The web dashboard provides comprehensive billing features:
-- **Balance Overview**: Current credits and recent usage
-- **Purchase History**: All credit transactions
-- **Usage Analytics**: Detailed cost breakdowns
-- **Payment Methods**: Manage payment options
-
-### Notifications
-Configure alerts for:
-- Low credit balance warnings
-- Unusual usage patterns
-- Purchase confirmations
-
-## API Integration
-
-### Programmatic Monitoring
-Build credit monitoring into your applications:
-
-```python
-import requests
-
-def check_credits(token):
-    """Check current credit balance"""
-    response = requests.get(
-        'https://api.lyceum.technology/api/v2/external/billing/credits',
-        headers={'Authorization': f'Bearer {token}'}
-    )
+<Tabs>
+  <Tab title="Python" icon="python">
+    ```python
+    import requests
     
-    if response.status_code == 200:
-        data = response.json()
-        print(f"Available credits: {data['available_credits']}")
+    class BillingManager:
+        def __init__(self, token):
+            self.token = token
+            self.base_url = "https://api.lyceum.technology/api/v2/external"
         
-        if data['available_credits'] < 10:
-            print("Warning: Low credit balance!")
-    
-    return response.json()
-```
+        def check_credits(self):
+            """Check current credit balance"""
+            response = requests.get(
+                f"{self.base_url}/billing/credits",
+                headers={"Authorization": f"Bearer {self.token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                credits = data['available_credits']
+                
+                if credits < 10:
+                    print(f"⚠️ Low balance: {credits} credits")
+                else:
+                    print(f"✓ Credits available: {credits}")
+                
+                return data
+            return None
+        
+        def should_execute(self, min_credits=5):
+            """Check if enough credits for execution"""
+            data = self.check_credits()
+            return data and data['available_credits'] >= min_credits
+    ```
+  </Tab>
 
-### Webhook Integration
-Handle payment events with Stripe webhooks:
+  <Tab title="JavaScript" icon="js">
+    ```javascript
+    class BillingManager {
+      constructor(token) {
+        this.token = token;
+        this.baseUrl = 'https://api.lyceum.technology/api/v2/external';
+      }
+      
+      async checkCredits() {
+        const response = await fetch(`${this.baseUrl}/billing/credits`, {
+          headers: { 'Authorization': `Bearer ${this.token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const credits = data.available_credits;
+          
+          if (credits < 10) {
+            console.warn(`⚠️ Low balance: ${credits} credits`);
+          } else {
+            console.log(`✓ Credits available: ${credits}`);
+          }
+          
+          return data;
+        }
+        return null;
+      }
+      
+      async shouldExecute(minCredits = 5) {
+        const data = await this.checkCredits();
+        return data && data.available_credits >= minCredits;
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Webhook Integration
+
+Handle payment events automatically:
 
 ```python
-# Configure webhook endpoint at /api/v2/external/webhook
-# Stripe will send payment completion events
+import stripe
+from flask import Flask, request
 
-def handle_stripe_webhook(request):
-    """Process Stripe webhook events"""
-    event = stripe.Webhook.construct_event(
-        request.body, 
-        request.headers['Stripe-Signature'],
-        webhook_secret
-    )
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get('Stripe-Signature')
     
-    if event.type == 'checkout.session.completed':
-        # Credit purchase completed
-        session = event.data.object
-        # Credits are automatically added to user account
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
+        )
+        
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            # Credits automatically added to user account
+            print(f"Payment completed: {session['id']}")
+            
+        return '', 200
+        
+    except Exception as e:
+        return str(e), 400
 ```
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="How are credits calculated?" icon="calculator">
+    Credits are consumed based on:
+    - Machine type (CPU/GPU)
+    - Execution duration
+    - Storage usage
+    
+    Current rates are visible in your dashboard.
+  </Accordion>
+
+  <Accordion title="Do credits expire?" icon="clock">
+    Check your account settings for credit expiration policies. Generally, credits don't expire for active accounts.
+  </Accordion>
+
+  <Accordion title="Can I set spending limits?" icon="shield">
+    Yes, configure spending limits and alerts in your dashboard settings to prevent unexpected charges.
+  </Accordion>
+
+  <Accordion title="How do I get invoices?" icon="file-invoice">
+    Invoices are automatically generated and available in the billing section of your dashboard. They're also emailed after each purchase.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Monitor your credit usage regularly. Set up low-balance alerts in the dashboard to avoid execution interruptions.
+</Warning>
 
 ## Support
 
-### Common Questions
-
-**How are credits calculated?**
-Credits are consumed based on the machine type and execution duration. Check the dashboard for current rates.
-
-**Do credits expire?**
-Check your account settings for credit expiration policies.
-
-**Can I set spending limits?**
-Yes, configure limits and alerts in your dashboard settings.
-
-**How do I get invoices?**
-Invoices are automatically generated and available in the dashboard.
-
-### Getting Help
-- **Billing Support**: Contact info@lyceum.technology
-- **Dashboard**: Access billing section for detailed information
-- **API Documentation**: Refer to the API reference for endpoint details
-
-<Note>
-For current pricing and credit packages, visit the dashboard or contact support. Rates may vary based on resource type and usage volume.
-</Note>
+<CardGroup cols={2}>
+  <Card title="Billing Support" icon="envelope">
+    Contact: info@lyceum.technology
+    
+    For billing inquiries and payment issues
+  </Card>
+  
+  <Card title="Documentation" icon="book">
+    Visit our [API Reference](/api-reference) for detailed endpoint documentation
+  </Card>
+</CardGroup>
