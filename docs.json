@@ -16,29 +16,53 @@
           {
             "group": "Getting Started",
             "pages": [
-              "index",
-              "quickstart"
+              {
+                "page": "index",
+                "icon": "home"
+              },
+              {
+                "page": "quickstart", 
+                "icon": "rocket"
+              }
             ]
           },
           {
             "group": "Execution Methods",
             "pages": [
-              "vscode-extension",
-              "docker-execution"
+              {
+                "page": "vscode-extension",
+                "icon": "code"
+              },
+              {
+                "page": "docker-execution",
+                "icon": "docker"
+              }
             ]
           },
           {
             "group": "Platform Components",
             "pages": [
-              "storage",
-              "machine-types",
-              "billing"
+              {
+                "page": "storage",
+                "icon": "database"
+              },
+              {
+                "page": "machine-types",
+                "icon": "server"
+              },
+              {
+                "page": "billing",
+                "icon": "credit-card"
+              }
             ]
           },
           {
             "group": "Resources",
             "pages": [
-              "best-practices"
+              {
+                "page": "best-practices",
+                "icon": "lightbulb"
+              }
             ]
           }
         ]
@@ -57,12 +81,7 @@
             "pages": [
               "examples/machine-learning",
               "examples/data-processing",
-              "examples/api-integration"
-            ]
-          },
-          {
-            "group": "Advanced Topics",
-            "pages": [
+              "examples/api-integration",
               "examples/docker-containers"
             ]
           }
