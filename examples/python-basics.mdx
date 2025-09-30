@@ -1,0 +1,265 @@
+---
+title: "Python Basics"
+description: "Execute Python scripts with automatic dependency management"
+icon: "python"
+---
+
+<Info>
+  Run Python code instantly in the cloud. Dependencies are automatically detected and installed from your imports.
+</Info>
+
+## Hello World
+
+The simplest way to get started with Lyceum Cloud:
+
+<CodeGroup>
+```python VS Code Extension
+# Create a new .py file and press Cmd+Shift+E (Mac) or Ctrl+Shift+E (Windows)
+print("Hello from Lyceum Cloud!")
+
+# Output appears in the Cloud Execution panel
+```
+
+```bash API
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/python/start \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "python_code": "print(\"Hello from Lyceum Cloud!\")",
+    "execution_type": "cpu"
+  }'
+```
+</CodeGroup>
+
+## Working with NumPy
+
+Lyceum automatically detects and installs packages like NumPy:
+
+```python
+import numpy as np
+
+# Create arrays
+data = np.array([1, 2, 3, 4, 5])
+matrix = np.random.rand(3, 3)
+
+print("Array:", data)
+print("Squared:", data ** 2)
+print("Mean:", np.mean(data))
+print("Matrix shape:", matrix.shape)
+print("Matrix determinant:", np.linalg.det(matrix))
+
+# Mathematical operations
+result = np.dot(data, data)
+print(f"Dot product: {result}")
+```
+
+<Tip>
+  No need to install NumPy yourself - Lyceum detects the import and installs it automatically!
+</Tip>
+
+## Data Analysis with Pandas
+
+Process data with pandas - perfect for data science workflows:
+
+```python
+import pandas as pd
+import numpy as np
+
+# Create sample dataset
+data = {
+    'name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'],
+    'age': [25, 30, 35, 28, 32],
+    'salary': [50000, 60000, 70000, 55000, 65000],
+    'department': ['Engineering', 'Sales', 'Engineering', 'Marketing', 'Sales']
+}
+
+df = pd.DataFrame(data)
+
+print("Dataset:")
+print(df)
+
+print("\nBasic Statistics:")
+print(df.describe())
+
+print("\nDepartment Summary:")
+dept_summary = df.groupby('department').agg({
+    'salary': ['mean', 'count'],
+    'age': 'mean'
+}).round(2)
+print(dept_summary)
+
+# Filter high earners
+high_earners = df[df['salary'] > 60000]
+print(f"\nHigh earners ({len(high_earners)} people):")
+print(high_earners[['name', 'salary']])
+```
+
+## File Processing
+
+Read and process files from your storage:
+
+```python
+import pandas as pd
+import json
+
+# Read CSV file from storage
+try:
+    # Files from Lyceum storage are mounted at /lyceum/storage/
+    df = pd.read_csv('/lyceum/storage/data.csv')
+    print(f"Loaded {len(df)} rows from CSV")
+    print(df.head())
+    
+    # Process the data
+    summary = {
+        'total_rows': len(df),
+        'columns': list(df.columns),
+        'memory_usage': df.memory_usage().sum()
+    }
+    
+    # Save results back to storage
+    with open('/lyceum/storage/summary.json', 'w') as f:
+        json.dump(summary, f, indent=2)
+    
+    print("Summary saved to storage!")
+    
+except FileNotFoundError:
+    print("No data.csv found in storage - upload a file first!")
+    
+    # Create sample data instead
+    sample_data = pd.DataFrame({
+        'x': range(10),
+        'y': [i**2 for i in range(10)]
+    })
+    
+    sample_data.to_csv('/lyceum/storage/sample.csv', index=False)
+    print("Created sample.csv in storage")
+```
+
+## Environment Variables
+
+Access configuration and secrets securely:
+
+```python
+import os
+
+# Read environment variables
+api_key = os.environ.get('API_KEY', 'not-set')
+debug_mode = os.environ.get('DEBUG', 'false').lower() == 'true'
+
+print(f"API Key configured: {'Yes' if api_key != 'not-set' else 'No'}")
+print(f"Debug mode: {debug_mode}")
+
+# Lyceum-specific environment variables
+storage_path = os.environ.get('LYCEUM_STORAGE_PATH', '/lyceum/storage/')
+execution_id = os.environ.get('LYCEUM_EXECUTION_ID', 'unknown')
+
+print(f"Storage path: {storage_path}")
+print(f"Execution ID: {execution_id}")
+
+# List all environment variables (be careful with secrets!)
+if debug_mode:
+    print("\nEnvironment variables:")
+    for key in sorted(os.environ.keys()):
+        if not any(secret in key.upper() for secret in ['KEY', 'TOKEN', 'SECRET', 'PASSWORD']):
+            print(f"  {key}: {os.environ[key]}")
+```
+
+## Error Handling
+
+Handle errors gracefully in cloud executions:
+
+```python
+import sys
+import traceback
+
+def safe_division(a, b):
+    """Demonstrate error handling"""
+    try:
+        result = a / b
+        print(f"{a} / {b} = {result}")
+        return result
+    except ZeroDivisionError:
+        print(f"Error: Cannot divide {a} by zero!")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
+
+def main():
+    """Main execution with error handling"""
+    try:
+        # Test various operations
+        safe_division(10, 2)
+        safe_division(10, 0)  # This will cause an error
+        safe_division(10, 3)
+        
+        # Simulate a success scenario
+        print("Execution completed successfully!")
+        sys.exit(0)
+        
+    except Exception as e:
+        print(f"Fatal error in main: {e}")
+        traceback.print_exc()
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+```
+
+## Working with Dependencies
+
+Specify exact package versions for reproducible results:
+
+<Tabs>
+  <Tab title="Automatic Detection">
+    ```python
+    # Lyceum detects these imports and installs automatically
+    import requests
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
+    # Fetch data from an API
+    response = requests.get('https://api.github.com/repos/python/cpython')
+    data = response.json()
+    
+    print(f"Repository: {data['name']}")
+    print(f"Stars: {data['stargazers_count']}")
+    print(f"Language: {data['language']}")
+    ```
+  </Tab>
+
+  <Tab title="Explicit Requirements">
+    ```python
+    # Add a requirements.txt to your project:
+    # requests==2.31.0
+    # matplotlib==3.7.1
+    # seaborn==0.12.2
+    
+    import requests
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
+    print("All packages installed from requirements.txt")
+    ```
+  </Tab>
+
+  <Tab title="API with Requirements">
+    ```bash
+    curl -X POST https://api.lyceum.technology/api/v2/external/execution/python/start \
+      -H "Authorization: Bearer <token>" \
+      -d '{
+        "python_code": "import requests; print(requests.__version__)",
+        "python_requirements": ["requests==2.31.0"],
+        "execution_type": "cpu"
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  Python scripts automatically have access to uploaded files in `/lyceum/storage/`. Any files you save there will be available for download after execution.
+</Note>
+
+<Warning>
+  Avoid infinite loops or very long-running operations without timeouts. Set reasonable execution limits for your scripts.
+</Warning>

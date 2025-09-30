@@ -1,0 +1,548 @@
+---
+title: "Docker Containers"
+description: "Run custom Docker images with full control over your execution environment"
+icon: "docker"
+---
+
+<Info>
+  Execute any Docker container on Lyceum Cloud. Perfect for reproducible environments, custom dependencies, and production workloads.
+</Info>
+
+## Simple Container Execution
+
+Start with a basic container to test the platform:
+
+<CodeGroup>
+```bash Alpine Linux
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "docker_image_ref": "alpine:latest",
+    "docker_run_cmd": ["echo", "Hello from Alpine!"],
+    "execution_type": "cpu"
+  }'
+```
+
+```bash Python Container
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "docker_image_ref": "python:3.11-slim",
+    "docker_run_cmd": ["python", "-c", "print(\"Hello from Python container!\")"],
+    "execution_type": "cpu"
+  }'
+```
+
+```python Python API Client
+import requests
+
+response = requests.post(
+    "https://api.lyceum.technology/api/v2/external/execution/image/start",
+    headers={"Authorization": f"Bearer {token}"},
+    json={
+        "docker_image_ref": "node:20-alpine",
+        "docker_run_cmd": ["node", "-e", "console.log('Hello from Node.js!')"],
+        "execution_type": "cpu"
+    }
+)
+
+execution_id = response.json()["execution_id"]
+print(f"Started execution: {execution_id}")
+```
+</CodeGroup>
+
+## Python Data Science Stack
+
+Run a complete data science environment:
+
+```bash
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "docker_image_ref": "jupyter/scipy-notebook:latest",
+    "docker_run_cmd": ["python", "-c", "
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Create sample data
+data = pd.DataFrame({
+    \"x\": np.random.randn(100),
+    \"y\": np.random.randn(100),
+    \"category\": np.random.choice([\"A\", \"B\", \"C\"], 100)
+})
+
+print(\"Data shape:\", data.shape)
+print(\"Summary statistics:\")
+print(data.describe())
+
+# Create a plot
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=data, x=\"x\", y=\"y\", hue=\"category\")
+plt.title(\"Sample Data Visualization\")
+plt.savefig(\"/lyceum/storage/scatter_plot.png\", dpi=300, bbox_inches=\"tight\")
+print(\"Plot saved to storage!\")
+"],
+    "execution_type": "cpu",
+    "timeout": 300
+  }'
+```
+
+## Machine Learning with PyTorch
+
+Run GPU-accelerated ML training:
+
+```bash
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "docker_image_ref": "pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime",
+    "docker_run_cmd": ["python", "-c", "
+import torch
+import torch.nn as nn
+
+# Check GPU
+device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")
+print(f\"Using device: {device}\")
+
+if torch.cuda.is_available():
+    print(f\"GPU: {torch.cuda.get_device_name(0)}\")
+    print(f\"Memory: {torch.cuda.get_device_properties(0).total_memory // 1024**3} GB\")
+
+# Simple tensor operations
+x = torch.randn(1000, 1000).to(device)
+y = torch.randn(1000, 1000).to(device)
+
+import time
+start = time.time()
+z = torch.mm(x, y)
+if device.type == \"cuda\":
+    torch.cuda.synchronize()
+end = time.time()
+
+print(f\"Matrix multiplication time: {end - start:.4f} seconds\")
+print(f\"Result shape: {z.shape}\")
+"],
+    "execution_type": "gpu",
+    "timeout": 600
+  }'
+```
+
+## Custom Environment with Requirements
+
+Build and run a container with specific dependencies:
+
+<Tabs>
+  <Tab title="Dockerfile" icon="docker">
+    Create a custom image for your specific needs:
+    
+    ```dockerfile
+    FROM python:3.11-slim
+
+    # Install system dependencies
+    RUN apt-get update && apt-get install -y \
+        git \
+        curl \
+        build-essential \
+        && rm -rf /var/lib/apt/lists/*
+
+    # Set working directory
+    WORKDIR /app
+
+    # Copy requirements first (for better caching)
+    COPY requirements.txt .
+
+    # Install Python dependencies
+    RUN pip install --no-cache-dir -r requirements.txt
+
+    # Copy application code
+    COPY . .
+
+    # Default command
+    CMD ["python", "main.py"]
+    ```
+  </Tab>
+
+  <Tab title="requirements.txt" icon="list">
+    ```txt
+    pandas==2.1.0
+    numpy==1.24.0
+    scikit-learn==1.3.0
+    matplotlib==3.7.2
+    seaborn==0.12.2
+    requests==2.31.0
+    jupyter==1.0.0
+    torch==2.0.1
+    ```
+  </Tab>
+
+  <Tab title="Execute Custom Image" icon="play">
+    ```bash
+    # First, build and push your image to a registry
+    # docker build -t myregistry.com/myapp:v1.0 .
+    # docker push myregistry.com/myapp:v1.0
+
+    curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+      -H "Authorization: Bearer <TOKEN>" \
+      -d '{
+        "docker_image_ref": "myregistry.com/myapp:v1.0",
+        "docker_run_cmd": ["python", "train_model.py"],
+        "docker_run_env": "ENVIRONMENT=production\nDEBUG=false",
+        "execution_type": "gpu",
+        "timeout": 3600
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Private Registry Authentication
+
+Use images from private registries:
+
+<Tabs>
+  <Tab title="Docker Hub Private" icon="docker">
+    ```bash
+    curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+      -H "Authorization: Bearer <TOKEN>" \
+      -d '{
+        "docker_image_ref": "myusername/private-image:latest",
+        "docker_registry_credential_type": "basic",
+        "docker_registry_credentials": {
+          "username": "myusername",
+          "password": "dckr_pat_xxxxxxxxxxxxxxxxxxxx"
+        },
+        "docker_run_cmd": ["python", "app.py"],
+        "execution_type": "cpu"
+      }'
+    ```
+  </Tab>
+
+  <Tab title="AWS ECR" icon="aws">
+    ```bash
+    curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+      -H "Authorization: Bearer <TOKEN>" \
+      -d '{
+        "docker_image_ref": "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:latest",
+        "docker_registry_credential_type": "aws",
+        "docker_registry_credentials": {
+          "region": "us-east-1",
+          "aws_access_key_id": "AKIAIOSFODNN7EXAMPLE",
+          "aws_secret_access_key": "wJalrXUtnFEMI/K7MDENG",
+          "aws_session_token": "AQoDYXdzEPT//"
+        },
+        "docker_run_cmd": ["python", "main.py"],
+        "execution_type": "cpu"
+      }'
+    ```
+  </Tab>
+
+  <Tab title="GitHub Container Registry" icon="github">
+    ```bash
+    curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+      -H "Authorization: Bearer <TOKEN>" \
+      -d '{
+        "docker_image_ref": "ghcr.io/username/my-app:latest",
+        "docker_registry_credential_type": "basic",
+        "docker_registry_credentials": {
+          "username": "github-username",
+          "password": "ghp_xxxxxxxxxxxxxxxxxxxx"
+        },
+        "execution_type": "cpu"
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Environment Variables and Configuration
+
+Pass configuration to your containers:
+
+```bash
+curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "docker_image_ref": "python:3.11",
+    "docker_run_cmd": ["python", "-c", "
+import os
+
+print(\"Environment Configuration:\")
+print(f\"App Name: {os.environ.get(\"APP_NAME\", \"Unknown\")}\")
+print(f\"Environment: {os.environ.get(\"ENVIRONMENT\", \"development\")}\")
+print(f\"Debug Mode: {os.environ.get(\"DEBUG\", \"false\")}\")
+print(f\"Worker Count: {os.environ.get(\"WORKERS\", \"1\")}\")
+
+# Database configuration (example)
+db_host = os.environ.get(\"DB_HOST\", \"localhost\")
+db_port = os.environ.get(\"DB_PORT\", \"5432\")
+print(f\"Database: {db_host}:{db_port}\")
+
+# API keys (be careful with logging these!)
+api_key = os.environ.get(\"API_KEY\", \"not-set\")
+print(f\"API Key configured: {\"Yes\" if api_key != \"not-set\" else \"No\"}\")
+
+# Storage paths
+storage_path = os.environ.get(\"LYCEUM_STORAGE_PATH\", \"/lyceum/storage\")
+print(f\"Storage path: {storage_path}\")
+
+# List files in storage
+import os
+if os.path.exists(storage_path):
+    files = os.listdir(storage_path)
+    print(f\"Files in storage: {files}\")
+else:
+    print(\"Storage path not found\")
+"],
+    "docker_run_env": "APP_NAME=MyApplication\nENVIRONMENT=production\nDEBUG=false\nWORKERS=4\nDB_HOST=db.example.com\nDB_PORT=5432\nAPI_KEY=secret-key-here",
+    "execution_type": "cpu"
+  }'
+```
+
+## FastAPI Web Service
+
+Run a web service in a container:
+
+<Tabs>
+  <Tab title="FastAPI App" icon="python">
+    ```python
+    # main.py
+    from fastapi import FastAPI
+    from pydantic import BaseModel
+    import uvicorn
+    import os
+
+    app = FastAPI(title="Lyceum Cloud API", version="1.0.0")
+
+    class PredictionRequest(BaseModel):
+        text: str
+
+    class PredictionResponse(BaseModel):
+        result: str
+        confidence: float
+
+    @app.get("/")
+    async def root():
+        return {"message": "Hello from Lyceum Cloud!", "status": "running"}
+
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy", "environment": os.environ.get("ENVIRONMENT", "development")}
+
+    @app.post("/predict", response_model=PredictionResponse)
+    async def predict(request: PredictionRequest):
+        # Dummy prediction logic
+        confidence = len(request.text) / 100.0
+        result = "positive" if confidence > 0.5 else "negative"
+        
+        return PredictionResponse(
+            result=result,
+            confidence=min(confidence, 1.0)
+        )
+
+    if __name__ == "__main__":
+        port = int(os.environ.get("PORT", 8000))
+        uvicorn.run(app, host="0.0.0.0", port=port)
+    ```
+  </Tab>
+
+  <Tab title="Dockerfile" icon="docker">
+    ```dockerfile
+    FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
+
+    COPY requirements.txt .
+    RUN pip install --no-cache-dir -r requirements.txt
+
+    COPY ./app /app
+
+    # requirements.txt should contain:
+    # fastapi==0.104.1
+    # uvicorn==0.24.0
+    # pydantic==2.5.0
+    ```
+  </Tab>
+
+  <Tab title="Run Service" icon="play">
+    ```bash
+    curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
+      -H "Authorization: Bearer <TOKEN>" \
+      -d '{
+        "docker_image_ref": "tiangolo/uvicorn-gunicorn-fastapi:python3.11",
+        "docker_run_cmd": ["python", "-c", "
+    from fastapi import FastAPI
+    import uvicorn
+
+    app = FastAPI()
+
+    @app.get(\"/\")
+    def read_root():
+        return {\"message\": \"Hello from Lyceum Cloud!\"}
+
+    @app.get(\"/health\")
+    def health_check():
+        return {\"status\": \"healthy\"}
+
+    if __name__ == \"__main__\":
+        uvicorn.run(app, host=\"0.0.0.0\", port=8000)
+    "],
+        "docker_run_env": "PORT=8000\nENVIRONMENT=production",
+        "execution_type": "cpu",
+        "timeout": 1800
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Multi-Step Processing Pipeline
+
+Chain multiple containers for complex workflows:
+
+```python
+import requests
+import time
+import json
+
+def run_processing_pipeline(token):
+    """Run a multi-step data processing pipeline"""
+    
+    base_url = "https://api.lyceum.technology/api/v2/external/execution/image/start"
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # Step 1: Data Collection
+    print("Step 1: Data Collection")
+    step1_response = requests.post(base_url, headers=headers, json={
+        "docker_image_ref": "python:3.11",
+        "docker_run_cmd": ["python", "-c", """
+import requests
+import json
+import pandas as pd
+
+# Simulate data collection
+data = {
+    'users': [f'user_{i}' for i in range(100)],
+    'values': [i * 2.5 + (i % 7) for i in range(100)],
+    'categories': ['A', 'B', 'C'] * 33 + ['A']
+}
+
+df = pd.DataFrame(data)
+df.to_csv('/lyceum/storage/raw_data.csv', index=False)
+print(f'Collected {len(df)} records')
+print(df.head())
+"""],
+        "execution_type": "cpu"
+    })
+    
+    print(f"Data collection started: {step1_response.json()}")
+    
+    # Wait a moment then start step 2
+    time.sleep(30)
+    
+    # Step 2: Data Processing
+    print("Step 2: Data Processing")
+    step2_response = requests.post(base_url, headers=headers, json={
+        "docker_image_ref": "python:3.11",
+        "docker_run_cmd": ["python", "-c", """
+import pandas as pd
+import numpy as np
+
+# Load data from step 1
+try:
+    df = pd.read_csv('/lyceum/storage/raw_data.csv')
+    print(f'Loaded {len(df)} records')
+    
+    # Process data
+    df['processed_values'] = df['values'].apply(lambda x: np.log(x + 1))
+    df['value_category'] = pd.cut(df['values'], bins=3, labels=['Low', 'Medium', 'High'])
+    
+    # Summary statistics
+    summary = df.groupby(['categories', 'value_category']).size().reset_index(name='count')
+    
+    # Save processed data
+    df.to_csv('/lyceum/storage/processed_data.csv', index=False)
+    summary.to_csv('/lyceum/storage/summary_stats.csv', index=False)
+    
+    print('Processing complete!')
+    print(summary)
+    
+except FileNotFoundError:
+    print('Raw data not found - run step 1 first')
+"""],
+        "execution_type": "cpu"
+    })
+    
+    print(f"Data processing started: {step2_response.json()}")
+    
+    # Step 3: Visualization
+    time.sleep(30)
+    print("Step 3: Visualization")
+    step3_response = requests.post(base_url, headers=headers, json={
+        "docker_image_ref": "python:3.11",
+        "docker_run_cmd": ["python", "-c", """
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+try:
+    # Load processed data
+    df = pd.read_csv('/lyceum/storage/processed_data.csv')
+    summary = pd.read_csv('/lyceum/storage/summary_stats.csv')
+    
+    # Create visualizations
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+    
+    # Plot 1: Distribution of values
+    axes[0, 0].hist(df['values'], bins=20, alpha=0.7)
+    axes[0, 0].set_title('Distribution of Values')
+    
+    # Plot 2: Box plot by category
+    df.boxplot(column='values', by='categories', ax=axes[0, 1])
+    axes[0, 1].set_title('Values by Category')
+    
+    # Plot 3: Scatter plot
+    colors = {'A': 'red', 'B': 'green', 'C': 'blue'}
+    for cat in df['categories'].unique():
+        subset = df[df['categories'] == cat]
+        axes[1, 0].scatter(subset.index, subset['values'], 
+                          c=colors[cat], label=cat, alpha=0.6)
+    axes[1, 0].legend()
+    axes[1, 0].set_title('Values Over Index')
+    
+    # Plot 4: Summary heatmap
+    pivot = summary.pivot(index='categories', columns='value_category', values='count')
+    sns.heatmap(pivot, annot=True, ax=axes[1, 1], cmap='viridis')
+    axes[1, 1].set_title('Count by Category and Value Range')
+    
+    plt.tight_layout()
+    plt.savefig('/lyceum/storage/analysis_report.png', dpi=300, bbox_inches='tight')
+    
+    print('Visualization complete!')
+    print('Files generated:')
+    print('- raw_data.csv')
+    print('- processed_data.csv') 
+    print('- summary_stats.csv')
+    print('- analysis_report.png')
+    
+except Exception as e:
+    print(f'Error: {e}')
+"""],
+        "execution_type": "cpu"
+    })
+    
+    print(f"Visualization started: {step3_response.json()}")
+    print("Pipeline initiated! Check storage for results.")
+
+# Example usage:
+# run_processing_pipeline("your-token-here")
+```
+
+<Tip>
+  Store intermediate results in `/lyceum/storage/` to pass data between pipeline steps. Files persist across different container executions.
+</Tip>
+
+<Warning>
+  Container images are pulled fresh each time. For faster execution, use smaller base images or pre-built images with your dependencies.
+</Warning>
+
+<Note>
+  All containers automatically have access to your Lyceum storage mounted at `/lyceum/storage/`. Use this for input data and saving results.
+</Note>

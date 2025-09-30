@@ -44,6 +44,31 @@
         ]
       },
       {
+        "tab": "Examples",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "examples/python-basics"
+            ]
+          },
+          {
+            "group": "Common Use Cases",
+            "pages": [
+              "examples/machine-learning",
+              "examples/data-processing",
+              "examples/api-integration"
+            ]
+          },
+          {
+            "group": "Advanced Topics",
+            "pages": [
+              "examples/docker-containers"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API Reference",
         "groups": [
           {
