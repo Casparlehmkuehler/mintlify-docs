@@ -434,6 +434,9 @@ const TopBar: React.FC = () => {
               )}
             </div>
           )}
+          {/* Emergency Button */}
+          <PanicButton userEmail={user?.email} />
+          
           {/* Help Button - Opens onboarding modal */}
           <button
             onClick={() => setShowOnboardingModal(true)}
@@ -536,9 +539,6 @@ const TopBar: React.FC = () => {
         onClose={() => setShowOnboardingModal(false)}
         hasApiKey={apiKeysCount > 0}
       />
-
-      {/* Panic Button */}
-      <PanicButton userEmail={user?.email} />
     </div>
   )
 }

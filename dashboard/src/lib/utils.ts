@@ -39,6 +39,7 @@ export interface Run {
   systemErrors?: string[]
   errors_docker?: string
   install_logs?: string
+  local_imports?: string[] | null
   [key: string]: any
 }
 

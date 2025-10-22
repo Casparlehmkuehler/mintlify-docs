@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, CreditCard, Key, TrendingUp, Activity, Loader, BarChart3, DollarSign, ArrowRight } from 'lucide-react'
+import { Play, CreditCard, Key, TrendingUp, Activity, Loader, BarChart3, DollarSign, ArrowRight, Server, Cpu, Zap } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import OnboardingGuide from '../OnboardingGuide'
 import AnalyticsChart, { MetricType, TimePeriod } from '../../utils/AnalyticsChart'
@@ -24,6 +24,7 @@ interface DashboardData {
     successRate: number
   }
   apiKeysCount: number
+  availableHardware: string[]
   recentExecutions: Array<{
     execution_id: string
     created_at: string
@@ -51,6 +52,7 @@ const DashboardHome: React.FC = () => {
     credits: null,
     executionStats: { totalExecutions: 0, activeExecutions: 0, successRate: 0 },
     apiKeysCount: 0,
+    availableHardware: [],
     recentExecutions: [],
     analyticsData: []
   })
@@ -59,7 +61,8 @@ const DashboardHome: React.FC = () => {
     credits: true,
     executions: true,
     apiKeys: true,
-    analytics: true
+    analytics: true,
+    hardware: true
   })
   const [error, setError] = useState<string | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(true)
@@ -131,7 +134,7 @@ const DashboardHome: React.FC = () => {
       if (!forceRefresh) {
         const cached = dataCache.get(cacheKey)
         if (cached && typeof cached === 'object' && 'credits' in cached) {
-          const { credits, executions, apiKeys } = cached as any
+          const { credits, executions, apiKeys, hardware } = cached as any
           
           // Calculate stats from cached data immediately
           const activeExecutions = executions.filter((exec: any) => 
@@ -153,6 +156,7 @@ const DashboardHome: React.FC = () => {
               successRate
             },
             apiKeysCount: apiKeys?.length || 0,
+            availableHardware: hardware || [],
             recentExecutions: executions.slice(0, 5),
             analyticsData: generateAnalyticsData(executions)
           })
@@ -161,7 +165,8 @@ const DashboardHome: React.FC = () => {
             credits: false,
             executions: false,
             apiKeys: false,
-            analytics: false
+            analytics: false,
+            hardware: false
           })
           
           // Check localStorage for onboarding preference
@@ -197,6 +202,10 @@ const DashboardHome: React.FC = () => {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
 
+      const hardwarePromise = fetch(buildApiUrl("/api/v2/external/user/quotas/available-hardware"), {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+
       // Process each response as it arrives
       creditsPromise.then(async response => {
         if (response.ok) {
@@ -220,6 +229,18 @@ const DashboardHome: React.FC = () => {
       }).catch(err => {
         console.warn('Failed to load API keys:', err)
         setPartialLoading(prev => ({ ...prev, apiKeys: false }))
+      })
+
+      hardwarePromise.then(async response => {
+        if (response.ok) {
+          const hardwareData = await response.json()
+          console.log('Hardware response:', hardwareData) // Debug log
+          setData(prev => ({ ...prev, availableHardware: hardwareData.available_hardware_profiles || [] }))
+        }
+        setPartialLoading(prev => ({ ...prev, hardware: false }))
+      }).catch(err => {
+        console.warn('Failed to load hardware:', err)
+        setPartialLoading(prev => ({ ...prev, hardware: false }))
       })
 
       // Wait only for execution history (most important for dashboard)
@@ -295,12 +316,14 @@ const DashboardHome: React.FC = () => {
       // Cache the data we have (wait for all promises to avoid partial cache)
       Promise.all([
         creditsPromise.then(r => r.json()).catch(() => null),
-        apiKeysPromise.then(r => r.json()).catch(() => [])
-      ]).then(([creditsData, apiKeysData]) => {
+        apiKeysPromise.then(r => r.json()).catch(() => []),
+        hardwarePromise.then(r => r.json()).catch(() => ({ available_hardware_profiles: [] }))
+      ]).then(([creditsData, apiKeysData, hardwareData]) => {
         dataCache.set(cacheKey, {
           credits: creditsData,
           executions: executions,
           apiKeys: apiKeysData || [],
+          hardware: hardwareData?.available_hardware_profiles || [],
           fetchedAt: Date.now()
         }, 2 * 60 * 1000) // 2 minute TTL for faster loading
       })
@@ -359,6 +382,29 @@ const DashboardHome: React.FC = () => {
   const dismissOnboarding = () => {
     localStorage.setItem('hideOnboarding', 'true')
     setShowOnboarding(false)
+  }
+
+  const getHardwareIcon = (profile: string) => {
+    const normalizedProfile = profile.toLowerCase()
+    if (normalizedProfile.includes('cpu')) {
+      return <Cpu className="h-4 w-4" />
+    } else if (normalizedProfile.includes('gpu') || normalizedProfile.includes('a10') || normalizedProfile.includes('h100')) {
+      return <Zap className="h-4 w-4" />
+    } else {
+      return <Server className="h-4 w-4" />
+    }
+  }
+
+  const getHardwareDisplayName = (profile: string) => {
+    const profileMap: { [key: string]: string } = {
+      'cpu': 'CPU',
+      'gpu': 'NVIDIA T4',
+      'gpu_a10': 'GPU A10',
+      'gpu_h100': 'GPU H100',
+      'gpu_4xa10': 'GPU 4xA10',
+      'gpu_8xh100': 'GPU 8xH100'
+    }
+    return profileMap[profile.toLowerCase()] || profile.toUpperCase()
   }
 
 
@@ -465,25 +511,37 @@ const DashboardHome: React.FC = () => {
           </Link>
         )}
 
-        {/* Success Rate Card */}
-        {partialLoading.executions ? (
+        {/* Available Machines Card */}
+        {partialLoading.hardware ? (
           <DashboardCardSkeleton />
         ) : (
-          <Link to="/runs" className="block bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-6 hover:bg-gray-50 dark:hover:bg-dark-accent/20 transition-colors cursor-pointer">
+          <Link to="/billing" className="block bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-6 hover:bg-gray-50 dark:hover:bg-dark-accent/20 transition-colors cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary">Success Rate</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary">Available Machines</p>
                 <p className="text-2xl font-semibold text-gray-900 dark:text-dark-text mt-1">
-                  {data.executionStats.successRate.toFixed(1)}%
+                  {data.availableHardware.length}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                <Server className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
-            <p className="mt-3 text-xs text-gray-500 dark:text-dark-text-secondary">
-              {data.executionStats.totalExecutions} total runs
-            </p>
+            <div className="mt-3 flex flex-wrap gap-1">
+              {data.availableHardware.slice(0, 4).map((profile) => (
+                <div 
+                  key={profile}
+                  className="flex items-center justify-center px-2 py-1 bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-full text-xs font-medium text-gray-700 dark:text-gray-300"
+                >
+                  {getHardwareDisplayName(profile)}
+                </div>
+              ))}
+              {data.availableHardware.length > 4 && (
+                <div className="flex items-center justify-center px-2 py-1 bg-gray-200 dark:bg-dark-accent border border-gray-300 dark:border-dark-border rounded-full text-xs font-medium text-gray-600 dark:text-gray-400">
+                  +{data.availableHardware.length - 4}
+                </div>
+              )}
+            </div>
           </Link>
         )}
 

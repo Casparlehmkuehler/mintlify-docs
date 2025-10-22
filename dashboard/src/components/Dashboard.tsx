@@ -6,9 +6,11 @@ import TopBar from './TopBar'
 import DashboardHome from './pages/DashboardHome'
 import RunsPage from './pages/RunsPage'
 import StoragePage from './pages/StoragePage'
+import EnvVarsPage from './pages/EnvVarsPage'
 import BillingPage from './pages/BillingPage'
 import ApiKeysPage from './pages/ApiKeysPage'
 import SettingsPage from './pages/SettingsPage'
+import PasswordResetPage from './pages/PasswordResetPage'
 import OAuthCallback from './auth/OAuthCallback'
 import { dataPreloader } from '../services/DataPreloader'
 import { usePreloader } from '../hooks/useCachedData'
@@ -45,6 +47,9 @@ const Dashboard: React.FC = () => {
       case '/storage':
         analytics.track('storage_page_viewed')
         break
+      case '/env-vars':
+        analytics.track('env_vars_page_viewed')
+        break
       case '/billing':
         analytics.track('billing_page_viewed')
         break
@@ -72,8 +77,14 @@ const Dashboard: React.FC = () => {
           setTimeout(() => triggerPreload('/storage'), 1500)
           break
         case '/storage':
-          // From storage, users might check runs or dashboard
+          // From storage, users might check runs or env vars
           setTimeout(() => triggerPreload('/runs'), 1500)
+          setTimeout(() => triggerPreload('/env-vars'), 2000)
+          break
+        case '/env-vars':
+          // From env vars, users might check storage or API keys
+          setTimeout(() => triggerPreload('/storage'), 1500)
+          setTimeout(() => triggerPreload('/api-keys'), 2000)
           break
         case '/billing':
           // From billing, users might check API keys or dashboard
@@ -108,9 +119,11 @@ const Dashboard: React.FC = () => {
                 <Route path="/" element={<DashboardHome />} />
                 <Route path="/runs" element={<RunsPage />} />
                 <Route path="/storage" element={<StoragePage />} />
+                <Route path="/env-vars" element={<EnvVarsPage />} />
                 <Route path="/billing" element={<BillingPage />} />
                 <Route path="/api-keys" element={<ApiKeysPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/reset-password" element={<PasswordResetPage />} />
                 <Route path="/auth/callback" element={<OAuthCallback />} />
               </Routes>
             </div>

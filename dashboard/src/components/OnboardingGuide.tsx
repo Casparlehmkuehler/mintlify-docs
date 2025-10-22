@@ -156,17 +156,17 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ hasApiKey }) => {
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-2">1. Install the Extension</h3>
                   <p className="text-sm text-gray-600 dark:text-dark-text-secondary mb-3">
-                    Open VS Code and install the Lyceum Cloud extension from the marketplace
+                    Open VS Code and install the Lyceum extension from the marketplace
                   </p>
                   <div className="flex items-center space-x-3">
                     <a
-                      href="vscode:extension/LyceumTechnology.lyceum-cloud"
+                      href="vscode:extension/LyceumTechnology.lyceum"
                       className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 dark:bg-dark-bg text-white rounded-md hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors text-sm"
                     >
                       <Download className="h-4 w-4" />
                       <span>Open in VS Code</span>
                     </a>
-                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">or search "Lyceum Cloud" in Extensions</span>
+                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">or search "Lyceum" in Extension Marketplace</span>
                   </div>
                 </div>
               </div>

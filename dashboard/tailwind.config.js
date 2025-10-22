@@ -9,14 +9,15 @@ export default {
     extend: {
       colors: {
         dark: {
-          bg: '#121212',        // charcoal black background
-          card: '#1a1a1a',      // slightly lighter for cards
-          text: '#E0E0E0',      // light gray primary text
-          'text-secondary': '#B0B0B0',  // medium gray secondary text
-          border: '#444444',    // dark gray borders/dividers
-          accent: '#888888',    // soft gray accent
-        }
-      }
+          bg: '#050505',               // ultra-deep black background (matte and rich)
+          card: '#0C0C0C',             // slightly lifted from bg — subtle contrast
+          text: '#EAEAEA',             // refined, high-clarity gray-white text
+          'text-secondary': '#9E9E9E', // calm neutral gray for secondary text
+          border: '#1A1A1A',           // understated border for clean separation
+          accent: '#272727',           // muted cool gray accent (good for hover states)
+          highlight: '#2F2F2F',        // for subtle emphasis or active states
+        },
+      },
     },
   },
   plugins: [],

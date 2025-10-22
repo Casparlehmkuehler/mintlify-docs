@@ -472,6 +472,7 @@ const SettingsPage: React.FC = () => {
         </div>
       )}
 
+
       <div className="grid grid-cols-1 gap-5">
         {/* Profile Settings */}
         <div className="bg-white dark:bg-dark-card p-6 rounded-lg border border-gray-200 dark:border-dark-border">

@@ -50,6 +50,58 @@ export interface Database {
           updated_at?: string
         }
       }
+      user_credits: {
+        Row: {
+          user_id: string
+          email: string
+          available_credits: number
+          used_credits: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          email: string
+          available_credits?: number
+          used_credits?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          email?: string
+          available_credits?: number
+          used_credits?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_quotas: {
+        Row: {
+          user_id: string
+          email: string
+          cpu: boolean
+          gpu: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          email: string
+          cpu?: boolean
+          gpu?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          email?: string
+          cpu?: boolean
+          gpu?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
       execution: {
         Row: {
           execution_id: string
@@ -125,6 +177,32 @@ export interface Database {
           python_globals_out?: string | null
           errors?: string | null
           metadata?: string | null
+        }
+      }
+      user_environment_variables: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          value: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          value: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          value?: string
+          created_at?: string
+          updated_at?: string
         }
       }
     }

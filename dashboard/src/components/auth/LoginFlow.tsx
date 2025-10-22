@@ -11,6 +11,7 @@ const LoginFlow: React.FC = () => {
   const [mode, setMode] = useState<AuthMode>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [passwordVisible, setPasswordVisible] = useState(false)
   
   // Check if this is part of a CLI auth flow
@@ -26,6 +27,7 @@ const LoginFlow: React.FC = () => {
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setError(null)
+    setSuccessMessage(null)
   }
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -55,6 +57,7 @@ const LoginFlow: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
+      setSuccessMessage(null)
       
       // Track login button click
       analytics.trackCTA(CTA_NAMES.LOGIN_BUTTON, {
@@ -67,10 +70,24 @@ const LoginFlow: React.FC = () => {
         password: formData.password,
       })
       
-      if (error) throw error
+      if (error) {
+        throw error
+      }
       
       // Track successful login
       if (data.user) {
+        // Ensure setup is complete (in case trigger failed during signup)
+        console.log('🔧 Calling ensure_user_setup for login user:', data.user.id)
+        const { data: setupData, error: setupError } = await supabase.rpc('ensure_user_setup', {
+          p_user_id: data.user.id
+        });
+        
+        if (setupError) {
+          console.error('❌ Login setup error:', setupError);
+        } else {
+          console.log('✅ Login user setup complete:', setupData);
+        }
+        
         analytics.track('login_success', {
           user_id: data.user.id,
           email: data.user.email,
@@ -103,6 +120,8 @@ const LoginFlow: React.FC = () => {
             user_id: data.user.id
           })
         }
+
+        // Login successful - redirect will happen automatically
       }
       
     } catch (error: any) {
@@ -118,8 +137,10 @@ const LoginFlow: React.FC = () => {
 
   const handleSignup = async () => {
     try {
+      console.log('🚀 Starting signup process with form data:', { email: formData.email, name: formData.name })
       setLoading(true)
       setError(null)
+      setSuccessMessage(null)
       
       // Get source from session storage for tracking
       const source = sessionStorage.getItem('lyceum_auth_source')
@@ -131,6 +152,7 @@ const LoginFlow: React.FC = () => {
         source: source || 'web'
       })
       
+      console.log('📡 Calling supabase.auth.signUp...')
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -142,18 +164,60 @@ const LoginFlow: React.FC = () => {
         }
       })
       
+      console.log('✅ Supabase signup response received:', { data, error })
+      
       if (error) {
+        console.error('Signup error details:', error)
+        console.log('Error message:', error.message)
+        console.log('Error code:', error.code)
+        
+        // Handle specific signup errors
         if (error.message.includes('already registered')) {
           setError('An account with this email already exists. Please sign in instead.')
           setMode('login')
           setStep('password')
           return
         }
-        throw error
+        
+        // Show the actual error for debugging
+        setError(`Signup failed: ${error.message}`)
+        return
       }
       
       // Track successful sign up (success-flow-1)
       if (data.user) {
+        console.log('✅ User successfully created:', data.user.id)
+        
+        // Send confirmation email
+        console.log('📧 Sending confirmation email to:', formData.email)
+        const { error: confirmError } = await supabase.auth.resend({
+          type: 'signup',
+          email: formData.email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
+        })
+        
+        if (confirmError) {
+          console.error('❌ Failed to send confirmation email:', confirmError)
+          // Don't fail the signup process, just log the error
+        } else {
+          console.log('✅ Confirmation email sent successfully')
+          setSuccessMessage('Account created successfully! Please check your email to confirm your account.')
+        }
+        
+        // Ensure user setup is complete
+        console.log('🔧 Calling ensure_user_setup for signup user:', data.user.id)
+        const { data: setupData, error: setupError } = await supabase.rpc('ensure_user_setup', {
+          p_user_id: data.user.id
+        });
+        
+        if (setupError) {
+          console.error('❌ Signup setup error:', setupError);
+        } else {
+          console.log('✅ Signup user setup complete:', setupData);
+        }
+        
         analytics.trackSignUp(data.user.id, {
           email: data.user.email,
           name: formData.name,
@@ -172,6 +236,7 @@ const LoginFlow: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
+      setSuccessMessage(null)
       
       // Track GitHub login CTA
       analytics.trackCTA('github_login', {
@@ -199,6 +264,7 @@ const LoginFlow: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
+      setSuccessMessage(null)
       
       // Track Google login CTA
       analytics.trackCTA('google_login', {
@@ -231,11 +297,13 @@ const LoginFlow: React.FC = () => {
       setStep('welcome')
     }
     setError(null)
+    setSuccessMessage(null)
   }
 
   const resetForm = () => {
     setFormData({ email: '', password: '', name: '' })
     setError(null)
+    setSuccessMessage(null)
     setPasswordVisible(false)
   }
 
@@ -281,6 +349,13 @@ const LoginFlow: React.FC = () => {
           {error && (
             <div className="mb-6 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-sm rounded-md">
               {error}
+            </div>
+          )}
+
+          {/* Success message */}
+          {successMessage && (
+            <div className="mb-6 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-sm rounded-md">
+              {successMessage}
             </div>
           )}
 
@@ -475,6 +550,7 @@ const LoginFlow: React.FC = () => {
               </button>
             </form>
           )}
+
 
         </div>
       </div>

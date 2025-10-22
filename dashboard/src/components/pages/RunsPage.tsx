@@ -27,12 +27,15 @@ const getStatusIcon = (status: string) => {
     case 'failed':
     case 'error':
       return <XCircle className="h-4 w-4 text-red-600" />
+    case 'system failure':
+      return <AlertTriangle className="h-4 w-4 text-orange-600" />
     case 'cancelled':
     case 'paused':
     case 'aborted':
       return <Pause className="h-4 w-4 text-yellow-600" />
     default:
-      return <Pause className="h-4 w-4 text-gray-600" />
+      // Default icon for any unknown status from API
+      return <AlertTriangle className="h-4 w-4 text-gray-600" />
   }
 }
 
@@ -50,11 +53,14 @@ const getStatusColor = (status: string) => {
     case 'failed':
     case 'error':
       return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700'
+    case 'system failure':
+      return 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700'
     case 'cancelled':
     case 'paused':
     case 'aborted':
       return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700'
     default:
+      // Default styling for any unknown status from API
       return 'bg-gray-100 dark:bg-dark-card text-gray-800 dark:text-dark-text border-gray-200 dark:border-dark-border'
   }
 }
@@ -149,6 +155,7 @@ const RunsPage: React.FC = () => {
               combined_output: '',
               stderr: '',
               stdout: '',
+              errors_docker: execution.errors_docker,
               file_name: execution.file_name,
               billed: execution.billed,
               amount_billed: execution.amount_billed
@@ -216,6 +223,7 @@ const RunsPage: React.FC = () => {
           billed: execution.billed,
           errors: null,
           warnings: null,
+          errors_docker: execution.errors_docker,
           file_name: execution.file_name,
           python_globals_in: null,
           python_globals_out: null,
@@ -368,7 +376,16 @@ const RunsPage: React.FC = () => {
 
   const canAbortRun = (status: string) => {
     const lowerStatus = status.toLowerCase()
-    return ['running', 'pending', 'starting', 'waiting for docker container'].includes(lowerStatus)
+    // Check if status indicates a running/active state that can be aborted
+    // Include known running states and any status containing certain keywords
+    return ['running', 'pending', 'starting', 'waiting for docker container'].includes(lowerStatus) ||
+           lowerStatus.includes('running') ||
+           lowerStatus.includes('starting') ||
+           lowerStatus.includes('pending') ||
+           lowerStatus.includes('processing') ||
+           lowerStatus.includes('executing') ||
+           lowerStatus.includes('in progress') ||
+           lowerStatus.includes('active')
   }
 
   const cancelDelete = () => {
@@ -560,18 +577,45 @@ const RunsPage: React.FC = () => {
     }
     // 'all' tab shows everything (matchesTab = true)
 
-    // Status filter from the cards
+    // Status filter from the cards - flexible to handle custom statuses
     let matchesStatusFilter = true
+    const lowerStatus = run.status.toLowerCase()
     if (activeStatusFilter === 'completed') {
-      matchesStatusFilter = ['completed', 'success'].includes(run.status.toLowerCase())
+      // Match known success states or any status containing success keywords
+      matchesStatusFilter = ['completed', 'success'].includes(lowerStatus) ||
+                           lowerStatus.includes('complete') ||
+                           lowerStatus.includes('success') ||
+                           lowerStatus.includes('done') ||
+                           lowerStatus.includes('finished')
     } else if (activeStatusFilter === 'running') {
-      matchesStatusFilter = ['running', 'pending', 'starting', 'waiting for docker container'].includes(run.status.toLowerCase())
+      // Match known running states or any status containing running keywords
+      matchesStatusFilter = ['running', 'pending', 'starting', 'waiting for docker container'].includes(lowerStatus) ||
+                           lowerStatus.includes('running') ||
+                           lowerStatus.includes('pending') ||
+                           lowerStatus.includes('starting') ||
+                           lowerStatus.includes('processing') ||
+                           lowerStatus.includes('executing') ||
+                           lowerStatus.includes('in progress') ||
+                           lowerStatus.includes('active')
     } else if (activeStatusFilter === 'failed') {
-      matchesStatusFilter = ['failed', 'error'].includes(run.status.toLowerCase())
+      // Match known error states or any status containing error keywords
+      matchesStatusFilter = ['failed', 'error'].includes(lowerStatus) ||
+                           lowerStatus.includes('fail') ||
+                           lowerStatus.includes('error') ||
+                           lowerStatus.includes('crash') ||
+                           lowerStatus.includes('exception')
     } else if (activeStatusFilter === 'cancelled') {
-      matchesStatusFilter = ['cancelled', 'paused'].includes(run.status.toLowerCase())
+      // Match known cancelled states or any status containing cancelled keywords
+      matchesStatusFilter = ['cancelled', 'paused'].includes(lowerStatus) ||
+                           lowerStatus.includes('cancel') ||
+                           lowerStatus.includes('pause') ||
+                           lowerStatus.includes('stop')
     } else if (activeStatusFilter === 'aborted') {
-      matchesStatusFilter = ['aborted', 'cancelled'].includes(run.status.toLowerCase())
+      // Match known aborted states or any status containing abort keywords
+      matchesStatusFilter = ['aborted', 'cancelled'].includes(lowerStatus) ||
+                           lowerStatus.includes('abort') ||
+                           lowerStatus.includes('cancel') ||
+                           lowerStatus.includes('terminate')
     }
     // 'all' shows everything (matchesStatusFilter = true)
     
@@ -966,23 +1010,31 @@ const RunsPage: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">Status</label>
               <div className="space-y-2">
-                {['running', 'pending', 'starting', 'completed', 'success', 'failed', 'error', 'cancelled', 'paused'].map(status => (
-                  <label key={status} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={filters.status.includes(status)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFilters({...filters, status: [...filters.status, status]})
-                        } else {
-                          setFilters({...filters, status: filters.status.filter(s => s !== status)})
-                        }
-                      }}
-                      className="rounded border-gray-300 text-blue-600 mr-2"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-dark-text-secondary capitalize">{status}</span>
-                  </label>
-                ))}
+                {/* Dynamically generate status filters from all unique statuses in runs */}
+                {Array.from(new Set([
+                  // Include common known statuses
+                  'running', 'pending', 'starting', 'completed', 'success', 'failed', 'error', 'cancelled', 'paused', 'aborted',
+                  // Add any unique statuses from actual runs
+                  ...runs.map(run => run.status.toLowerCase())
+                ]))
+                  .sort()
+                  .map(status => (
+                    <label key={status} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={filters.status.includes(status)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFilters({...filters, status: [...filters.status, status]})
+                          } else {
+                            setFilters({...filters, status: filters.status.filter(s => s !== status)})
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 mr-2"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-dark-text-secondary capitalize">{status}</span>
+                    </label>
+                  ))}
               </div>
             </div>
             <div>
@@ -1151,9 +1203,9 @@ const RunsPage: React.FC = () => {
                     )}
                     {visibleColumns.status && (
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(run.status)}`}>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(run.errors_docker ? 'system failure' : run.status)}`}>
                           <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5"></span>
-                          <span className="capitalize">{run.status}</span>
+                          <span className="capitalize">{run.errors_docker ? 'system failure' : run.status}</span>
                         </span>
                       </td>
                     )}
@@ -1401,9 +1453,9 @@ const RunsPage: React.FC = () => {
               {/* Status */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900 dark:text-dark-text mb-2">Status</h3>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(selectedRun.status)}`}>
-                  {getStatusIcon(selectedRun.status)}
-                  <span className="ml-1 capitalize">{selectedRun.status}</span>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(selectedRun.errors_docker ? 'system failure' : selectedRun.status)}`}>
+                  {getStatusIcon(selectedRun.errors_docker ? 'system failure' : selectedRun.status)}
+                  <span className="ml-1 capitalize">{selectedRun.errors_docker ? 'system failure' : selectedRun.status}</span>
                 </span>
               </div>
 
@@ -1517,13 +1569,13 @@ const RunsPage: React.FC = () => {
               {selectedRun.timestamps && (
                 <div>
                   <div className="bg-gray-50 dark:bg-dark-card rounded-lg p-4">
-                    <TimestampDetails 
-                      timestamps={selectedRun.timestamps} 
-                      status={selectedRun.status}
+                    <TimestampDetails
+                      timestamps={selectedRun.timestamps}
+                      status={selectedRun.errors_docker ? 'system failure' : selectedRun.status}
                     />
-                    
-                    {/* Docker Error for Aborted Runs - Integrated into timeline */}
-                    {selectedRun.errors_docker && ['aborted', 'cancelled', 'failed'].includes(selectedRun.status.toLowerCase()) && (
+
+                    {/* Docker Error - Always shown when present */}
+                    {selectedRun.errors_docker && (
                       <div className="mt-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg transition-all duration-200">
                         <button
                           onClick={() => setExpandedDockerError(!expandedDockerError)}

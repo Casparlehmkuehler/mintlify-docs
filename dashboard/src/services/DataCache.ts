@@ -140,11 +140,13 @@ export const CacheKeys = {
   billingData: () => 'billing:data',
   userSettings: () => 'user:settings',
   executionDetail: (id: string) => `execution:${id}`,
+  envVars: () => 'env:vars',
   
   // Pattern invalidation keys
   allRuns: () => /^runs:/,
   allStorage: () => /^storage:/,
-  allDashboard: () => /^dashboard:/
+  allDashboard: () => /^dashboard:/,
+  allEnvVars: () => /^env:/
 }
 
 export default DataCache

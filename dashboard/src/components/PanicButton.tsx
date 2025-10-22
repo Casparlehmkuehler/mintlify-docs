@@ -88,19 +88,17 @@ Timestamp: ${new Date().toISOString()}
 
   return (
     <>
-      {/* Floating Panic Button */}
-      <motion.button
+      {/* Emergency Button for Top Bar */}
+      <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 z-40 bg-red-600 hover:bg-red-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 group"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+        className="p-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 relative group"
         title="Emergency Support"
       >
-        <AlertTriangle className="h-6 w-6" />
-        <span className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+        <AlertTriangle className="h-5 w-5" />
+        <span className="absolute top-full right-0 mt-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50">
           Emergency Support
         </span>
-      </motion.button>
+      </button>
 
       {/* Modal */}
       <AnimatePresence>

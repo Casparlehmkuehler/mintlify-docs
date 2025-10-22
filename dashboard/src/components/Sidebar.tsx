@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   LayoutDashboard, 
   Play, 
-  Folder,
+  Lock,
   CreditCard, 
   Key, 
   Settings, 
@@ -12,7 +12,8 @@ import {
   X,
   LogOut,
   User,
-  ChevronDown
+  ChevronDown,
+  Database
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../contexts/AuthContext'
@@ -28,9 +29,10 @@ interface SidebarProps {
 const navigationItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Runs', href: '/runs', icon: Play },
-  { name: 'Storage', href: '/storage', icon: Folder },
-  { name: 'Billing', href: '/billing', icon: CreditCard },
+  { name: 'Storage', href: '/storage', icon: Database },
+  { name: 'Environment Variables', href: '/env-vars', icon: Lock },
   { name: 'API Keys', href: '/api-keys', icon: Key },
+  { name: 'Billing', href: '/billing', icon: CreditCard },
 ]
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -86,6 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         '/': CTA_NAMES.NAV_DASHBOARD,
                         '/runs': 'nav_runs',
                         '/storage': 'nav_storage',
+                        '/env-vars': 'nav_env_vars',
                         '/billing': 'nav_billing',
                         '/api-keys': CTA_NAMES.NAV_API_KEYS,
                       }
