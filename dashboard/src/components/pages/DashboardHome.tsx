@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, CreditCard, Key, TrendingUp, Activity, Loader, BarChart3, DollarSign, ArrowRight, Server, Cpu, Zap } from 'lucide-react'
+import { Play, CreditCard, Key, Activity, Loader, BarChart3, DollarSign, ArrowRight, Server, Cpu, Zap, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import OnboardingGuide from '../OnboardingGuide'
 import AnalyticsChart, { MetricType, TimePeriod } from '../../utils/AnalyticsChart'
@@ -66,6 +66,7 @@ const DashboardHome: React.FC = () => {
   })
   const [error, setError] = useState<string | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(true)
+  const [showVersionBanner, setShowVersionBanner] = useState(true)
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('runs')
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('day')
   usePreloader()
@@ -73,6 +74,11 @@ const DashboardHome: React.FC = () => {
   useEffect(() => {
     // Fetch dashboard data on mount
     fetchDashboardData()
+    // Check if version banner has been dismissed
+    const bannerDismissed = localStorage.getItem('versionBannerDismissed_v0.2.32')
+    if (bannerDismissed) {
+      setShowVersionBanner(false)
+    }
   }, [])
 
   const generateAnalyticsData = (executions: any[]) => {
@@ -384,6 +390,11 @@ const DashboardHome: React.FC = () => {
     setShowOnboarding(false)
   }
 
+  const dismissVersionBanner = () => {
+    localStorage.setItem('versionBannerDismissed_v0.2.32', 'true')
+    setShowVersionBanner(false)
+  }
+
   const getHardwareIcon = (profile: string) => {
     const normalizedProfile = profile.toLowerCase()
     if (normalizedProfile.includes('cpu')) {
@@ -423,6 +434,36 @@ const DashboardHome: React.FC = () => {
         <p className="mt-1 text-sm text-gray-500 dark:text-dark-text-secondary">Welcome back! Here's your cloud execution overview.</p>
       </div>
 
+      {/* Version Banner */}
+      {showVersionBanner && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start flex-1">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400 dark:text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  Hey, to ensure smooth running, please make sure you're on extension version <strong>0.2.32</strong>
+                </p>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                  Btw - we've made some really cool changes - can you spot them? Ping us if any issues
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={dismissVersionBanner}
+              className="flex-shrink-0 ml-4 text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+              aria-label="Dismiss banner"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Error Banner */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -434,7 +475,7 @@ const DashboardHome: React.FC = () => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-              <button 
+              <button
                 onClick={() => fetchDashboardData(true)}
                 className="mt-2 text-sm text-red-600 dark:text-red-400 underline hover:text-red-500 dark:hover:text-red-300"
               >

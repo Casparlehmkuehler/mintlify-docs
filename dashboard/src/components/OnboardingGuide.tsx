@@ -160,7 +160,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ hasApiKey }) => {
                   </p>
                   <div className="flex items-center space-x-3">
                     <a
-                      href="vscode:extension/LyceumTechnology.lyceum"
+                      href="vscode:extension/LyceumTechnology.lyceumcloud"
                       className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 dark:bg-dark-bg text-white rounded-md hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors text-sm"
                     >
                       <Download className="h-4 w-4" />
@@ -340,9 +340,9 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ hasApiKey }) => {
                 <div className="space-y-2">
                   <div className="bg-gray-900 rounded-md p-3">
                     <div className="flex items-center justify-between">
-                      <code className="text-gray-100 dark:text-dark-text text-sm">lyceum login</code>
+                      <code className="text-gray-100 dark:text-dark-text text-sm">lyceum auth login</code>
                       <button
-                        onClick={() => copyToClipboard('lyceum config set-key YOUR_API_KEY', 'config')}
+                        onClick={() => copyToClipboard('lyceum auth login', 'config')}
                         className="text-gray-400 dark:text-dark-text-secondary hover:text-white dark:hover:text-dark-text transition-colors"
                       >
                         {copiedCommand === 'config' ? (
@@ -405,7 +405,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ hasApiKey }) => {
                   </div>
                   <div className="bg-gray-900 rounded-md p-3">
                     <div className="flex items-center justify-between">
-                      <code className="text-gray-100 dark:text-dark-text text-sm">lyceum docker run pytorch/pytorch:latest --script.py</code>
+                      <code className="text-gray-100 dark:text-dark-text text-sm">lyceum docker run pytorch/pytorch:latest</code>
                       <button
                         onClick={() => copyToClipboard('lyceum docker run pytorch/pytorch:latest', 'docker')}
                         className="text-gray-400 dark:text-dark-text-secondary hover:text-white dark:hover:text-dark-text transition-colors"

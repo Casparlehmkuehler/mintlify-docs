@@ -15,13 +15,19 @@ const CLIAuthHandler: React.FC = () => {
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null)
   const [source, setSource] = useState<string | null>(null)
   const [redirectAttempted] = useState(false)
+  const [redirectComplete, setRedirectComplete] = useState(false)
+  const [showManualFallback, setShowManualFallback] = useState(false)
+  const [tokens, setTokens] = useState<{ accessToken: string; refreshToken: string } | null>(null)
+  const [copiedToken, setCopiedToken] = useState<'access' | 'refresh' | null>(null)
+  const [isManualMode, setIsManualMode] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const callback = params.get('callback')
     const sourceParam = params.get('source')
-    const autoRedirect = params.get('auto_redirect')
-    
+    const autoRedirectParam = params.get('auto_redirect')
+    const manualParam = params.get('manual')
+
     if (callback) {
       setCallbackUrl(callback)
       setSource(sourceParam)
@@ -30,72 +36,93 @@ const CLIAuthHandler: React.FC = () => {
       if (sourceParam) {
         sessionStorage.setItem('lyceum_auth_source', sourceParam)
       }
-      if (autoRedirect === 'true') {
+      if (autoRedirectParam === 'true') {
         sessionStorage.setItem('lyceum_auth_auto_redirect', 'true')
+      }
+      if (manualParam === 'true') {
+        sessionStorage.setItem('lyceum_auth_manual', 'true')
+        setIsManualMode(true)
       }
     } else {
       // Check if we have a stored callback from previous auth attempt
       const storedCallback = sessionStorage.getItem('lyceum_auth_callback')
       const storedSource = sessionStorage.getItem('lyceum_auth_source')
+      const storedManual = sessionStorage.getItem('lyceum_auth_manual')
       if (storedCallback) {
         setCallbackUrl(storedCallback)
         setSource(storedSource)
+        setIsManualMode(storedManual === 'true')
       }
     }
   }, [location.search])
 
   useEffect(() => {
-    // If user is authenticated and we have a callback URL, redirect
+    // If user is authenticated and we have a callback URL
     if (user && callbackUrl) {
-      console.log('User authenticated, preparing redirect to:', callbackUrl)
+      console.log('User authenticated, preparing tokens for:', isManualMode ? 'manual entry' : 'redirect')
       // Get user session for token
-      const getTokenAndRedirect = async () => {
+      const getTokens = async () => {
         try {
           const { data: { session } } = await supabase.auth.getSession()
           console.log('Session data:', session ? 'Session found' : 'No session')
-          
+
           if (session?.access_token && session?.refresh_token) {
-            const redirectUrl = new URL(callbackUrl)
-            redirectUrl.searchParams.set('token', session.access_token)
-            redirectUrl.searchParams.set('refresh_token', session.refresh_token)
-            redirectUrl.searchParams.set('user', user.email || '')
-            
-            console.log('Redirecting to:', redirectUrl.toString())
-            
-            // Clear stored callback and source
-            sessionStorage.removeItem('lyceum_auth_callback')
-            sessionStorage.removeItem('lyceum_auth_source')
-            sessionStorage.removeItem('lyceum_auth_auto_redirect')
-            
-            // Try redirect and close tab when successful
-            try {
-              window.location.href = redirectUrl.toString()
-              // Close the tab after successful redirect
-              setTimeout(() => {
-                window.close()
-              }, 2000)
-            } catch (error) {
-              console.error('window.location.href failed, trying window.open:', error)
-              // Fallback to window.open
-              window.open(redirectUrl.toString(), '_self')
-              setTimeout(() => {
-                window.close()
-              }, 2000)
+            // Store tokens
+            setTokens({
+              accessToken: session.access_token,
+              refreshToken: session.refresh_token
+            })
+
+            if (isManualMode) {
+              // Manual mode: show tokens immediately, no redirect attempt
+              setShowManualFallback(true)
+            } else {
+              // Auto-redirect mode: attempt redirect
+              const redirectUrl = new URL(callbackUrl)
+              redirectUrl.searchParams.set('token', session.access_token)
+              redirectUrl.searchParams.set('refresh_token', session.refresh_token)
+              redirectUrl.searchParams.set('user', user.email || '')
+
+              console.log('Redirecting to:', redirectUrl.toString())
+
+              try {
+                window.location.href = redirectUrl.toString()
+
+                // Set timeout to show manual fallback if redirect doesn't work
+                const fallbackTimeout = setTimeout(() => {
+                  setShowManualFallback(true)
+                }, 3000)
+
+                // Show success message after 1 second
+                const successTimeout = setTimeout(() => {
+                  setRedirectComplete(true)
+                }, 1000)
+
+                // Cleanup function
+                return () => {
+                  clearTimeout(fallbackTimeout)
+                  clearTimeout(successTimeout)
+                }
+              } catch (error) {
+                console.error('window.location.href failed:', error)
+                setShowManualFallback(true)
+              }
             }
           } else {
-            console.error('Missing tokens in session:', { 
-              hasAccessToken: !!session?.access_token, 
-              hasRefreshToken: !!session?.refresh_token 
+            console.error('Missing tokens in session:', {
+              hasAccessToken: !!session?.access_token,
+              hasRefreshToken: !!session?.refresh_token
             })
           }
         } catch (error) {
           console.error('Error getting session:', error)
+          setShowManualFallback(true)
         }
       }
-      
-      getTokenAndRedirect()
+
+      getTokens()
     }
-  }, [user, callbackUrl])
+  }, [user, callbackUrl, isManualMode])
 
   if (loading) {
     return (
@@ -113,6 +140,35 @@ const CLIAuthHandler: React.FC = () => {
     return <LoginFlow />
   }
 
+  // Copy token to clipboard
+  const copyToken = async (type: 'access' | 'refresh') => {
+    if (!tokens) return
+
+    const token = type === 'access' ? tokens.accessToken : tokens.refreshToken
+    try {
+      await navigator.clipboard.writeText(token)
+      setCopiedToken(type)
+      setTimeout(() => setCopiedToken(null), 2000)
+    } catch (error) {
+      console.error('Failed to copy token:', error)
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = token
+      textArea.style.position = 'fixed'
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.select()
+      try {
+        document.execCommand('copy')
+        setCopiedToken(type)
+        setTimeout(() => setCopiedToken(null), 2000)
+      } catch (err) {
+        console.error('Fallback copy failed:', err)
+      }
+      document.body.removeChild(textArea)
+    }
+  }
+
   // Manual redirect function
   const handleManualRedirect = async () => {
     if (callbackUrl) {
@@ -123,8 +179,14 @@ const CLIAuthHandler: React.FC = () => {
           redirectUrl.searchParams.set('token', session.access_token)
           redirectUrl.searchParams.set('refresh_token', session.refresh_token)
           redirectUrl.searchParams.set('user', user?.email || '')
-          
+
+          setShowManualFallback(false) // Hide fallback during retry
           window.location.href = redirectUrl.toString()
+
+          // Show fallback again if redirect fails
+          setTimeout(() => {
+            setShowManualFallback(true)
+          }, 3000)
         }
       } catch (error) {
         console.error('Manual redirect failed:', error)
@@ -132,7 +194,116 @@ const CLIAuthHandler: React.FC = () => {
     }
   }
 
-  // Show processing message while redirecting
+  // Show manual token UI (either manual mode or auto-redirect failed)
+  if (showManualFallback && tokens) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-dark-bg flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-1">
+              {isManualMode ? 'Authentication Tokens' : 'Manual Sign-In'}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-dark-text-secondary">
+              {isManualMode
+                ? `Paste these into ${source === 'vscode' ? 'VSCode' : source === 'cursor' ? 'Cursor' : 'your editor'}`
+                : 'Copy and paste these tokens to complete sign-in'}
+            </p>
+          </div>
+
+          {/* Token Cards */}
+          <div className="space-y-3 mb-6">
+            {/* Access Token */}
+            <div className="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-medium text-gray-600 dark:text-dark-text-secondary">
+                  Access Token
+                </label>
+                <button
+                  onClick={() => copyToken('access')}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                >
+                  {copiedToken === 'access' ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+              <div className="font-mono text-xs text-gray-900 dark:text-dark-text bg-gray-50 dark:bg-dark-bg rounded px-3 py-2 overflow-x-auto">
+                {tokens.accessToken}
+              </div>
+            </div>
+
+            {/* Refresh Token */}
+            <div className="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-medium text-gray-600 dark:text-dark-text-secondary">
+                  Refresh Token
+                </label>
+                <button
+                  onClick={() => copyToken('refresh')}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                >
+                  {copiedToken === 'refresh' ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+              <div className="font-mono text-xs text-gray-900 dark:text-dark-text bg-gray-50 dark:bg-dark-bg rounded px-3 py-2 overflow-x-auto">
+                {tokens.refreshToken}
+              </div>
+            </div>
+          </div>
+
+          {/* Instructions */}
+          {isManualMode ? (
+            <p className="text-xs text-gray-500 dark:text-dark-text-secondary text-center">
+              {source === 'vscode' ? 'VSCode' : source === 'cursor' ? 'Cursor' : 'Your editor'} is waiting for these tokens
+            </p>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-xs text-gray-500 dark:text-dark-text-secondary space-y-1">
+                <p>1. Return to {source === 'vscode' ? 'VSCode' : source === 'cursor' ? 'Cursor' : 'your editor'}</p>
+                <p>2. Click "Sign In Manually" in the Lyceum status bar</p>
+                <p>3. Paste each token when prompted</p>
+              </div>
+              <button
+                onClick={handleManualRedirect}
+                className="w-full px-4 py-2 text-sm text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text hover:bg-gray-50 dark:hover:bg-dark-accent/20 rounded-lg transition-all duration-200"
+              >
+                Try auto-redirect again
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Show processing message while redirecting or success message after redirect
+  if (redirectComplete) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex items-center justify-center">
+        <div className="text-center">
+          <svg
+            className="mx-auto h-16 w-16 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-dark-text">
+            Authentication successful!
+          </h2>
+          <p className="mt-2 text-gray-600 dark:text-dark-text-secondary">
+            You can now close this tab and return to {source === 'vscode' ? 'VSCode' : 'the CLI'}.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex items-center justify-center">
       <div className="text-center">

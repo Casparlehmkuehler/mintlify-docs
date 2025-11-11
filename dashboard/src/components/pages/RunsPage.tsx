@@ -311,9 +311,9 @@ const RunsPage: React.FC = () => {
       analytics.track('workload_aborted', {
         run_id: runId
       })
-      
+
       setAbortingRuns(prev => new Set([...prev, runId]))
-      
+
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       if (!currentSession) {
         throw new Error('Please log in to abort jobs')
@@ -333,24 +333,90 @@ const RunsPage: React.FC = () => {
         throw new Error(`Failed to abort run: ${errorText}`)
       }
 
-      const result = await response.json()
-      
-      // Update the run status in local state
-      setRuns(prevRuns => prevRuns.map(run => 
-        run.id === runId 
-          ? { ...run, status: result.status || 'cancelling' }
+      await response.json() // Consume the response
+
+      // Update the run status in local state to "cancelling"
+      setRuns(prevRuns => prevRuns.map(run =>
+        run.id === runId
+          ? { ...run, status: 'cancelling' }
           : run
       ))
-      
+
       // Update selected run if it's the one being aborted
       if (selectedRun?.id === runId) {
-        setSelectedRun(prev => prev ? { ...prev, status: result.status || 'cancelling' } : null)
+        setSelectedRun(prev => prev ? { ...prev, status: 'cancelling' } : null)
       }
-      
-      // Refresh the runs list after a short delay to get updated status
-      setTimeout(() => {
-        fetchRuns()
-      }, 1000)
+
+      // Poll for status updates until the run is actually aborted
+      const pollForAbortStatus = async (attempts = 0, maxAttempts = 10) => {
+        if (attempts >= maxAttempts) {
+          console.log('Max polling attempts reached, stopping status check')
+          return
+        }
+
+        // Wait before checking status (exponential backoff: 2s, 4s, 6s, etc.)
+        await new Promise(resolve => setTimeout(resolve, 2000 + (attempts * 2000)))
+
+        try {
+          const { data: { session: currentSession } } = await supabase.auth.getSession()
+          if (!currentSession) return
+
+          const statusResponse = await fetch(buildApiUrl(`/api/v2/external/execution/${runId}`), {
+            headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+          })
+
+          if (statusResponse.ok) {
+            const executionData = await statusResponse.json()
+            const currentStatus = executionData.status?.toLowerCase()
+
+            // Check if execution has reached a terminal state
+            if (currentStatus === 'aborted' || currentStatus === 'cancelled' ||
+                currentStatus === 'failed' || currentStatus === 'completed') {
+              // Update to final status in the runs list
+              setRuns(prevRuns => prevRuns.map(run =>
+                run.id === runId
+                  ? { ...run, status: executionData.status }
+                  : run
+              ))
+
+              // Update selected run with full details to ensure sidebar shows correct status
+              setSelectedRun(prev => {
+                if (prev?.id === runId) {
+                  return {
+                    ...prev,
+                    status: executionData.status,
+                    // Clear any error states that might override the status display
+                    errors_docker: currentStatus === 'aborted' ? undefined : prev.errors_docker
+                  }
+                }
+                return prev
+              })
+            } else {
+              // Still transitioning - update the status in the UI and continue polling
+              setRuns(prevRuns => prevRuns.map(run =>
+                run.id === runId
+                  ? { ...run, status: executionData.status || 'cancelling' }
+                  : run
+              ))
+
+              setSelectedRun(prev => {
+                if (prev?.id === runId) {
+                  return { ...prev, status: executionData.status || 'cancelling' }
+                }
+                return prev
+              })
+
+              // Continue polling
+              pollForAbortStatus(attempts + 1, maxAttempts)
+            }
+          }
+        } catch (error) {
+          console.error('Error polling for abort status:', error)
+        }
+      }
+
+      // Start polling for status updates
+      pollForAbortStatus()
 
     } catch (err: any) {
       console.error('Error aborting run:', err)
@@ -492,9 +558,20 @@ const RunsPage: React.FC = () => {
       setLoadingStatus('Finalizing...')
       
       if (details) {
+        // Recalculate duration with more accurate timestamps from details
+        const detailedStartTime = details.start_time || details.execelet_start || details.created_at
+        const detailedEndTime = details.end_time || details.finish_time
+        const recalculatedRun = convertExecutionToRun({
+          ...run,
+          ...details,
+          start_time: detailedStartTime,
+          end_time: detailedEndTime
+        })
+
         // Create the fully loaded run object
         const fullyLoadedRun = {
           ...run,
+          ...recalculatedRun,
           combined_output: details.combined_output || run.combined_output,
           stdout: details.stdout || run.stdout,
           stderr: details.stderr || run.stderr,
