@@ -30,7 +30,7 @@ const navigationItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Runs', href: '/runs', icon: Play },
   { name: 'Storage', href: '/storage', icon: Database },
- //{ name: 'Environment Variables', href: '/env-vars', icon: Lock },
+  { name: 'Environment Variables', href: '/env-vars', icon: Lock },
   { name: 'API Keys', href: '/api-keys', icon: Key },
   { name: 'Billing', href: '/billing', icon: CreditCard },
 ]

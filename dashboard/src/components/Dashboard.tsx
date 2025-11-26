@@ -11,6 +11,7 @@ import BillingPage from './pages/BillingPage'
 import ApiKeysPage from './pages/ApiKeysPage'
 import SettingsPage from './pages/SettingsPage'
 import PasswordResetPage from './pages/PasswordResetPage'
+import UnsubscribePage from './pages/UnsubscribePage'
 import OAuthCallback from './auth/OAuthCallback'
 import { dataPreloader } from '../services/DataPreloader'
 import { usePreloader } from '../hooks/useCachedData'
@@ -124,6 +125,7 @@ const Dashboard: React.FC = () => {
                 <Route path="/api-keys" element={<ApiKeysPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/reset-password" element={<PasswordResetPage />} />
+                <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/auth/callback" element={<OAuthCallback />} />
               </Routes>
             </div>

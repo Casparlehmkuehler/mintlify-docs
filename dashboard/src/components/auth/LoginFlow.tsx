@@ -2,8 +2,11 @@ import React, { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff, Github } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { analytics, CTA_NAMES } from '../../services/analytics'
+import { MFAService } from '../../services/MFAService'
+import { MFAEnrollment } from './MFAEnrollment'
+import { MFAVerification } from './MFAVerification'
 
-type Step = 'welcome' | 'email' | 'password' | 'signup-name' | 'signup-password'
+type Step = 'welcome' | 'email' | 'password' | 'signup-name' | 'signup-password' | 'signup-mfa-prompt' | 'signup-mfa-setup' | 'mfa-verify'
 type AuthMode = 'login' | 'signup'
 
 const LoginFlow: React.FC = () => {
@@ -13,16 +16,19 @@ const LoginFlow: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [passwordVisible, setPasswordVisible] = useState(false)
-  
+  const [jwtToken, setJwtToken] = useState<string | null>(null)
+  const [mfaRequired, setMfaRequired] = useState(false)
+
   // Check if this is part of a CLI auth flow
   const isCLIAuth = sessionStorage.getItem('lyceum_auth_callback') !== null
   const source = sessionStorage.getItem('lyceum_auth_source')
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: ''
   })
+  const [emailNotifications, setEmailNotifications] = useState(true)
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -58,50 +64,82 @@ const LoginFlow: React.FC = () => {
       setLoading(true)
       setError(null)
       setSuccessMessage(null)
-      
+
       // Track login button click
       analytics.trackCTA(CTA_NAMES.LOGIN_BUTTON, {
         email: formData.email,
         source: source || 'web'
       })
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
-      
+
       if (error) {
         throw error
       }
-      
+
       // Track successful login
-      if (data.user) {
+      if (data.user && data.session) {
+        // Store JWT token for MFA verification
+        setJwtToken(data.session.access_token)
+
+        // Check if MFA is enabled for this user
+        try {
+          console.log('🔐 Checking MFA status for user:', data.user.id)
+          const mfaStatus = await MFAService.getStatus(data.session.access_token)
+          console.log('🔐 MFA Status:', mfaStatus)
+
+          if (mfaStatus.enabled) {
+            // MFA is enabled, show verification screen but keep session
+            console.log('🔐 MFA is enabled, showing verification screen')
+            // Mark that MFA is pending in sessionStorage
+            sessionStorage.setItem('mfa_pending', 'true')
+            setMfaRequired(true)
+            setStep('mfa-verify')
+            setLoading(false)
+            return
+          }
+
+          console.log('🔐 MFA is not enabled, proceeding with normal login')
+          // Clear any MFA pending flag
+          sessionStorage.removeItem('mfa_pending')
+        } catch (mfaError: any) {
+          console.error('❌ Error checking MFA status:', mfaError)
+          console.error('❌ Error details:', {
+            message: mfaError?.message,
+            response: mfaError?.response,
+          })
+          // If MFA check fails, continue with login (don't block user)
+        }
+
         // Ensure setup is complete (in case trigger failed during signup)
         console.log('🔧 Calling ensure_user_setup for login user:', data.user.id)
         const { data: setupData, error: setupError } = await supabase.rpc('ensure_user_setup', {
           p_user_id: data.user.id
         });
-        
+
         if (setupError) {
           console.error('❌ Login setup error:', setupError);
         } else {
           console.log('✅ Login user setup complete:', setupData);
         }
-        
+
         analytics.track('login_success', {
           user_id: data.user.id,
           email: data.user.email,
           source: source || 'web',
           method: 'email'
         })
-        
+
         // Track Meta Pixel CompleteRegistration for returning users
         analytics.trackCompleteRegistration({
           user_id: data.user.id,
           login_method: 'email',
           source: source || 'web'
         })
-        
+
         // Track CLI/VSCode authentication success if applicable
         if (source === 'cli') {
           analytics.track('cli_auth_success', {
@@ -123,7 +161,7 @@ const LoginFlow: React.FC = () => {
 
         // Login successful - redirect will happen automatically
       }
-      
+
     } catch (error: any) {
       setError(error.message)
       analytics.track('login_failed', {
@@ -141,17 +179,17 @@ const LoginFlow: React.FC = () => {
       setLoading(true)
       setError(null)
       setSuccessMessage(null)
-      
+
       // Get source from session storage for tracking
       const source = sessionStorage.getItem('lyceum_auth_source')
-      
+
       // Track sign up button click
       analytics.trackCTA(CTA_NAMES.SIGN_UP_BUTTON, {
         email: formData.email,
         name: formData.name,
         source: source || 'web'
       })
-      
+
       console.log('📡 Calling supabase.auth.signUp...')
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
@@ -159,18 +197,19 @@ const LoginFlow: React.FC = () => {
         options: {
           data: {
             full_name: formData.name,
-            signup_source: source || 'web'
+            signup_source: source || 'web',
+            email_notifications: emailNotifications
           }
         }
       })
-      
+
       console.log('✅ Supabase signup response received:', { data, error })
-      
+
       if (error) {
         console.error('Signup error details:', error)
         console.log('Error message:', error.message)
         console.log('Error code:', error.code)
-        
+
         // Handle specific signup errors
         if (error.message.includes('already registered')) {
           setError('An account with this email already exists. Please sign in instead.')
@@ -178,53 +217,62 @@ const LoginFlow: React.FC = () => {
           setStep('password')
           return
         }
-        
+
         // Show the actual error for debugging
         setError(`Signup failed: ${error.message}`)
         return
       }
-      
+
       // Track successful sign up (success-flow-1)
       if (data.user) {
         console.log('✅ User successfully created:', data.user.id)
-        
-        // Send confirmation email
-        console.log('📧 Sending confirmation email to:', formData.email)
-        const { error: confirmError } = await supabase.auth.resend({
-          type: 'signup',
-          email: formData.email,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`
+
+        // Check if email confirmation is required (no session means confirmation required)
+        const requiresEmailConfirmation = !data.session
+
+        if (data.session) {
+          // Store JWT token for MFA enrollment
+          setJwtToken(data.session.access_token)
+
+          // Ensure user setup is complete
+          console.log('🔧 Calling ensure_user_setup for signup user:', data.user.id)
+          const { data: setupData, error: setupError } = await supabase.rpc('ensure_user_setup', {
+            p_user_id: data.user.id
+          });
+
+          if (setupError) {
+            console.error('❌ Signup setup error:', setupError);
+          } else {
+            console.log('✅ Signup user setup complete:', setupData);
           }
-        })
-        
-        if (confirmError) {
-          console.error('❌ Failed to send confirmation email:', confirmError)
-          // Don't fail the signup process, just log the error
-        } else {
-          console.log('✅ Confirmation email sent successfully')
-          setSuccessMessage('Account created successfully! Please check your email to confirm your account.')
         }
-        
-        // Ensure user setup is complete
-        console.log('🔧 Calling ensure_user_setup for signup user:', data.user.id)
-        const { data: setupData, error: setupError } = await supabase.rpc('ensure_user_setup', {
-          p_user_id: data.user.id
-        });
-        
-        if (setupError) {
-          console.error('❌ Signup setup error:', setupError);
-        } else {
-          console.log('✅ Signup user setup complete:', setupData);
-        }
-        
+
         analytics.trackSignUp(data.user.id, {
           email: data.user.email,
           name: formData.name,
           source: source || 'web'
         })
+
+        // TODO: Re-enable MFA prompt once backend is fully implemented
+        // setStep('signup-mfa-prompt')
+
+        // Show appropriate message based on whether email confirmation is required
+        if (requiresEmailConfirmation) {
+          setSuccessMessage('Account created! Please check your email to confirm your account before signing in.')
+          // Don't redirect - user needs to confirm email first
+          setTimeout(() => {
+            setMode('login')
+            setStep('email')
+          }, 3000)
+        } else {
+          // Email confirmation not required - user can access dashboard immediately
+          setSuccessMessage('Account created successfully! Redirecting to dashboard...')
+          setTimeout(() => {
+            navigate('/', { replace: true })
+          }, 2000)
+        }
       }
-      
+
     } catch (error: any) {
       setError(error.message)
     } finally {
@@ -295,6 +343,11 @@ const LoginFlow: React.FC = () => {
       setStep('signup-name')
     } else if (step === 'email') {
       setStep('welcome')
+    } else if (step === 'signup-mfa-setup') {
+      setStep('signup-mfa-prompt')
+    } else if (step === 'mfa-verify') {
+      setStep('password')
+      setMfaRequired(false)
     }
     setError(null)
     setSuccessMessage(null)
@@ -540,7 +593,33 @@ const LoginFlow: React.FC = () => {
                   Password must be at least 6 characters long
                 </p>
               </div>
-              
+
+              <div className="space-y-4">
+                <label className="flex items-center justify-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailNotifications}
+                    onChange={(e) => setEmailNotifications(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-dark-border rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-400 dark:text-gray-500">
+                    Send me email notifications about my account
+                  </span>
+                </label>
+
+                <p className="text-xs text-center text-gray-400 dark:text-gray-500">
+                  By signing up you agree to our{' '}
+                  <a
+                    href="https://lyceum.technology/terms-conditions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 underline"
+                  >
+                    terms and conditions
+                  </a>
+                </p>
+              </div>
+
               <button
                 type="submit"
                 className="w-full py-2 px-4 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
@@ -551,9 +630,86 @@ const LoginFlow: React.FC = () => {
             </form>
           )}
 
+          {/* MFA Prompt Step (Signup) */}
+          {step === 'signup-mfa-prompt' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="mx-auto h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                  <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-dark-text mb-2">
+                  Account Created Successfully!
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-dark-text-secondary">
+                  Welcome to Lyceum, {formData.name}!
+                </p>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
+                  Secure your account with Two-Factor Authentication
+                </h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Add an extra layer of security to protect your account. You'll need an authenticator app like Google Authenticator or Authy.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => setStep('signup-mfa-setup')}
+                  className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors font-medium"
+                >
+                  Enable Two-Factor Authentication
+                </button>
+
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full py-3 px-4 border border-gray-300 dark:border-dark-border rounded-md text-gray-700 dark:text-dark-text bg-white dark:bg-dark-card hover:bg-gray-50 dark:hover:bg-dark-accent/20 focus:ring-2 focus:ring-blue-500 transition-colors"
+                >
+                  Skip for Now
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 dark:text-dark-text-secondary text-center">
+                You can enable two-factor authentication later from your account settings.
+              </p>
+            </div>
+          )}
+
+          {/* MFA Setup Step (Signup) */}
+          {step === 'signup-mfa-setup' && jwtToken && (
+            <MFAEnrollment
+              jwtToken={jwtToken}
+              onSuccess={() => {
+                setSuccessMessage('Two-factor authentication enabled successfully!')
+                setTimeout(() => window.location.reload(), 2000)
+              }}
+              onCancel={() => setStep('signup-mfa-prompt')}
+              autoStart={true}
+            />
+          )}
 
         </div>
       </div>
+
+      {/* MFA Verification Step (Login) - Full Screen */}
+      {step === 'mfa-verify' && jwtToken && (
+        <MFAVerification
+          jwtToken={jwtToken}
+          onSuccess={() => {
+            console.log('🔐 MFA verification successful, clearing pending flag')
+            // Clear the MFA pending flag
+            sessionStorage.removeItem('mfa_pending')
+            setSuccessMessage('MFA verification successful!')
+            // Redirect will happen automatically via AuthContext
+            window.location.reload()
+          }}
+          onBack={goBack}
+          userEmail={formData.email}
+        />
+      )}
     </div>
   )
 }

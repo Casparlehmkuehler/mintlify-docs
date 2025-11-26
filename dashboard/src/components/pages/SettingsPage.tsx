@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { User, Bell, Shield, Palette, Save, Moon, Sun, Loader2, Lock, AlertCircle, Smartphone, Copy, Check, Trash2 } from 'lucide-react'
+import { User, Shield, Palette, Save, Moon, Sun, Loader2, Lock, AlertCircle, Trash2, Mail, ChevronDown, ChevronUp, Github } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
 import { buildApiUrl } from '../../lib/api'
+import { MFASettings } from '../settings/MFASettings'
+import { EmailPreferencesApi, EmailPreferences } from '../../services/emailPreferencesApi'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -17,33 +19,52 @@ const SettingsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [changingPassword, setChangingPassword] = useState(false)
-  const [show2FASetup, setShow2FASetup] = useState(false)
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
-  const [manualEntrySecret, setManualEntrySecret] = useState<string | null>(null)
-  const [verificationCode, setVerificationCode] = useState('')
   const [showDeleteAccount, setShowDeleteAccount] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [deleting, setDeleting] = useState(false)
-  const [setting2FA, setSetting2FA] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [factorId, setFactorId] = useState<string | null>(null)
+  const [jwtToken, setJwtToken] = useState<string | null>(null)
+  const [emailPreferences, setEmailPreferences] = useState<EmailPreferences | null>(null)
+  const [loadingEmailPrefs, setLoadingEmailPrefs] = useState(false)
+  const [savingEmailPrefs, setSavingEmailPrefs] = useState(false)
+  const [showEmailPrefs, setShowEmailPrefs] = useState(false)
+  const [authProvider, setAuthProvider] = useState<'email' | 'github' | 'google' | null>(null)
 
-  // Load profile data
+  // Load profile data and JWT token
   useEffect(() => {
     if (user) {
       loadProfile()
+      loadJWTToken()
     }
   }, [user])
 
-  // Helper function to check actual MFA status from Supabase
-  const checkMFAStatus = async () => {
+  const loadJWTToken = async () => {
     try {
-      const { data: factors } = await supabase.auth.mfa.listFactors()
-      const hasVerifiedTOTP = factors?.totp?.some(factor => factor.status === 'verified') || false
-      return hasVerifiedTOTP
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setJwtToken(session.access_token)
+        // Load email preferences once we have the token
+        loadEmailPreferences(session.access_token)
+
+        // Detect auth provider
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        const provider = authUser?.app_metadata?.provider || 'email'
+        setAuthProvider(provider as 'email' | 'github' | 'google')
+      }
     } catch (error) {
-      console.error('Error checking MFA status:', error)
-      return false
+      console.error('Error loading JWT token:', error)
+    }
+  }
+
+  const loadEmailPreferences = async (token: string) => {
+    try {
+      setLoadingEmailPrefs(true)
+      const prefs = await EmailPreferencesApi.getEmailPreferences(token)
+      setEmailPreferences(prefs)
+    } catch (error) {
+      console.error('Error loading email preferences:', error)
+      // Don't show error to user for this, just log it
+    } finally {
+      setLoadingEmailPrefs(false)
     }
   }
 
@@ -64,9 +85,6 @@ const SettingsPage: React.FC = () => {
           throw error
         }
       } else {
-        // Check actual MFA status and sync it
-        await checkMFAStatus()
-        
         setProfile(data)
       }
     } catch (err: any) {
@@ -105,6 +123,31 @@ const SettingsPage: React.FC = () => {
   const handleProfileChange = (field: keyof Profile, value: string | boolean) => {
     if (profile) {
       setProfile(prev => ({ ...prev!, [field]: value }))
+    }
+  }
+
+  const handleEmailPreferenceChange = (field: keyof EmailPreferences, value: boolean) => {
+    if (emailPreferences) {
+      setEmailPreferences(prev => ({ ...prev!, [field]: value }))
+    }
+  }
+
+  const handleSaveEmailPreferences = async () => {
+    if (!emailPreferences || !jwtToken) return
+
+    try {
+      setSavingEmailPrefs(true)
+      setError(null)
+      setSuccess(null)
+
+      await EmailPreferencesApi.updateEmailPreferences(jwtToken, emailPreferences)
+
+      setSuccess('Email preferences updated successfully!')
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err: any) {
+      setError('Failed to save email preferences: ' + err.message)
+    } finally {
+      setSavingEmailPrefs(false)
     }
   }
 
@@ -147,240 +190,17 @@ const SettingsPage: React.FC = () => {
 
       // Always use password reset email for security
       const { error } = await supabase.auth.resetPasswordForEmail(user?.email || '', {
-        redirectTo: window.location.origin + '/settings?password-reset=true'
+        redirectTo: window.location.origin + '/reset-password'
       })
-      
+
       if (error) throw error
-      
+
       setSuccess('Password reset email sent! Check your inbox and follow the link to reset your password.')
       setTimeout(() => setSuccess(null), 4000)
     } catch (err: any) {
       setError('Failed to send password reset email: ' + err.message)
     } finally {
       setChangingPassword(false)
-    }
-  }
-
-  const handleEnable2FA = async () => {
-    try {
-      setSetting2FA(true)
-      setError(null)
-
-      // First check if user already has factors enrolled
-      const { data: existingFactors, error: listError } = await supabase.auth.mfa.listFactors()
-      
-      if (listError) {
-        console.error('List Factors Error:', listError)
-        throw listError
-      }
-
-      console.log('Existing factors:', existingFactors)
-
-      // If there are existing unverified factors, clean them up first
-      if (existingFactors.totp && existingFactors.totp.length > 0) {
-        for (const factor of existingFactors.totp) {
-          if (factor.status === 'unverified') {
-            console.log('Cleaning up unverified factor:', factor.id)
-            await supabase.auth.mfa.unenroll({ factorId: factor.id })
-          } else if (factor.status === 'verified') {
-            setError('Two-factor authentication is already enabled for your account.')
-            return
-          }
-        }
-      }
-
-      // Create a unique friendly name with timestamp
-      const timestamp = Date.now()
-      const friendlyName = `Authenticator App ${timestamp}`
-
-      const { data, error } = await supabase.auth.mfa.enroll({
-        factorType: 'totp',
-        friendlyName: friendlyName
-      })
-
-      if (error) {
-        console.error('MFA Enrollment Error:', error)
-        throw error
-      }
-
-      console.log('MFA Enrollment Success:', data)
-      
-      // Store the factor ID for later verification
-      setFactorId(data.id)
-      setQrCodeUrl(data.totp.qr_code)
-      setManualEntrySecret(data.totp.secret)
-      setShow2FASetup(true)
-    } catch (err: any) {
-      if (err.message?.includes('422') || err.message?.includes('MFA is not enabled')) {
-        setError('Two-factor authentication is not enabled for this project. Please contact your administrator.')
-      } else if (err.code === 'mfa_factor_name_conflict') {
-        setError('A setup attempt is already in progress. Please try again in a moment.')
-      } else {
-        setError('Failed to start 2FA setup: ' + err.message)
-      }
-      console.error('2FA Setup Error:', err)
-    } finally {
-      setSetting2FA(false)
-    }
-  }
-
-  const handleVerify2FA = async () => {
-    if (!verificationCode || verificationCode.length !== 6) {
-      setError('Please enter a valid 6-digit code')
-      return
-    }
-
-    if (!factorId) {
-      setError('2FA setup error: Missing factor ID. Please try again.')
-      return
-    }
-
-    try {
-      setSetting2FA(true)
-      setError(null)
-
-      // First, create a challenge for the factor
-      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-        factorId: factorId
-      })
-
-      if (challengeError) {
-        console.error('Challenge Error:', challengeError)
-        throw challengeError
-      }
-
-      console.log('Challenge created:', challengeData)
-      
-      // Then verify the challenge with the user's code
-      const { data: verifyData, error: verifyError } = await supabase.auth.mfa.verify({
-        factorId: factorId,
-        challengeId: challengeData.id,
-        code: verificationCode
-      })
-
-      if (verifyError) {
-        console.error('Verify Error:', verifyError)
-        throw verifyError
-      }
-
-      console.log('Verification success:', verifyData)
-
-      // Update profile to reflect 2FA is enabled - do this first
-      if (profile && user) {
-        const updatedProfile = { ...profile, two_factor_enabled: true }
-        setProfile(updatedProfile)
-        
-        // Save to database immediately
-        const { error: updateError } = await (supabase as any)
-          .from('profiles')
-          .update({ two_factor_enabled: true })
-          .eq('id', user.id)
-          
-        if (updateError) {
-          console.error('Failed to update 2FA status in database:', updateError)
-        }
-      }
-
-      setSuccess('Two-factor authentication enabled successfully!')
-      setShow2FASetup(false)
-      setVerificationCode('')
-      setFactorId(null)
-      
-      // Reload the profile to ensure UI is in sync
-      setTimeout(() => {
-        setSuccess(null)
-        loadProfile()
-      }, 1000)
-    } catch (err: any) {
-      console.error('2FA Verification Error:', err)
-      if (err.message?.includes('Invalid TOTP code')) {
-        setError('Invalid verification code. Please check your authenticator app and try again.')
-      } else {
-        setError('Failed to verify 2FA code: ' + err.message)
-      }
-    } finally {
-      setSetting2FA(false)
-    }
-  }
-
-  const handleDisable2FA = async () => {
-    try {
-      setSetting2FA(true)
-      setError(null)
-
-      // First get all enrolled factors
-      const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors()
-      
-      if (factorsError) {
-        console.error('List Factors Error:', factorsError)
-        throw factorsError
-      }
-
-      console.log('Current factors:', factors)
-
-      // Find TOTP factors and unenroll them
-      const totpFactors = factors.totp?.filter(factor => factor.status === 'verified') || []
-      
-      if (totpFactors.length === 0) {
-        throw new Error('No active 2FA factors found')
-      }
-
-      // Unenroll the first TOTP factor (assuming one factor per user)
-      const { error: unenrollError } = await supabase.auth.mfa.unenroll({
-        factorId: totpFactors[0].id
-      })
-
-      if (unenrollError) {
-        console.error('Unenroll Error:', unenrollError)
-        throw unenrollError
-      }
-
-      // Update profile to reflect 2FA is disabled
-      if (profile && user) {
-        const updatedProfile = { ...profile, two_factor_enabled: false }
-        setProfile(updatedProfile)
-        
-        // Save to database immediately
-        const { error: updateError } = await (supabase as any)
-          .from('profiles')
-          .update({ two_factor_enabled: false })
-          .eq('id', user.id)
-          
-        if (updateError) {
-          console.error('Failed to update 2FA status in database:', updateError)
-        }
-      }
-
-      setSuccess('Two-factor authentication disabled successfully!')
-      
-      // Reload the profile to ensure UI is in sync
-      setTimeout(() => {
-        setSuccess(null)
-        loadProfile()
-      }, 1000)
-    } catch (err: any) {
-      console.error('2FA Disable Error:', err)
-      setError('Failed to disable 2FA: ' + err.message)
-    } finally {
-      setSetting2FA(false)
-    }
-  }
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      // Fallback for browsers that don't support clipboard API
-      const textArea = document.createElement('textarea')
-      textArea.value = text
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
     }
   }
 
@@ -522,31 +342,141 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Notification Preferences */}
+        {/* Email Preferences */}
         <div className="bg-white dark:bg-dark-card p-6 rounded-lg border border-gray-200 dark:border-dark-border">
-          <div className="flex items-center mb-4">
-            <Bell className="h-5 w-5 text-gray-500 dark:text-dark-text-secondary mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Notification Preferences</h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-dark-text">Email Notifications</p>
-                <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Receive important updates via email</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={profile?.email_notifications || false}
-                onChange={(e) => handleProfileChange('email_notifications', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-dark-border rounded"
-              />
+          <button
+            onClick={() => setShowEmailPrefs(!showEmailPrefs)}
+            className="flex items-center justify-between w-full text-left"
+          >
+            <div className="flex items-center">
+              <Mail className="h-5 w-5 text-gray-500 dark:text-dark-text-secondary mr-2" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Email Preferences</h2>
             </div>
-            <div className="bg-gray-50 dark:bg-dark-accent/10 p-3 rounded-md">
-              <p className="text-sm text-gray-600 dark:text-dark-text-secondary">
-                <strong>Note:</strong> Granular notification settings (run completion, failures, billing, etc.) will be available soon. For now, this controls all email notifications.
+            <div className="flex items-center">
+              {loadingEmailPrefs && (
+                <Loader2 className="h-4 w-4 animate-spin text-blue-600 mr-2" />
+              )}
+              {showEmailPrefs ? (
+                <ChevronUp className="h-5 w-5 text-gray-500 dark:text-dark-text-secondary" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-500 dark:text-dark-text-secondary" />
+              )}
+            </div>
+          </button>
+
+          {showEmailPrefs && emailPreferences ? (
+            <div className="space-y-4 mt-4">
+              <div className="flex items-start justify-between py-3 border-b border-gray-200 dark:border-dark-border">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">Marketing & Product Updates</p>
+                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
+                    Occasional emails about new features, tips, and product announcements
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={emailPreferences.email_marketing}
+                  onChange={(e) => handleEmailPreferenceChange('email_marketing', e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-dark-border rounded"
+                />
+              </div>
+
+              <div className="flex items-start justify-between py-3 border-b border-gray-200 dark:border-dark-border">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">Transactional Emails</p>
+                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
+                    Account-related emails like welcome messages and verification requests
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={emailPreferences.email_transactional}
+                  onChange={(e) => handleEmailPreferenceChange('email_transactional', e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-dark-border rounded"
+                />
+              </div>
+
+              <div className="flex items-start justify-between py-3 border-b border-gray-200 dark:border-dark-border">
+                <div className="flex-1">
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-900 dark:text-dark-text">Security Alerts</p>
+                    <AlertCircle className="h-4 w-4 ml-2 text-orange-500" />
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
+                    Important security notifications about your account (Recommended)
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={emailPreferences.email_security}
+                  onChange={(e) => handleEmailPreferenceChange('email_security', e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-dark-border rounded"
+                />
+              </div>
+
+              <div className="flex items-start justify-between py-3 border-b border-gray-200 dark:border-dark-border">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">Job Notifications</p>
+                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
+                    Notifications when your jobs complete or fail
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={emailPreferences.email_job_notifications}
+                  onChange={(e) => handleEmailPreferenceChange('email_job_notifications', e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-dark-border rounded"
+                />
+              </div>
+
+              <div className="flex items-start justify-between py-3">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">Billing & Payments</p>
+                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
+                    Receipts, payment confirmations, and low credit warnings
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={emailPreferences.email_billing}
+                  onChange={(e) => handleEmailPreferenceChange('email_billing', e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-dark-border rounded"
+                />
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 rounded-md mt-4">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Note:</strong> Password reset emails are always sent for security reasons, regardless of your preferences.
+                </p>
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={handleSaveEmailPreferences}
+                  disabled={savingEmailPrefs}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {savingEmailPrefs ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Email Preferences
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : showEmailPrefs && !emailPreferences ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-gray-500 dark:text-dark-text-secondary">
+                {loadingEmailPrefs ? 'Loading email preferences...' : 'Unable to load email preferences'}
               </p>
             </div>
-          </div>
+          ) : null}
         </div>
 
         {/* Appearance Settings */}
@@ -587,191 +517,71 @@ const SettingsPage: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Security</h2>
           </div>
           <div className="space-y-4">
-            <div>
-              <button 
-                onClick={handlePasswordChange}
-                disabled={changingPassword}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {changingPassword ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Sending Reset Email...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-4 w-4 mr-2" />
-                    Send Password Reset Email
-                  </>
-                )}
-              </button>
-              <p className="mt-2 text-sm text-gray-500 dark:text-dark-text-secondary">
-                You'll receive an email with a secure link to reset your password.
-              </p>
-            </div>
-            
-            <div className="pt-4 border-t border-gray-200 dark:border-dark-border">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-dark-text mb-1">Two-Factor Authentication</h3>
-                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Add an extra layer of security to your account</p>
-                </div>
-                <div className="flex items-center">
-                  <Smartphone className="h-4 w-4 text-gray-400 dark:text-dark-text-secondary mr-2" />
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    profile?.two_factor_enabled 
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
-                      : 'bg-gray-100 dark:bg-dark-accent/20 text-gray-600 dark:text-dark-text-secondary'
-                  }`}>
-                    {profile?.two_factor_enabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-              </div>
-              
-              {!profile?.two_factor_enabled ? (
+            {/* Password Reset - Only for email/password auth users */}
+            {authProvider === 'email' && (
+              <div>
                 <button
-                  onClick={handleEnable2FA}
-                  disabled={setting2FA}
-                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onClick={handlePasswordChange}
+                  disabled={changingPassword}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {setting2FA ? (
+                  {changingPassword ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Setting up...
+                      Sending Reset Email...
                     </>
                   ) : (
                     <>
-                      <Shield className="h-4 w-4 mr-2" />
-                      Enable 2FA
+                      <Lock className="h-4 w-4 mr-2" />
+                      Send Password Reset Email
                     </>
                   )}
                 </button>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                    <Shield className="h-4 w-4 text-green-600 dark:text-green-400 mr-2" />
-                    <span className="text-sm text-green-800 dark:text-green-200">
-                      Your account is protected with two-factor authentication.
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleDisable2FA}
-                    disabled={setting2FA}
-                    className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {setting2FA ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Disabling...
-                      </>
-                    ) : (
-                      'Disable 2FA'
-                    )}
-                  </button>
+                <p className="mt-2 text-sm text-gray-500 dark:text-dark-text-secondary">
+                  You'll receive an email with a secure link to reset your password.
+                </p>
+              </div>
+            )}
+
+            {/* OAuth Provider Info - For GitHub users */}
+            {authProvider === 'github' && (
+              <div className="flex items-start p-4 bg-gray-50 dark:bg-dark-accent/10 rounded-lg border border-gray-200 dark:border-dark-border">
+                <Github className="h-5 w-5 text-gray-600 dark:text-dark-text-secondary mr-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
+                    You sign in with GitHub
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
+                    Password management is handled through your GitHub account.
+                  </p>
                 </div>
-              )}
-              
-              {/* 2FA Setup Modal */}
-              {show2FASetup && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                  <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShow2FASetup(false)}></div>
-                    
-                    <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                    
-                    <div className="inline-block align-bottom bg-white dark:bg-dark-card rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                      <div className="bg-white dark:bg-dark-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div className="sm:flex sm:items-start">
-                          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 sm:mx-0 sm:h-10 sm:w-10">
-                            <Smartphone className="h-6 w-6 text-green-600 dark:text-green-400" />
-                          </div>
-                          <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-dark-text">
-                              Set up Two-Factor Authentication
-                            </h3>
-                            <div className="mt-4 space-y-4">
-                              <p className="text-sm text-gray-500 dark:text-dark-text-secondary">
-                                Scan this QR code with your authenticator app (like Google Authenticator or Authy):
-                              </p>
-                              
-                              {qrCodeUrl && (
-                                <div className="flex justify-center">
-                                  <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48" />
-                                </div>
-                              )}
-                              
-                              <div className="bg-gray-50 dark:bg-dark-accent/10 p-3 rounded-md">
-                                <p className="text-xs text-gray-600 dark:text-dark-text-secondary mb-2">
-                                  Or enter this code manually:
-                                </p>
-                                <div className="flex items-center space-x-2">
-                                  <code className="flex-1 text-sm font-mono bg-gray-100 dark:bg-dark-accent/20 p-2 rounded border text-gray-900 dark:text-dark-text">
-                                    {manualEntrySecret}
-                                  </code>
-                                  <button
-                                    onClick={() => copyToClipboard(manualEntrySecret!)}
-                                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-dark-text-secondary dark:hover:text-dark-text"
-                                  >
-                                    {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                                  </button>
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
-                                  Enter the 6-digit code from your authenticator app:
-                                </label>
-                                <input
-                                  type="text"
-                                  value={verificationCode}
-                                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-dark-card text-gray-900 dark:text-dark-text text-center text-lg font-mono"
-                                  placeholder="000000"
-                                  maxLength={6}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-dark-accent/10 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button
-                          type="button"
-                          onClick={handleVerify2FA}
-                          disabled={setting2FA || verificationCode.length !== 6}
-                          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                          {setting2FA ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Verifying...
-                            </>
-                          ) : (
-                            'Enable 2FA'
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShow2FASetup(false)
-                            setVerificationCode('')
-                            setFactorId(null)
-                            setQrCodeUrl(null)
-                            setManualEntrySecret(null)
-                          }}
-                          disabled={setting2FA}
-                          className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-dark-border shadow-sm px-4 py-2 bg-white dark:bg-dark-card text-base font-medium text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-accent/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+              </div>
+            )}
+
+            {/* OAuth Provider Info - For Google users */}
+            {authProvider === 'google' && (
+              <div className="flex items-start p-4 bg-gray-50 dark:bg-dark-accent/10 rounded-lg border border-gray-200 dark:border-dark-border">
+                <svg className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
+                    You sign in with Google
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
+                    Password management is handled through your Google account.
+                  </p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* MFA Settings */}
+        {jwtToken && <MFASettings jwtToken={jwtToken} />}
 
         {/* Delete Account Section */}
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 p-6 rounded-lg">

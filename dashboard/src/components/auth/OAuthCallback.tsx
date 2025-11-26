@@ -10,41 +10,71 @@ const OAuthCallback: React.FC = () => {
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
-        // Get the current session after OAuth callback
+        // Exchange the auth code in the URL for a session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
+
         if (sessionError) {
           console.error('Session error:', sessionError)
-          setError('Authentication failed. Please try again.')
+          setError('Authentication failed. Please try signing in.')
           setStatus('error')
           return
         }
 
         if (!session?.user) {
-          console.error('No user session found')
-          setError('No user session found. Please try again.')
+          console.log('No active session found - checking URL for auth code')
+
+          // Check if this is an email confirmation or OAuth redirect with a code in the URL
+          const hashParams = new URLSearchParams(window.location.hash.substring(1))
+          const queryParams = new URLSearchParams(window.location.search)
+
+          const accessToken = hashParams.get('access_token') || queryParams.get('access_token')
+          const type = hashParams.get('type') || queryParams.get('type')
+
+          if (type === 'recovery') {
+            // This is a password reset - redirect to password reset page
+            console.log('Password reset callback detected')
+            navigate('/reset-password', { replace: true })
+            return
+          }
+
+          if (!accessToken) {
+            console.error('No session and no access token in URL')
+            setError('Email confirmation link may have expired. Please try signing in.')
+            setStatus('error')
+            return
+          }
+
+          console.log('Access token found in URL, user should be authenticated')
+        }
+
+        // At this point we should have a valid session
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+
+        if (!currentSession?.user) {
+          console.error('Still no user session after token exchange')
+          setError('Unable to complete authentication. Please sign in.')
           setStatus('error')
           return
         }
 
-        const user = session.user
-        console.log('OAuth callback - user authenticated:', user.id)
-        
-        // Ensure user setup is complete for OAuth users
+        const user = currentSession.user
+        console.log('Auth callback - user authenticated:', user.id)
+
+        // Ensure user setup is complete
         setStatus('creating_profile')
-        console.log('🔧 Calling ensure_user_setup for OAuth user:', user.id)
+        console.log('🔧 Calling ensure_user_setup for user:', user.id)
         const { data: setupData, error: setupError } = await supabase.rpc('ensure_user_setup', {
           p_user_id: user.id
         });
-        
+
         if (setupError) {
-          console.error('❌ OAuth setup error:', setupError);
+          console.error('❌ Setup error:', setupError);
         } else {
-          console.log('✅ OAuth user setup complete:', setupData);
+          console.log('✅ User setup complete:', setupData);
         }
-        
+
         setStatus('complete')
-        
+
         // Redirect to dashboard after a short delay
         const timer = setTimeout(() => {
           navigate('/', { replace: true })
@@ -53,7 +83,7 @@ const OAuthCallback: React.FC = () => {
         return () => clearTimeout(timer)
 
       } catch (error: any) {
-        console.error('OAuth callback error:', error)
+        console.error('Auth callback error:', error)
         setError(`Authentication error: ${error.message}`)
         setStatus('error')
       }
