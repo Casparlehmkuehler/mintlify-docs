@@ -31,6 +31,14 @@
             ]
           },
           {
+            "group": "Virtual Machines",
+            "pages": [
+              "docs/vms/overview",
+              "docs/vms/cli",
+              "docs/vms/api"
+            ]
+          },
+          {
             "group": "Platform Components",
             "pages": [
               "docs/storage",
@@ -61,7 +69,8 @@
               "examples/machine-learning",
               "examples/data-processing",
               "examples/api-integration",
-              "examples/docker-containers"
+              "examples/docker-containers",
+              "examples/vm-instances"
             ]
           }
         ]

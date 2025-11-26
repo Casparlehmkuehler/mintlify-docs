@@ -1,0 +1,106 @@
+---
+title: "Virtual Machines"
+description: "Provision and manage GPU/CPU VM instances on Lyceum's cloud infrastructure"
+icon: "server"
+---
+
+<Info>
+  Launch dedicated virtual machines with SSH access for long-running workloads, development environments, or persistent compute needs.
+</Info>
+
+## Overview
+
+Lyceum VMs provide full Linux instances with root access, ideal for workloads that need persistent state, custom system configurations, or interactive development sessions.
+
+<CardGroup cols={3}>
+  <Card title="GPU Support" icon="microchip">
+    A100 and H100 GPUs for ML training and inference
+  </Card>
+  <Card title="SSH Access" icon="terminal">
+    Full shell access with your SSH keys
+  </Card>
+  <Card title="Flexible Resources" icon="sliders">
+    Configure CPU, memory, disk, and GPU count
+  </Card>
+</CardGroup>
+
+## When to Use VMs
+
+<Tabs>
+  <Tab title="Use VMs For" icon="check">
+    - Long-running training jobs (hours/days)
+    - Interactive development and debugging
+    - Persistent development environments
+    - Workloads requiring custom system packages
+    - Multi-process applications
+    - Jobs requiring specific hardware configurations
+  </Tab>
+  <Tab title="Consider Alternatives" icon="xmark">
+    - Short batch jobs → Use [Docker Execution](/docs/docker-execution)
+    - Quick Python scripts → Use [Python Execution](/docs/vscode-extension)
+    - Stateless containerized workloads → Use Docker Execution
+  </Tab>
+</Tabs>
+
+## Hardware Profiles
+
+| Profile | GPU | vCPU | Memory | Best For |
+|---------|-----|------|--------|----------|
+| `cpu` | None | 4 | 16 GB | Development, testing, CPU workloads |
+| `a100` | NVIDIA A100 | 8 | 64 GB | ML training, large models |
+| `h100` | NVIDIA H100 | 8 | 80 GB | Latest ML workloads, maximum performance |
+
+<Tip>
+  Check real-time availability with `lyceum vms availability` before starting instances.
+</Tip>
+
+## VM Lifecycle
+
+| Status | Description |
+|--------|-------------|
+| `pending` | VM is being provisioned |
+| `ready` / `running` | VM is available for SSH access |
+| `failed` / `error` | Provisioning failed |
+| `terminated` | VM has been deleted |
+
+## Quick Start
+
+<Steps>
+  <Step title="Authenticate">
+    ```bash
+    lyceum auth login
+    ```
+  </Step>
+  <Step title="Check availability">
+    ```bash
+    lyceum vms availability
+    ```
+  </Step>
+  <Step title="Start a VM">
+    ```bash
+    lyceum vms start -h a100 -k "$(cat ~/.ssh/id_rsa.pub)" -n "my-training-vm"
+    ```
+  </Step>
+  <Step title="Connect via SSH">
+    The CLI displays the SSH command when your VM is ready:
+    ```bash
+    ssh -i ~/.ssh/id_rsa ubuntu@<ip-address>
+    ```
+  </Step>
+  <Step title="Terminate when done">
+    ```bash
+    lyceum vms terminate <vm_id>
+    ```
+  </Step>
+</Steps>
+
+## What's Next
+
+<CardGroup cols={2}>
+  <Card title="CLI Reference" icon="terminal" href="/docs/vms/cli">
+    Complete CLI command reference
+  </Card>
+  <Card title="API Reference" icon="code" href="/docs/vms/api">
+    REST API endpoints for programmatic access
+  </Card>
+</CardGroup>

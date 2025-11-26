@@ -1,0 +1,281 @@
+---
+title: "CLI Reference"
+description: "Complete reference for Lyceum VM CLI commands"
+icon: "terminal"
+---
+
+<Info>
+  All VM commands require authentication. Run `lyceum auth login` before using these commands.
+</Info>
+
+## Commands Overview
+
+| Command | Description |
+|---------|-------------|
+| `lyceum vms start` | Start a new VM instance |
+| `lyceum vms list` | List all your VM instances |
+| `lyceum vms status` | Get detailed status of a VM |
+| `lyceum vms availability` | Check hardware availability |
+| `lyceum vms terminate` | Terminate a VM instance |
+
+## Start VM Instance
+
+Start a new VM with the specified configuration.
+
+```bash
+lyceum vms start --key "<ssh-public-key>" [options]
+```
+
+### Options
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--hardware-profile` | `-h` | Hardware profile (`cpu`, `a100`, `h100`) | `a100` |
+| `--key` | `-k` | SSH public key (required) | - |
+| `--name` | `-n` | Friendly instance name | - |
+| `--cpu` | - | CPU cores | Profile default |
+| `--memory` | - | Memory in GB | Profile default |
+| `--disk` | - | Disk size in GB | Profile default |
+| `--gpu-count` | - | Number of GPUs | Profile default |
+
+### Examples
+
+<CodeGroup>
+  ```bash Basic A100 Instance
+  lyceum vms start -h a100 -k "ssh-rsa AAAAB3..." -n "training-vm"
+  ```
+
+  ```bash CPU Instance
+  lyceum vms start -h cpu -k "$(cat ~/.ssh/id_rsa.pub)" -n "dev-vm"
+  ```
+
+  ```bash Custom Resources
+  lyceum vms start -h a100 \
+    -k "$(cat ~/.ssh/id_rsa.pub)" \
+    -n "large-training" \
+    --cpu 16 \
+    --memory 128 \
+    --disk 500
+  ```
+
+  ```bash H100 Instance
+  lyceum vms start -h h100 -k "$(cat ~/.ssh/id_ed25519.pub)" -n "h100-training"
+  ```
+</CodeGroup>
+
+<Note>
+  After starting, the CLI polls for readiness (30 second intervals, up to 10 minutes) and displays the SSH command when the VM is ready.
+</Note>
+
+## List VM Instances
+
+Display all your VM instances in a table format.
+
+```bash
+lyceum vms list
+```
+
+### Output Columns
+
+| Column | Description |
+|--------|-------------|
+| VM ID | Unique identifier |
+| Name | Friendly name (if set) |
+| Status | Current status (`pending`, `ready`, `running`, `terminated`) |
+| IP Address | SSH connection address |
+| Hardware Profile | `cpu`, `a100`, or `h100` |
+| Billed ($) | Cost incurred |
+| Created At | Creation timestamp |
+
+### Example Output
+
+```
+┌──────────────────────────────────────┬───────────────┬─────────┬─────────────────┬──────────┬──────────┬─────────────────────┐
+│ VM ID                                │ Name          │ Status  │ IP Address      │ Profile  │ Billed   │ Created At          │
+├──────────────────────────────────────┼───────────────┼─────────┼─────────────────┼──────────┼──────────┼─────────────────────┤
+│ vm-abc123def456                      │ training-vm   │ running │ 10.0.1.5:22     │ a100     │ $2.45    │ 2024-01-15 10:30:00 │
+│ vm-xyz789ghi012                      │ dev-vm        │ ready   │ 10.0.1.8:22     │ cpu      │ $0.15    │ 2024-01-15 11:00:00 │
+└──────────────────────────────────────┴───────────────┴─────────┴─────────────────┴──────────┴──────────┴─────────────────────┘
+```
+
+## Check Hardware Availability
+
+Check which hardware profiles are currently available.
+
+```bash
+lyceum vms availability
+```
+
+### Example Output
+
+```
+┌──────────┬──────────────┬───────┬──────────┬───────────┐
+│ Profile  │ GPU Type     │ vCPU  │ Memory   │ Available │
+├──────────┼──────────────┼───────┼──────────┼───────────┤
+│ cpu      │ None         │ 4     │ 16 GB    │ 12        │
+│ a100     │ NVIDIA A100  │ 8     │ 64 GB    │ 3         │
+│ h100     │ NVIDIA H100  │ 8     │ 80 GB    │ 1         │
+└──────────┴──────────────┴───────┴──────────┴───────────┘
+```
+
+<Tip>
+  Run this command before starting a VM to ensure your desired hardware is available.
+</Tip>
+
+## Get VM Status
+
+Get detailed information about a specific VM.
+
+```bash
+lyceum vms status <vm_id>
+```
+
+### Output Fields
+
+| Field | Description |
+|-------|-------------|
+| Status | Current VM status |
+| Name | Instance name |
+| IP Address | SSH connection address |
+| Hardware Profile | Hardware configuration |
+| Billed | Total cost incurred |
+| Uptime | Time since VM started |
+| Instance Specs | CPU, memory, disk, GPU details |
+| SSH Command | Ready-to-use SSH command |
+
+### Example
+
+```bash
+lyceum vms status vm-abc123def456
+```
+
+```
+VM Status: running
+Name: training-vm
+IP Address: 10.0.1.5:22
+Hardware Profile: a100
+Billed: $2.45
+Uptime: 2h 15m 30s
+
+Instance Specs:
+  CPU: 8 cores
+  Memory: 64 GB
+  Disk: 100 GB
+  GPU: 1x NVIDIA A100
+
+SSH Command:
+  ssh -i <your-key> ubuntu@10.0.1.5
+```
+
+## Terminate VM
+
+Terminate a running VM instance.
+
+```bash
+lyceum vms terminate <vm_id> [--force]
+```
+
+### Options
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--force` | `-f` | Skip confirmation prompt |
+
+### Examples
+
+<CodeGroup>
+  ```bash With Confirmation
+  lyceum vms terminate vm-abc123def456
+  # Prompts: Are you sure you want to terminate vm-abc123def456? (y/N)
+  ```
+
+  ```bash Force Terminate
+  lyceum vms terminate vm-abc123def456 --force
+  ```
+</CodeGroup>
+
+<Warning>
+  Terminating a VM is irreversible. All data on the VM will be lost unless you've backed it up to persistent storage.
+</Warning>
+
+## SSH Access
+
+Once your VM is ready, connect via SSH:
+
+<Tabs>
+  <Tab title="Standard Port" icon="terminal">
+    ```bash
+    ssh -i ~/.ssh/id_rsa ubuntu@<ip>
+    ```
+  </Tab>
+  <Tab title="Custom Port" icon="plug">
+    If the IP address includes a port (e.g., `10.0.1.5:2222`):
+    ```bash
+    ssh -i ~/.ssh/id_rsa -p 2222 ubuntu@10.0.1.5
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  The default user is `ubuntu` with sudo privileges.
+</Tip>
+
+## Common Workflows
+
+<AccordionGroup>
+  <Accordion title="Start VM and run training job" icon="rocket">
+    ```bash
+    # Start the VM
+    lyceum vms start -h a100 -k "$(cat ~/.ssh/id_rsa.pub)" -n "training"
+
+    # Wait for ready message, then SSH in
+    ssh -i ~/.ssh/id_rsa ubuntu@<ip>
+
+    # On the VM: run your training
+    git clone https://github.com/your/repo.git
+    cd repo
+    pip install -r requirements.txt
+    python train.py
+
+    # When done, terminate
+    lyceum vms terminate <vm_id> -f
+    ```
+  </Accordion>
+
+  <Accordion title="Check availability before starting" icon="magnifying-glass">
+    ```bash
+    # Check what's available
+    lyceum vms availability
+
+    # If H100 is available, start one
+    lyceum vms start -h h100 -k "$(cat ~/.ssh/id_rsa.pub)" -n "h100-job"
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor and terminate idle VMs" icon="eye">
+    ```bash
+    # List all VMs to find idle ones
+    lyceum vms list
+
+    # Check specific VM status
+    lyceum vms status vm-abc123
+
+    # Terminate idle VMs
+    lyceum vms terminate vm-abc123 -f
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+| Exit Code | Meaning |
+|-----------|---------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Authentication required |
+| 3 | Insufficient credits |
+| 4 | VM not found |
+
+<Note>
+  If you encounter `Insufficient credits` (exit code 3), add credits via the [dashboard](https://dashboard.lyceum.technology) or [billing API](/docs/billing).
+</Note>

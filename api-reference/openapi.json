@@ -366,7 +366,7 @@
           "Docker Execution"
         ],
         "summary": "Start Docker Execution",
-        "description": "Start Docker container execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
+        "description": "Start Docker container execution asynchronously and return a streaming URL.\n\nThis endpoint returns immediately with an execution_id and streaming_url. The actual execution happens asynchronously. Use the streaming_url to receive real-time output logs as the job runs.",
         "operationId": "start_docker_execution_api_v2_external_execution_image_start_post",
         "requestBody": {
           "content": {
@@ -449,7 +449,7 @@
           "Python Execution"
         ],
         "summary": "Start Streaming Execution",
-        "description": "Start execution and return direct streaming URL.\n\nThe client can then connect directly to the streaming_url to receive output.",
+        "description": "Start Python code execution asynchronously and return a streaming URL.\n\nThis endpoint returns immediately with an execution_id and streaming_url. The actual execution happens asynchronously. Use the streaming_url to receive real-time output logs as the job runs.",
         "operationId": "start_streaming_execution_api_v2_external_execution_streaming_start_post",
         "requestBody": {
           "content": {
@@ -469,59 +469,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ExecutionStartResponse"
                 }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v2/external/execution/streaming/complete/{execution_id}": {
-      "post": {
-        "tags": [
-          "Python Execution"
-        ],
-        "summary": "Complete Execution",
-        "description": "Complete execution endpoint called by the extension after streaming finishes.\nUpdates the Supabase record with final output and status.",
-        "operationId": "complete_execution_api_v2_external_execution_streaming_complete__execution_id__post",
-        "parameters": [
-          {
-            "name": "execution_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Execution Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true,
-                "title": "Request"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
               }
             }
           },
@@ -1309,6 +1256,187 @@
         }
       }
     },
+    "/api/v2/external/vms/create": {
+      "post": {
+        "tags": [
+          "Virtual Machines"
+        ],
+        "summary": "Create VM Instance",
+        "description": "Create and start a new VM instance with the specified hardware profile and configuration.",
+        "operationId": "create_vm_api_v2_external_vms_create_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VMCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VMCreateResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/vms/list": {
+      "get": {
+        "tags": [
+          "Virtual Machines"
+        ],
+        "summary": "List VM Instances",
+        "description": "List all VM instances for the authenticated user.",
+        "operationId": "list_vms_api_v2_external_vms_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VMListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/vms/availability": {
+      "get": {
+        "tags": [
+          "Virtual Machines"
+        ],
+        "summary": "Check Hardware Availability",
+        "description": "Check available hardware profiles and current capacity.",
+        "operationId": "check_availability_api_v2_external_vms_availability_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VMAvailabilityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/vms/{vm_id}/status": {
+      "get": {
+        "tags": [
+          "Virtual Machines"
+        ],
+        "summary": "Get VM Status",
+        "description": "Get detailed status of a specific VM instance.",
+        "operationId": "get_vm_status_api_v2_external_vms__vm_id__status_get",
+        "parameters": [
+          {
+            "name": "vm_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "VM Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VMStatusResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "VM not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/external/vms/{vm_id}": {
+      "delete": {
+        "tags": [
+          "Virtual Machines"
+        ],
+        "summary": "Terminate VM Instance",
+        "description": "Terminate and delete a VM instance.",
+        "operationId": "terminate_vm_api_v2_external_vms__vm_id__delete",
+        "parameters": [
+          {
+            "name": "vm_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "VM Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VMTerminateResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "VM not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/external/create-checkout-session": {
       "post": {
         "tags": [],
@@ -2014,7 +2142,7 @@
           "streaming_url"
         ],
         "title": "DockerExecutionStartResponse",
-        "description": "Response model with direct streaming URL"
+        "description": "Response from starting a Docker execution. Contains execution_id for tracking and streaming_url for real-time output logs."
       },
       "ExecutionHistory": {
         "properties": {
@@ -2075,7 +2203,7 @@
           "streaming_url"
         ],
         "title": "ExecutionStartResponse",
-        "description": "Response model with direct streaming URL"
+        "description": "Response from starting a Python execution. Contains execution_id for tracking and streaming_url for real-time output logs."
       },
       "FileInfo": {
         "properties": {
@@ -2603,6 +2731,370 @@
         ],
         "title": "ExecutionSummary",
         "description": "Summary model for execution information."
+      },
+      "VMCreateRequest": {
+        "properties": {
+          "hardware_profile": {
+            "type": "string",
+            "enum": ["cpu", "a100", "h100"],
+            "title": "Hardware Profile",
+            "description": "Hardware profile for the VM instance"
+          },
+          "user_public_key": {
+            "type": "string",
+            "title": "User Public Key",
+            "description": "SSH public key for authentication"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Friendly name for the VM instance"
+          },
+          "instance_specs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VMInstanceSpecs"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Custom resource specifications"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hardware_profile",
+          "user_public_key"
+        ],
+        "title": "VMCreateRequest",
+        "description": "Request model for creating a VM instance"
+      },
+      "VMInstanceSpecs": {
+        "properties": {
+          "cpu": {
+            "type": "integer",
+            "title": "CPU",
+            "description": "Number of CPU cores"
+          },
+          "memory": {
+            "type": "integer",
+            "title": "Memory",
+            "description": "Memory in GB"
+          },
+          "disk": {
+            "type": "integer",
+            "title": "Disk",
+            "description": "Disk size in GB"
+          },
+          "gpu_count": {
+            "type": "integer",
+            "title": "GPU Count",
+            "description": "Number of GPUs"
+          }
+        },
+        "type": "object",
+        "title": "VMInstanceSpecs",
+        "description": "VM instance resource specifications"
+      },
+      "VMCreateResponse": {
+        "properties": {
+          "vm_id": {
+            "type": "string",
+            "title": "VM Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "IP Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vm_id",
+          "status",
+          "created_at"
+        ],
+        "title": "VMCreateResponse",
+        "description": "Response from creating a VM instance"
+      },
+      "VMListResponse": {
+        "properties": {
+          "vms": {
+            "items": {
+              "$ref": "#/components/schemas/VMSummary"
+            },
+            "type": "array",
+            "title": "VMs"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vms",
+          "total"
+        ],
+        "title": "VMListResponse",
+        "description": "Response from listing VM instances"
+      },
+      "VMSummary": {
+        "properties": {
+          "vm_id": {
+            "type": "string",
+            "title": "VM Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "IP Address"
+          },
+          "hardware_profile": {
+            "type": "string",
+            "title": "Hardware Profile"
+          },
+          "billed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billed"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vm_id",
+          "status",
+          "hardware_profile",
+          "created_at"
+        ],
+        "title": "VMSummary",
+        "description": "Summary of a VM instance"
+      },
+      "VMAvailabilityResponse": {
+        "properties": {
+          "pool_name": {
+            "type": "string",
+            "title": "Pool Name"
+          },
+          "available_hardware_profiles": {
+            "items": {
+              "$ref": "#/components/schemas/HardwareProfileAvailability"
+            },
+            "type": "array",
+            "title": "Available Hardware Profiles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pool_name",
+          "available_hardware_profiles"
+        ],
+        "title": "VMAvailabilityResponse",
+        "description": "Response showing hardware availability"
+      },
+      "HardwareProfileAvailability": {
+        "properties": {
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "gpu_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "GPU Type"
+          },
+          "vcpu": {
+            "type": "integer",
+            "title": "vCPU"
+          },
+          "memory_gb": {
+            "type": "integer",
+            "title": "Memory GB"
+          },
+          "available": {
+            "type": "integer",
+            "title": "Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "vcpu",
+          "memory_gb",
+          "available"
+        ],
+        "title": "HardwareProfileAvailability",
+        "description": "Availability info for a hardware profile"
+      },
+      "VMStatusResponse": {
+        "properties": {
+          "vm_id": {
+            "type": "string",
+            "title": "VM Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "IP Address"
+          },
+          "hardware_profile": {
+            "type": "string",
+            "title": "Hardware Profile"
+          },
+          "billed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billed"
+          },
+          "uptime_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uptime Seconds"
+          },
+          "instance_specs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VMInstanceSpecs"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vm_id",
+          "status",
+          "hardware_profile",
+          "created_at"
+        ],
+        "title": "VMStatusResponse",
+        "description": "Detailed status of a VM instance"
+      },
+      "VMTerminateResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "VMTerminateResponse",
+        "description": "Response from terminating a VM instance"
       }
     }
   }

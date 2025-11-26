@@ -1,0 +1,479 @@
+---
+title: "VM Instances"
+description: "Provision and manage GPU/CPU virtual machines for long-running workloads"
+icon: "server"
+---
+
+<Info>
+  Launch dedicated virtual machines with SSH access for training jobs, development environments, or any workload requiring persistent compute.
+</Info>
+
+<Note>
+  **Provisioning Time:** VMs take 1-3 minutes to provision. The CLI polls automatically, or use the API to check status until `ready` or `running`.
+</Note>
+
+## Quick Start with CLI
+
+Start a GPU instance and connect via SSH:
+
+<CodeGroup>
+```bash A100 Instance
+# Authenticate first
+lyceum auth login
+
+# Check availability
+lyceum vms availability
+
+# Start an A100 instance
+lyceum vms start \
+  -h a100 \
+  -k "$(cat ~/.ssh/id_rsa.pub)" \
+  -n "my-training-vm"
+
+# CLI waits and shows SSH command when ready:
+# ssh -i ~/.ssh/id_rsa ubuntu@10.0.1.5
+```
+
+```bash CPU Instance
+# Start a CPU-only instance for development
+lyceum vms start \
+  -h cpu \
+  -k "$(cat ~/.ssh/id_rsa.pub)" \
+  -n "dev-vm"
+```
+
+```bash H100 Instance
+# Start an H100 for maximum performance
+lyceum vms start \
+  -h h100 \
+  -k "$(cat ~/.ssh/id_ed25519.pub)" \
+  -n "h100-training"
+```
+</CodeGroup>
+
+## ML Training Workflow
+
+Complete workflow for training a model on a GPU VM:
+
+<Steps>
+  <Step title="Start the VM">
+    ```bash
+    lyceum vms start -h a100 -k "$(cat ~/.ssh/id_rsa.pub)" -n "pytorch-training"
+    ```
+  </Step>
+  <Step title="Connect and set up environment">
+    ```bash
+    # SSH into the VM
+    ssh -i ~/.ssh/id_rsa ubuntu@<ip>
+
+    # On the VM: verify GPU
+    nvidia-smi
+
+    # Clone your repo
+    git clone https://github.com/your-org/ml-project.git
+    cd ml-project
+
+    # Create virtual environment
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Run training">
+    ```bash
+    # Start training (use tmux/screen for long jobs)
+    tmux new -s training
+    python train.py --epochs 100 --batch-size 32
+
+    # Detach with Ctrl+B, D
+    # Reattach later with: tmux attach -t training
+    ```
+  </Step>
+  <Step title="Download results and terminate">
+    ```bash
+    # From your local machine
+    scp -i ~/.ssh/id_rsa ubuntu@<ip>:~/ml-project/model.pt ./
+
+    # Terminate the VM
+    lyceum vms terminate <vm_id> -f
+    ```
+  </Step>
+</Steps>
+
+## API Examples
+
+### Start VM Programmatically
+
+<CodeGroup>
+```python Python
+import requests
+import time
+
+BASE_URL = "https://api.lyceum.technology"
+TOKEN = "your-token"
+
+def create_vm(name, hardware_profile="a100"):
+    """Create a new VM instance."""
+    with open("/home/user/.ssh/id_rsa.pub") as f:
+        public_key = f.read().strip()
+
+    response = requests.post(
+        f"{BASE_URL}/api/v2/external/vms/create",
+        headers={
+            "Authorization": f"Bearer {TOKEN}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "hardware_profile": hardware_profile,
+            "user_public_key": public_key,
+            "name": name,
+            "instance_specs": {
+                "cpu": 8,
+                "memory": 64,
+                "disk": 100,
+                "gpu_count": 1
+            }
+        }
+    )
+    return response.json()
+
+def wait_for_ready(vm_id, timeout=600):
+    """Poll until VM is ready."""
+    start = time.time()
+    while time.time() - start < timeout:
+        response = requests.get(
+            f"{BASE_URL}/api/v2/external/vms/{vm_id}/status",
+            headers={"Authorization": f"Bearer {TOKEN}"}
+        )
+        status = response.json()
+
+        if status["status"] in ["ready", "running"]:
+            return status
+        elif status["status"] in ["failed", "error"]:
+            raise Exception(f"VM failed: {status}")
+
+        print(f"Status: {status['status']}...")
+        time.sleep(30)
+
+    raise TimeoutError("VM provisioning timed out")
+
+# Create and wait for VM
+vm = create_vm("training-job", "a100")
+print(f"Created VM: {vm['vm_id']}")
+
+ready_vm = wait_for_ready(vm["vm_id"])
+print(f"VM ready! SSH: ssh ubuntu@{ready_vm['ip_address']}")
+```
+
+```javascript JavaScript
+const BASE_URL = 'https://api.lyceum.technology';
+const TOKEN = 'your-token';
+
+async function createVM(name, hardwareProfile = 'a100') {
+  const response = await fetch(`${BASE_URL}/api/v2/external/vms/create`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      hardware_profile: hardwareProfile,
+      user_public_key: 'ssh-rsa AAAAB3...',
+      name: name,
+      instance_specs: {
+        cpu: 8,
+        memory: 64,
+        disk: 100,
+        gpu_count: 1
+      }
+    })
+  });
+  return response.json();
+}
+
+async function waitForReady(vmId, timeout = 600000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const response = await fetch(
+      `${BASE_URL}/api/v2/external/vms/${vmId}/status`,
+      { headers: { 'Authorization': `Bearer ${TOKEN}` } }
+    );
+    const status = await response.json();
+
+    if (['ready', 'running'].includes(status.status)) {
+      return status;
+    } else if (['failed', 'error'].includes(status.status)) {
+      throw new Error(`VM failed: ${JSON.stringify(status)}`);
+    }
+
+    console.log(`Status: ${status.status}...`);
+    await new Promise(r => setTimeout(r, 30000));
+  }
+  throw new Error('VM provisioning timed out');
+}
+
+// Usage
+const vm = await createVM('training-job', 'a100');
+console.log(`Created VM: ${vm.vm_id}`);
+
+const readyVM = await waitForReady(vm.vm_id);
+console.log(`SSH: ssh ubuntu@${readyVM.ip_address}`);
+```
+
+```bash cURL
+# Create VM
+curl -X POST https://api.lyceum.technology/api/v2/external/vms/create \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hardware_profile": "a100",
+    "user_public_key": "ssh-rsa AAAAB3...",
+    "name": "training-job",
+    "instance_specs": {
+      "cpu": 8,
+      "memory": 64,
+      "disk": 100,
+      "gpu_count": 1
+    }
+  }'
+
+# Check status (poll until ready)
+curl -X GET https://api.lyceum.technology/api/v2/external/vms/<vm_id>/status \
+  -H "Authorization: Bearer <TOKEN>"
+
+# Terminate when done
+curl -X DELETE https://api.lyceum.technology/api/v2/external/vms/<vm_id> \
+  -H "Authorization: Bearer <TOKEN>"
+```
+</CodeGroup>
+
+### List and Monitor VMs
+
+```python
+def list_vms():
+    """List all VMs."""
+    response = requests.get(
+        f"{BASE_URL}/api/v2/external/vms/list",
+        headers={"Authorization": f"Bearer {TOKEN}"}
+    )
+    return response.json()
+
+def check_availability():
+    """Check hardware availability."""
+    response = requests.get(
+        f"{BASE_URL}/api/v2/external/vms/availability",
+        headers={"Authorization": f"Bearer {TOKEN}"}
+    )
+    return response.json()
+
+# Check what's available
+availability = check_availability()
+for profile in availability["available_hardware_profiles"]:
+    print(f"{profile['profile']}: {profile['available']} available")
+
+# List running VMs
+vms = list_vms()
+for vm in vms["vms"]:
+    print(f"{vm['name']}: {vm['status']} - ${vm['billed']:.2f}")
+```
+
+## Development Environment Setup
+
+Set up a persistent development environment on a CPU VM:
+
+```bash
+# Start a CPU VM for development
+lyceum vms start -h cpu -k "$(cat ~/.ssh/id_rsa.pub)" -n "dev-env"
+
+# SSH in and set up your environment
+ssh -i ~/.ssh/id_rsa ubuntu@<ip>
+
+# Install development tools
+sudo apt update && sudo apt install -y \
+  build-essential \
+  git \
+  vim \
+  tmux \
+  htop
+
+# Set up Python environment
+sudo apt install -y python3-pip python3-venv
+python3 -m venv ~/venv
+echo 'source ~/venv/bin/activate' >> ~/.bashrc
+source ~/venv/bin/activate
+
+# Install your packages
+pip install numpy pandas jupyter
+
+# Start Jupyter (accessible via SSH tunnel)
+jupyter notebook --no-browser --port=8888
+
+# From your local machine, create SSH tunnel:
+# ssh -i ~/.ssh/id_rsa -L 8888:localhost:8888 ubuntu@<ip>
+# Then open http://localhost:8888 in your browser
+```
+
+## Batch Training with Multiple VMs
+
+Run parallel training jobs across multiple VMs:
+
+```python
+import concurrent.futures
+import requests
+
+def run_training_job(config):
+    """Start a VM, run training, terminate."""
+    vm = create_vm(config["name"], config["hardware"])
+    ready_vm = wait_for_ready(vm["vm_id"])
+
+    # Here you would SSH in and run training
+    # For automation, consider using Fabric or Paramiko
+    print(f"VM {config['name']} ready at {ready_vm['ip_address']}")
+    print(f"Run: ssh ubuntu@{ready_vm['ip_address']} 'python train.py --lr {config['lr']}'")
+
+    return {
+        "config": config,
+        "vm_id": vm["vm_id"],
+        "ip": ready_vm["ip_address"]
+    }
+
+# Define hyperparameter sweep
+configs = [
+    {"name": "lr-001", "hardware": "a100", "lr": 0.001},
+    {"name": "lr-0001", "hardware": "a100", "lr": 0.0001},
+    {"name": "lr-00001", "hardware": "a100", "lr": 0.00001},
+]
+
+# Start VMs in parallel
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    results = list(executor.map(run_training_job, configs))
+
+print("\nAll VMs started:")
+for r in results:
+    print(f"  {r['config']['name']}: {r['ip']}")
+
+# Don't forget to terminate when done!
+for r in results:
+    requests.delete(
+        f"{BASE_URL}/api/v2/external/vms/{r['vm_id']}",
+        headers={"Authorization": f"Bearer {TOKEN}"}
+    )
+    print(f"Terminated {r['config']['name']}")
+```
+
+## Cost Management
+
+Monitor and manage VM costs:
+
+```python
+def get_running_costs():
+    """Get total costs for running VMs."""
+    vms = list_vms()
+    total = sum(vm.get("billed", 0) for vm in vms["vms"])
+
+    running = [v for v in vms["vms"] if v["status"] in ["running", "ready"]]
+
+    print(f"Running VMs: {len(running)}")
+    print(f"Total billed: ${total:.2f}")
+
+    for vm in running:
+        print(f"  {vm['name']}: ${vm.get('billed', 0):.2f} ({vm['hardware_profile']})")
+
+    return total
+
+def terminate_idle_vms(max_idle_hours=2):
+    """Terminate VMs idle for too long."""
+    from datetime import datetime, timezone
+
+    vms = list_vms()
+    for vm in vms["vms"]:
+        if vm["status"] not in ["running", "ready"]:
+            continue
+
+        # Check uptime
+        response = requests.get(
+            f"{BASE_URL}/api/v2/external/vms/{vm['vm_id']}/status",
+            headers={"Authorization": f"Bearer {TOKEN}"}
+        )
+        status = response.json()
+
+        uptime_hours = status.get("uptime_seconds", 0) / 3600
+        if uptime_hours > max_idle_hours:
+            print(f"Terminating {vm['name']} (uptime: {uptime_hours:.1f}h)")
+            # Add your own logic to check if actually idle
+            # requests.delete(f"{BASE_URL}/api/v2/external/vms/{vm['vm_id']}", ...)
+
+# Check costs
+get_running_costs()
+```
+
+## Common Patterns
+
+<AccordionGroup>
+  <Accordion title="Using tmux for long-running jobs" icon="terminal">
+    Keep jobs running after disconnecting:
+
+    ```bash
+    # Start tmux session
+    tmux new -s training
+
+    # Run your training
+    python train.py --epochs 1000
+
+    # Detach: Ctrl+B, then D
+    # Reconnect later:
+    tmux attach -t training
+    ```
+  </Accordion>
+
+  <Accordion title="Transferring files" icon="upload">
+    ```bash
+    # Upload files to VM
+    scp -i ~/.ssh/id_rsa ./data.tar.gz ubuntu@<ip>:~/
+
+    # Download results
+    scp -i ~/.ssh/id_rsa ubuntu@<ip>:~/results/* ./local-results/
+
+    # Sync directories
+    rsync -avz -e "ssh -i ~/.ssh/id_rsa" ./project/ ubuntu@<ip>:~/project/
+    ```
+  </Accordion>
+
+  <Accordion title="Port forwarding for Jupyter/TensorBoard" icon="globe">
+    ```bash
+    # Forward Jupyter (port 8888)
+    ssh -i ~/.ssh/id_rsa -L 8888:localhost:8888 ubuntu@<ip>
+
+    # Forward TensorBoard (port 6006)
+    ssh -i ~/.ssh/id_rsa -L 6006:localhost:6006 ubuntu@<ip>
+
+    # Forward multiple ports
+    ssh -i ~/.ssh/id_rsa \
+      -L 8888:localhost:8888 \
+      -L 6006:localhost:6006 \
+      ubuntu@<ip>
+    ```
+  </Accordion>
+
+  <Accordion title="Auto-terminate on job completion" icon="clock">
+    ```bash
+    # On the VM, run training then signal completion
+    python train.py && touch /tmp/job_complete
+
+    # Script to check and terminate (run locally)
+    while true; do
+      ssh -i ~/.ssh/id_rsa ubuntu@<ip> 'test -f /tmp/job_complete' && break
+      sleep 60
+    done
+    lyceum vms terminate <vm_id> -f
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Remember to terminate VMs when you're done to avoid unnecessary charges. Use `lyceum vms list` to check for running instances.
+</Warning>
+
+<Note>
+  Need help? Check the [VM CLI Reference](/docs/vms/cli) or [VM API Reference](/docs/vms/api) for complete documentation.
+</Note>
