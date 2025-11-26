@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { AlertCircle, ExternalLink, RotateCcw, Cpu, Zap, Server, CheckCircle, X, Send, Check } from 'lucide-react'
+import { AlertCircle, ExternalLink, RotateCcw, Cpu, Zap, Server, CheckCircle, X, Send, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 // import ExecutionDetailsSidebar from '../ExecutionDetailsSidebar'
 import { dataCache, CacheKeys } from '../../services/DataCache'
@@ -52,15 +52,13 @@ interface BillingHistory {
 
 interface Invoice {
   id: string
-  number: string
+  created_at: string  // ISO datetime string
+  amount: number      // Monetary amount (not cents)
+  credits: number     // Number of credits purchased
   status: string
-  amount_paid: number
-  amount_due: number
-  currency: string
-  created: number
-  hosted_invoice_url: string
-  invoice_pdf: string
-  description?: string
+  invoice_pdf: string | null
+  receipt_url: string | null
+  payment_intent_id: string | null
 }
 
 const BillingPage: React.FC = () => {
@@ -72,6 +70,9 @@ const BillingPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [invoicesLoading, setInvoicesLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [invoicePage, setInvoicePage] = useState(1)
+  const [totalInvoices, setTotalInvoices] = useState(0)
+  const invoicesPerPage = 5
   const [, ] = useState(false)
   const [availableHardware, setAvailableHardware] = useState<string[]>([])
   const [hardwareLoading, setHardwareLoading] = useState(false)
@@ -123,7 +124,7 @@ const BillingPage: React.FC = () => {
     fetchCreditsData()
     fetchExecutionHistory()
     fetchBillingActivities()
-    fetchInvoices()
+    fetchInvoices(1) // Fetch first page of invoices
     fetchAvailableHardware()
   }, [])
 
@@ -360,17 +361,18 @@ const BillingPage: React.FC = () => {
     }
   }
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (page: number = 1) => {
     try {
       setInvoicesLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session) {
         console.log('No session found for invoice fetch')
         return
       }
 
-      const response = await fetch(buildApiUrl("/api/v2/external/billing/invoices"), {
+      const offset = (page - 1) * invoicesPerPage
+      const response = await fetch(buildApiUrl(`/api/v2/external/billing/invoices?limit=${invoicesPerPage}&offset=${offset}`), {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
@@ -381,7 +383,10 @@ const BillingPage: React.FC = () => {
       }
 
       const data = await response.json()
+      console.log('📋 Invoice API response:', data)
+      console.log('📊 Total invoices from API:', data.total_invoices)
       setInvoices(data.invoices || [])
+      setTotalInvoices(data.total_invoices || data.total || data.invoices?.length || 0)
     } catch (err) {
       console.error('Error fetching invoices:', err)
       // Don't set error for invoices as it's not critical
@@ -391,9 +396,9 @@ const BillingPage: React.FC = () => {
   }
 
   const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`
-  
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -818,7 +823,7 @@ Submitted on ${new Date().toLocaleString()}
                   <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Your billing history</p>
                 </div>
                 <button
-                  onClick={fetchInvoices}
+                  onClick={() => fetchInvoices(invoicePage)}
                   disabled={invoicesLoading}
                   className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors disabled:opacity-50"
                   title="Refresh invoices"
@@ -862,30 +867,38 @@ Submitted on ${new Date().toLocaleString()}
                     </thead>
                     <tbody>
                       {invoices.map((invoice) => (
-                        <tr 
+                        <tr
                           key={invoice.id}
                           className="border-b border-gray-50 dark:border-dark-border last:border-b-0 hover:bg-gray-25 dark:hover:bg-dark-accent/20 transition-colors"
                         >
                           <td className="px-4 py-3">
-                            <div className="text-sm font-medium text-gray-900 dark:text-dark-text">#{invoice.number || 'Draft'}</div>
-                            <div className="text-xs text-gray-500 dark:text-dark-text-secondary truncate max-w-xs">{invoice.description || 'Credit purchase'}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-dark-text">
+                              #{invoice.id.substring(0, 8)}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-dark-text-secondary">
+                              {invoice.credits} credits
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-500 dark:text-dark-text-secondary">
-                            {formatDate(invoice.created)}
+                            {formatDate(invoice.created_at)}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-900 dark:text-dark-text">
-                            {formatCurrency(invoice.amount_paid / 100)}
+                            {formatCurrency(invoice.amount)}
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <a
-                              href={invoice.hosted_invoice_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center space-x-1 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              <span>View</span>
-                            </a>
+                            {invoice.receipt_url ? (
+                              <a
+                                href={invoice.receipt_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center space-x-1 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                <span>View</span>
+                              </a>
+                            ) : (
+                              <span className="text-xs text-gray-400">Processing...</span>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -893,6 +906,44 @@ Submitted on ${new Date().toLocaleString()}
                   </table>
                 )}
               </div>
+
+              {/* Pagination Controls */}
+              {!invoicesLoading && invoices.length > 0 && totalInvoices > invoicesPerPage && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-dark-border">
+                  <div className="text-xs text-gray-500 dark:text-dark-text-secondary">
+                    Showing {((invoicePage - 1) * invoicesPerPage) + 1} to {Math.min(invoicePage * invoicesPerPage, totalInvoices)} of {totalInvoices} invoices
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        const newPage = invoicePage - 1
+                        setInvoicePage(newPage)
+                        fetchInvoices(newPage)
+                      }}
+                      disabled={invoicePage === 1}
+                      className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="Previous page"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="text-xs text-gray-600 dark:text-dark-text-secondary">
+                      Page {invoicePage} of {Math.ceil(totalInvoices / invoicesPerPage)}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newPage = invoicePage + 1
+                        setInvoicePage(newPage)
+                        fetchInvoices(newPage)
+                      }}
+                      disabled={invoicePage >= Math.ceil(totalInvoices / invoicesPerPage)}
+                      className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="Next page"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -154,26 +154,36 @@ Set up your Lyceum Cloud account and execute your first code on cloud infrastruc
 ### Step 3: Make Your First API Call
 
 <Accordion icon="rocket" title="Execute code via API">
-  The API is mainly desgined for docker image execution. Here's a simple code execution example:
+  The API is mainly designed for docker image execution. Here's how to start an async execution:
 
+  **Step 1: Start the execution** (returns immediately)
   ```bash
   curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
     -H "Authorization: Bearer YOUR_API_KEY" \
     -H "Content-Type: application/json" \
     -d '{
-      "image": "lyceum/python:3.9:latest",
+      "docker_image_ref": "python:3.9",
       "docker_run_cmd": ["python", "-c", "print(\"Hello from Docker!\")"],
-      "execution_type": "cpu",
-      "docker_registry_credential_type": "aws",
-      "aws_access_key_id": "${AWS_ACCESS_KEY}",
-      "aws_secret_access_key": "${AWS_SECRET_ACCESS_KEY}",
-      "aws_session_token": "${AWS_SESSION_TOKEN}",
-      "aws_region": "${AWS_REGION}"
+      "execution_type": "cpu"
     }'
   ```
-  
+
+  **Response:**
+  ```json
+  {
+    "execution_id": "abc123...",
+    "status": "pending",
+    "streaming_url": "https://api.lyceum.technology/stream/abc123..."
+  }
+  ```
+
+  **Step 2: Connect to the streaming URL** to watch real-time output:
+  ```bash
+  curl https://api.lyceum.technology/stream/abc123...
+  ```
+
   <Note>
-    Replace `YOUR_API_KEY` with your actual API key. Find more API documentation here: [API Reference](/api-reference)
+    The execution happens asynchronously. Connect to the `streaming_url` to receive real-time logs as the job runs. Find more API documentation here: [API Reference](/api-reference/introduction)
   </Note>
 </Accordion>
 
@@ -186,11 +196,11 @@ Now that you're set up, explore the full capabilities of Lyceum Cloud:
 
 <CardGroup cols={3}>
 
-<Card title="Upload Files" icon="cloud-arrow-up" href="/storage">
+<Card title="Upload Files" icon="cloud-arrow-up" href="/docs/storage">
   Learn how to upload and manage files in cloud storage.
 </Card>
 
-<Card title="Machine Types" icon="server" href="/machine-types">
+<Card title="Machine Types" icon="server" href="/docs/machine-types">
   Discover available CPU and GPU configurations.
 </Card>
 

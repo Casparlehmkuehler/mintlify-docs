@@ -8,12 +8,17 @@ icon: "docker"
   Execute any Docker container on Lyceum Cloud. Perfect for reproducible environments, custom dependencies, and production workloads.
 </Info>
 
+<Note>
+  **Async Execution:** All execution endpoints return immediately with a `streaming_url` for real-time logs and an `execution_id`. Connect to the streaming URL to watch output as the job runs.
+</Note>
+
 ## Simple Container Execution
 
 Start with a basic container to test the platform:
 
 <CodeGroup>
 ```bash Alpine Linux
+# Start execution (returns immediately)
 curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
   -H "Authorization: Bearer <TOKEN>" \
   -H "Content-Type: application/json" \
@@ -22,9 +27,13 @@ curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start
     "docker_run_cmd": ["echo", "Hello from Alpine!"],
     "execution_type": "cpu"
   }'
+
+# Response: { "execution_id": "...", "streaming_url": "...", "status": "pending" }
+# Connect to streaming_url for real-time output
 ```
 
 ```bash Python Container
+# Start execution (async)
 curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start \
   -H "Authorization: Bearer <TOKEN>" \
   -d '{
@@ -32,11 +41,14 @@ curl -X POST https://api.lyceum.technology/api/v2/external/execution/image/start
     "docker_run_cmd": ["python", "-c", "print(\"Hello from Python container!\")"],
     "execution_type": "cpu"
   }'
+
+# Returns streaming_url for real-time logs
 ```
 
 ```python Python API Client
 import requests
 
+# Start execution
 response = requests.post(
     "https://api.lyceum.technology/api/v2/external/execution/image/start",
     headers={"Authorization": f"Bearer {token}"},
@@ -47,8 +59,15 @@ response = requests.post(
     }
 )
 
-execution_id = response.json()["execution_id"]
+data = response.json()
+execution_id = data["execution_id"]
+streaming_url = data["streaming_url"]
+
 print(f"Started execution: {execution_id}")
+print(f"Stream output at: {streaming_url}")
+
+# Connect to streaming_url for real-time output
+# Or poll GET /api/v2/external/execution/{execution_id} for final results
 ```
 </CodeGroup>
 

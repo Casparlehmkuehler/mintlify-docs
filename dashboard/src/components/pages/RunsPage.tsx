@@ -12,6 +12,7 @@ import { dataPreloader } from '../../services/DataPreloader'
 import { usePreloader } from '../../hooks/useCachedData'
 import { buildApiUrl } from '../../lib/api'
 import { analytics, ANALYTICS_EVENTS } from '../../services/analytics'
+import LogsViewer from '../LogsViewer'
 
 const getStatusIcon = (status: string) => {
   const lowerStatus = status.toLowerCase()
@@ -1696,6 +1697,9 @@ const RunsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Execution Logs */}
+              <LogsViewer executionId={selectedRun.id} />
 
               {/* Warnings */}
               {selectedRun.warnings && selectedRun.warnings.length > 0 && (

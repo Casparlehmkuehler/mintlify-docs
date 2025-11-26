@@ -22,7 +22,7 @@ export interface EnvVarResponse {
 }
 
 class EnvVarsApi {
-  private readonly baseUrl = 'http://localhost:8000'
+  private readonly baseUrl = 'https://api.lyceum.technology'
 
   private async getAuthHeaders() {
     const { data: { session }, error } = await supabase.auth.getSession()
@@ -58,15 +58,9 @@ class EnvVarsApi {
 
   async createMultipleEnvVars(envVars: CreateEnvVarRequest[]): Promise<EnvVar[]> {
     const headers = await this.getAuthHeaders()
-    
-    // All variables are treated as sensitive - base64 encode all values
-    const processedVars = envVars.map(envVar => ({
-      name: envVar.name,
-      value: btoa(envVar.value) // Always base64 encode since all vars are sensitive
-    }))
-    
+
     const requestBody: UpsertEnvVarsRequest = {
-      environment_variables: processedVars
+      environment_variables: envVars
     }
     
     const response = await fetch(`${this.baseUrl}/api/v2/external/environment-variables/`, {
@@ -87,7 +81,6 @@ class EnvVarsApi {
   async updateEnvVar(_id: string, name: string, value: string): Promise<EnvVar> {
     // Use upsert endpoint to update - the API will update based on user_id + name
     // The id parameter is not used since the new API uses name for upsert logic
-    // All variables are treated as sensitive
     const result = await this.createMultipleEnvVars([{ name, value }])
     return result[0]
   }

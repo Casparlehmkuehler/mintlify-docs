@@ -1,0 +1,475 @@
+---
+title: "API Reference"
+description: "REST API endpoints for managing VM instances programmatically"
+icon: "code"
+---
+
+<Info>
+  Base URL: `https://api.lyceum.technology`
+
+  All endpoints require authentication via Bearer token in the header:
+  ```
+  Authorization: Bearer <token>
+  ```
+</Info>
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/v2/external/vms/create` | Create a new VM instance |
+| `GET` | `/api/v2/external/vms/list` | List all VM instances |
+| `GET` | `/api/v2/external/vms/availability` | Check hardware availability |
+| `GET` | `/api/v2/external/vms/{vm_id}/status` | Get VM status |
+| `DELETE` | `/api/v2/external/vms/{vm_id}` | Terminate a VM |
+
+## Create VM
+
+Create and start a new VM instance.
+
+**Endpoint:** `POST /api/v2/external/vms/create`
+
+<CodeGroup>
+  ```bash cURL
+  curl -X POST https://api.lyceum.technology/api/v2/external/vms/create \
+    -H "Authorization: Bearer <TOKEN>" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "hardware_profile": "a100",
+      "user_public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB...",
+      "name": "my-training-vm",
+      "instance_specs": {
+        "cpu": 8,
+        "memory": 64,
+        "disk": 100,
+        "gpu_count": 1
+      }
+    }'
+  ```
+
+  ```python Python
+  import requests
+
+  response = requests.post(
+      "https://api.lyceum.technology/api/v2/external/vms/create",
+      headers={
+          "Authorization": f"Bearer {token}",
+          "Content-Type": "application/json"
+      },
+      json={
+          "hardware_profile": "a100",
+          "user_public_key": open("/home/user/.ssh/id_rsa.pub").read().strip(),
+          "name": "my-training-vm",
+          "instance_specs": {
+              "cpu": 8,
+              "memory": 64,
+              "disk": 100,
+              "gpu_count": 1
+          }
+      }
+  )
+
+  vm = response.json()
+  print(f"VM ID: {vm['vm_id']}")
+  print(f"Status: {vm['status']}")
+  ```
+
+  ```javascript JavaScript
+  const response = await fetch(
+    'https://api.lyceum.technology/api/v2/external/vms/create',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        hardware_profile: 'a100',
+        user_public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB...',
+        name: 'my-training-vm',
+        instance_specs: {
+          cpu: 8,
+          memory: 64,
+          disk: 100,
+          gpu_count: 1
+        }
+      })
+    }
+  );
+
+  const vm = await response.json();
+  console.log(`VM ID: ${vm.vm_id}`);
+  ```
+</CodeGroup>
+
+### Request Body
+
+<ResponseField name="hardware_profile" type="string" required>
+  Hardware profile: `cpu`, `a100`, or `h100`
+</ResponseField>
+
+<ResponseField name="user_public_key" type="string" required>
+  SSH public key for authentication
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Friendly name for the VM instance
+</ResponseField>
+
+<ResponseField name="instance_specs" type="object">
+  Custom resource specifications (optional - uses profile defaults if not provided)
+
+  <Expandable title="instance_specs properties">
+    <ResponseField name="cpu" type="integer">
+      Number of CPU cores
+    </ResponseField>
+    <ResponseField name="memory" type="integer">
+      Memory in GB
+    </ResponseField>
+    <ResponseField name="disk" type="integer">
+      Disk size in GB
+    </ResponseField>
+    <ResponseField name="gpu_count" type="integer">
+      Number of GPUs (for GPU profiles)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Response
+
+```json
+{
+  "vm_id": "vm-abc123def456",
+  "status": "pending",
+  "name": "my-training-vm",
+  "created_at": "2024-01-15T10:30:00Z",
+  "ip_address": null
+}
+```
+
+<Note>
+  The `ip_address` will be `null` while the VM is provisioning. Poll the status endpoint to get the IP once the VM is ready.
+</Note>
+
+## List VMs
+
+List all VM instances for the authenticated user.
+
+**Endpoint:** `GET /api/v2/external/vms/list`
+
+<CodeGroup>
+  ```bash cURL
+  curl -X GET https://api.lyceum.technology/api/v2/external/vms/list \
+    -H "Authorization: Bearer <TOKEN>"
+  ```
+
+  ```python Python
+  response = requests.get(
+      "https://api.lyceum.technology/api/v2/external/vms/list",
+      headers={"Authorization": f"Bearer {token}"}
+  )
+
+  data = response.json()
+  for vm in data["vms"]:
+      print(f"{vm['name']}: {vm['status']} - {vm['ip_address']}")
+  ```
+
+  ```javascript JavaScript
+  const response = await fetch(
+    'https://api.lyceum.technology/api/v2/external/vms/list',
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+
+  const { vms, total } = await response.json();
+  vms.forEach(vm => console.log(`${vm.name}: ${vm.status}`));
+  ```
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "vms": [
+    {
+      "vm_id": "vm-abc123def456",
+      "name": "training-vm",
+      "status": "running",
+      "ip_address": "10.0.1.5:22",
+      "hardware_profile": "a100",
+      "billed": 2.45,
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+## Check Availability
+
+Check available hardware profiles and capacity.
+
+**Endpoint:** `GET /api/v2/external/vms/availability`
+
+<CodeGroup>
+  ```bash cURL
+  curl -X GET https://api.lyceum.technology/api/v2/external/vms/availability \
+    -H "Authorization: Bearer <TOKEN>"
+  ```
+
+  ```python Python
+  response = requests.get(
+      "https://api.lyceum.technology/api/v2/external/vms/availability",
+      headers={"Authorization": f"Bearer {token}"}
+  )
+
+  data = response.json()
+  for profile in data["available_hardware_profiles"]:
+      print(f"{profile['profile']}: {profile['available']} available")
+  ```
+
+  ```javascript JavaScript
+  const response = await fetch(
+    'https://api.lyceum.technology/api/v2/external/vms/availability',
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+
+  const { available_hardware_profiles } = await response.json();
+  available_hardware_profiles.forEach(p =>
+    console.log(`${p.profile}: ${p.available} available`)
+  );
+  ```
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "pool_name": "default",
+  "available_hardware_profiles": [
+    {
+      "profile": "cpu",
+      "gpu_type": null,
+      "vcpu": 4,
+      "memory_gb": 16,
+      "available": 12
+    },
+    {
+      "profile": "a100",
+      "gpu_type": "NVIDIA A100",
+      "vcpu": 8,
+      "memory_gb": 64,
+      "available": 3
+    },
+    {
+      "profile": "h100",
+      "gpu_type": "NVIDIA H100",
+      "vcpu": 8,
+      "memory_gb": 80,
+      "available": 1
+    }
+  ]
+}
+```
+
+## Get VM Status
+
+Get detailed status of a specific VM.
+
+**Endpoint:** `GET /api/v2/external/vms/{vm_id}/status`
+
+<CodeGroup>
+  ```bash cURL
+  curl -X GET https://api.lyceum.technology/api/v2/external/vms/vm-abc123def456/status \
+    -H "Authorization: Bearer <TOKEN>"
+  ```
+
+  ```python Python
+  vm_id = "vm-abc123def456"
+  response = requests.get(
+      f"https://api.lyceum.technology/api/v2/external/vms/{vm_id}/status",
+      headers={"Authorization": f"Bearer {token}"}
+  )
+
+  status = response.json()
+  print(f"Status: {status['status']}")
+  print(f"IP: {status['ip_address']}")
+  print(f"Uptime: {status['uptime_seconds']}s")
+  ```
+
+  ```javascript JavaScript
+  const vmId = 'vm-abc123def456';
+  const response = await fetch(
+    `https://api.lyceum.technology/api/v2/external/vms/${vmId}/status`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+
+  const status = await response.json();
+  console.log(`Status: ${status.status}, IP: ${status.ip_address}`);
+  ```
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "vm_id": "vm-abc123def456",
+  "status": "running",
+  "name": "training-vm",
+  "ip_address": "10.0.1.5:22",
+  "hardware_profile": "a100",
+  "billed": 2.45,
+  "uptime_seconds": 8130,
+  "instance_specs": {
+    "cpu": 8,
+    "memory": 64,
+    "disk": 100,
+    "gpu_count": 1
+  },
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+## Terminate VM
+
+Terminate and delete a VM instance.
+
+**Endpoint:** `DELETE /api/v2/external/vms/{vm_id}`
+
+<CodeGroup>
+  ```bash cURL
+  curl -X DELETE https://api.lyceum.technology/api/v2/external/vms/vm-abc123def456 \
+    -H "Authorization: Bearer <TOKEN>"
+  ```
+
+  ```python Python
+  vm_id = "vm-abc123def456"
+  response = requests.delete(
+      f"https://api.lyceum.technology/api/v2/external/vms/{vm_id}",
+      headers={"Authorization": f"Bearer {token}"}
+  )
+
+  print(response.json()["message"])
+  ```
+
+  ```javascript JavaScript
+  const vmId = 'vm-abc123def456';
+  const response = await fetch(
+    `https://api.lyceum.technology/api/v2/external/vms/${vmId}`,
+    {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+
+  const { message } = await response.json();
+  console.log(message);
+  ```
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "message": "VM instance terminated successfully"
+}
+```
+
+## Error Responses
+
+All endpoints return standard error responses:
+
+| Status Code | Description |
+|-------------|-------------|
+| `400` | Bad request - invalid parameters |
+| `401` | Unauthorized - invalid or missing token |
+| `402` | Payment required - insufficient credits |
+| `404` | Not found - VM does not exist |
+| `422` | Validation error - invalid request body |
+| `500` | Server error |
+
+### Error Response Format
+
+```json
+{
+  "detail": "Insufficient credits to start VM instance"
+}
+```
+
+## Polling for VM Readiness
+
+VMs take time to provision. Here's how to poll for readiness:
+
+<CodeGroup>
+  ```python Python
+  import time
+
+  def wait_for_vm(vm_id, token, timeout=600, interval=30):
+      """Poll until VM is ready or timeout."""
+      start = time.time()
+
+      while time.time() - start < timeout:
+          response = requests.get(
+              f"https://api.lyceum.technology/api/v2/external/vms/{vm_id}/status",
+              headers={"Authorization": f"Bearer {token}"}
+          )
+          status = response.json()
+
+          if status["status"] in ["ready", "running"]:
+              return status
+          elif status["status"] in ["failed", "error"]:
+              raise Exception(f"VM failed: {status}")
+
+          print(f"Status: {status['status']} - waiting...")
+          time.sleep(interval)
+
+      raise TimeoutError("VM did not become ready in time")
+
+  # Usage
+  vm = create_vm(...)
+  ready_vm = wait_for_vm(vm["vm_id"], token)
+  print(f"SSH: ssh -i ~/.ssh/id_rsa ubuntu@{ready_vm['ip_address']}")
+  ```
+
+  ```javascript JavaScript
+  async function waitForVM(vmId, token, timeout = 600000, interval = 30000) {
+    const start = Date.now();
+
+    while (Date.now() - start < timeout) {
+      const response = await fetch(
+        `https://api.lyceum.technology/api/v2/external/vms/${vmId}/status`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const status = await response.json();
+
+      if (['ready', 'running'].includes(status.status)) {
+        return status;
+      } else if (['failed', 'error'].includes(status.status)) {
+        throw new Error(`VM failed: ${JSON.stringify(status)}`);
+      }
+
+      console.log(`Status: ${status.status} - waiting...`);
+      await new Promise(r => setTimeout(r, interval));
+    }
+
+    throw new Error('VM did not become ready in time');
+  }
+  ```
+</CodeGroup>
+
+## Rate Limits
+
+| Endpoint | Rate Limit |
+|----------|------------|
+| Create VM | 10 requests/minute |
+| List/Status | 60 requests/minute |
+| Terminate | 30 requests/minute |
+
+<Note>
+  Need help? Contact support@lyceum.technology or check our [API Introduction](/api-reference/introduction) for authentication details.
+</Note>

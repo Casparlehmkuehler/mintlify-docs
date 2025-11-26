@@ -24,22 +24,16 @@ const PasswordResetPage: React.FC = () => {
     const checkResetSession = async () => {
       try {
         setValidating(true)
-        
-        // Check URL parameters
-        const urlParams = new URLSearchParams(location.search)
-        const hasResetParam = urlParams.get('password-reset') === 'true'
-        
-        if (!hasResetParam) {
-          // Check for Supabase auth session with recovery mode
-          const { data: { session } } = await supabase.auth.getSession()
-          
-          if (!session) {
-            setError('Invalid or expired password reset link. Please request a new password reset.')
-            setValidating(false)
-            return
-          }
+
+        // Check for Supabase auth session (should be present from password reset link)
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (!session) {
+          setError('Invalid or expired password reset link. Please request a new password reset.')
+          setValidating(false)
+          return
         }
-        
+
         setIsValidSession(true)
       } catch (err: any) {
         console.error('Error checking reset session:', err)
